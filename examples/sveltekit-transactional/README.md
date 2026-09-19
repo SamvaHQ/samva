@@ -19,7 +19,7 @@ Add a real `SAMVA_API_KEY` and a random `SAMVA_SEND_TOKEN` in `.env`. Both are
 read only from server code via `$env/dynamic/private`.
 
 Your Samva account must have a verified sender or domain before production sends
-will deliver. There is no `from` field in this example; Samva uses the verified
+will deliver. This example omits the optional `from` field; Samva uses the verified
 sender configured on your account.
 
 ## Run

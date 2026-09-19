@@ -1,1 +1,2 @@
 SAMVA_API_KEY="samva_sk_live_your_key_here"
+SAMVA_WEBHOOK_SECRET="whsec_your_webhook_signing_secret"

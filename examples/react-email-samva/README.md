@@ -27,8 +27,7 @@ bun run send           # render → html + text → samva.messages.send
 ```
 
 `src/send.tsx` renders the template, derives a plain-text fallback with
-`toPlainText`, and sends both via `samva.messages.send`. There is **no `from`** —
-Samva sends from the verified sender configured on your account.
+`toPlainText`, and sends both via `samva.messages.send`. The `from` field is optional and defaults to the verified sender configured on your account.
 
 ## Files
 

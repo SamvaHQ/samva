@@ -32,11 +32,12 @@ curl -X POST http://localhost:8787/send \
 ```
 
 `POST /send` validates `to` and `subject`, builds the Samva client from
-`c.env.SAMVA_API_KEY`, and returns the SDK result. There is no `from` field;
-Samva sends from the verified sender configured on your account.
+`c.env.SAMVA_API_KEY`, and returns the SDK result. The `from` field is optional;
+when omitted, Samva sends from the verified sender configured on your account.
 
-The example also includes `POST /webhooks/samva`, which reads the raw body and
-signature header. Verification is left to the `samva/webhooks` SDK subpath.
+The example also includes `POST /webhooks/samva`, which verifies the signed raw
+request with `verifyRequest` from the `samva/webhooks` SDK subpath before
+trusting the event.
 
 ## Deploy
 

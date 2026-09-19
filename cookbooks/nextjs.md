@@ -4,7 +4,7 @@ Use the `samva` SDK from Next.js server code.
 Use Server Actions for forms. Use Route Handlers for HTTP endpoints.
 Use Pages Router API routes for older apps.
 Samva sends from the verified sender on your account.
-The payload has no `from` field.
+The `from` field is optional and defaults to that sender.
 
 ## Setup
 
@@ -265,8 +265,8 @@ other services.
 knows whether Samva accepted the message. For bulk or post-response work, enqueue
 a job or use the host's background primitive such as `waitUntil` or `after`.
 
-**Where is `from`?** Samva sends from the verified sender on your account at
-[samva.dev](https://samva.dev). Do not add a `from` field.
+**Where is `from`?** `from` is optional. Omit it and Samva sends from the verified sender on your account at
+[samva.dev](https://samva.dev).
 
 **What about webhooks?** Receiving and verifying Samva webhooks is a separate
 flow. See the [webhooks guide](https://samva.dev/docs/integrations/webhooks)

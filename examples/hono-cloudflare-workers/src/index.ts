@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import { createClient, SamvaApiError, SamvaTransportError } from "samva";
+import { verifyRequest, WebhookVerificationError } from "samva/webhooks";
 
 type Bindings = {
   SAMVA_API_KEY: string;
+  SAMVA_WEBHOOK_SECRET: string;
 };
 
 type SendRequestBody = {
@@ -61,14 +63,21 @@ app.post("/send", async (c) => {
 });
 
 app.post("/webhooks/samva", async (c) => {
-  const payload = await c.req.text();
-  const signature = c.req.header("x-webhook-signature");
+  const secret = c.env.SAMVA_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error("SAMVA_WEBHOOK_SECRET is not configured for this Worker.");
+  }
 
-  // TODO(wave 3): verify payload and signature with samva/webhooks.
-  void payload;
-  void signature;
-
-  return c.body(null, 204);
+  // Verify the untouched raw request before trusting any event data.
+  try {
+    const verified = await verifyRequest(c.req.raw, secret);
+    return c.json({ ok: true, id: verified.id, type: verified.event.type }, 202);
+  } catch (error) {
+    if (error instanceof WebhookVerificationError) {
+      return c.json({ ok: false, error: "Invalid webhook signature." }, 400);
+    }
+    throw error;
+  }
 });
 
 export default app;
