@@ -44,7 +44,7 @@ const releaseChecks = (): TegamiPlugin => ({
 });
 
 const paper = tegami({
-  ignore: ["@samva/integrations", /^@samva-examples\//],
+  ignore: ["@samva/workspace", /^@samva-examples\//],
   npm: {
     client: "bun",
     updateLockFile: true,
