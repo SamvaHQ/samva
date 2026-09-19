@@ -41,10 +41,12 @@ trusting the event.
 
 ## Deploy
 
-Store the API key as a production Worker secret, then deploy:
+Store the API key and webhook signing secret as production Worker secrets, then
+deploy:
 
 ```sh
 wrangler secret put SAMVA_API_KEY
+wrangler secret put SAMVA_WEBHOOK_SECRET
 bun run deploy
 ```
 

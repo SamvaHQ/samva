@@ -12,16 +12,19 @@ bun add hono samva
 bun add -d wrangler @cloudflare/workers-types typescript
 ```
 
-Store secrets in Workers bindings. In production, put the key with Wrangler:
+Store secrets in Workers bindings. In production, put the API key and the
+webhook signing secret with Wrangler:
 
 ```sh
 wrangler secret put SAMVA_API_KEY
+wrangler secret put SAMVA_WEBHOOK_SECRET
 ```
 
 For local development, keep a `.dev.vars` file next to `wrangler.jsonc`:
 
 ```sh
 SAMVA_API_KEY="samva_sk_live_..."
+SAMVA_WEBHOOK_SECRET="whsec_your_webhook_signing_secret"
 ```
 
 Configure the Worker with a module entrypoint. You do not need `nodejs_compat`.

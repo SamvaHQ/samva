@@ -211,6 +211,7 @@
         "@samva/markup": "^0.6.0",
       },
       "devDependencies": {
+        "@samva/cli": "^0.2.1",
         "@samva/vite": "^0.6.0",
         "@types/node": "^22.0.0",
         "vite": "^8.2.2",
@@ -810,6 +811,16 @@
     "@samva-examples/email-sdk": ["@samva-examples/email-sdk@workspace:examples/email-sdk"],
 
     "@samva/better-auth": ["@samva/better-auth@workspace:packages/better-auth"],
+
+    "@samva/cli": ["@samva/cli@0.2.1", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.2.1", "@samva/cli-darwin-x64": "0.2.1", "@samva/cli-linux-arm64": "0.2.1", "@samva/cli-linux-x64": "0.2.1" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-9if5M770dXlNxWcufRzdr2UXQUVTF3LBXTHnEiajmwA9wikUua7sPQrMnDbRJEDvB3fFd7zkwdubBhdu5Cjztg=="],
+
+    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.2.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tU7sk6az7+E5PSzcSR4RDl/zXenJigR3UHTug7hWv7LyuAhr/HcaLvI4y4DztZZaLziY0yzNisibGTF68i/RTg=="],
+
+    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.2.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-5w/c9TYB985hR7fd3RLuNo3uvby41+wLDQkrU9Fo9/vMRbgWzW2/x11BNTiTdXs8Of2YnvFw7GIwpOv8qmi02g=="],
+
+    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.2.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-DNXzdiEnawlVTF+o9aYBjpIbsi5KUR5JuLhTnGo6Ouun2aVIgW7ThEzJR3So8PUhcMtYvetDz0G1KPd+hGJyCg=="],
+
+    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.2.1", "", { "os": "linux", "cpu": "x64" }, "sha512-7xTgVGFZzWoXBQvwfHkKaN0z4gjTO4U15qbnbQCagjyVjgA0h1ju/EgCMynl1VknTFPlztRd2+M49wjkt1S6Yg=="],
 
     "@samva/email-sdk": ["@samva/email-sdk@workspace:packages/email-sdk"],
 

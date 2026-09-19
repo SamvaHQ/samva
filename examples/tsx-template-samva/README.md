@@ -30,13 +30,14 @@ separate, explicit action.
 
 ## Publish and send
 
-`samva templates check` executes the declared fixtures without writing.
+Install the CLI (`bun add --dev @samva/cli`) so the `samva` executable resolves.
+`bunx samva templates check` executes the declared fixtures without writing.
 Publishing and sending a template are API actions owned by the CLI and SDK, not
 by this preview:
 
 ```sh
-samva templates check
-samva templates publish
+bunx samva templates check
+bunx samva templates publish
 ```
 
 See the [TSX template authoring cookbook](../../cookbooks/tsx-templates.md) for

@@ -9,7 +9,11 @@ example is the runnable version of this page.
 
 ```sh
 bun add @samva/markup @samva/vite vite
+bun add --dev @samva/cli
 ```
+
+The `samva` executable comes from `@samva/cli`; run it through your package
+runner so the local install resolves.
 
 Set `jsx: "react-jsx"` and `jsxImportSource: "@samva/markup/email"` in
 `tsconfig.json`. A template module default-exports `defineEmail({ id, schema,
@@ -62,7 +66,7 @@ concrete input; supported visual edits update the authored TSX.
 ## Check, commit, and publish
 
 ```sh
-samva templates check
+bunx samva templates check
 ```
 
 `check` runs the no-write TypeScript gate and executes the declared fixtures.
@@ -71,7 +75,7 @@ lockfile v3); hosted builds consume that locked graph and verify package
 integrity. Push the checked source, then publish an exact commit:
 
 ```sh
-samva templates publish --commit HEAD
+bunx samva templates publish --commit HEAD
 ```
 
 Publishing pins the project, commit, and entry path and returns an immutable
@@ -96,6 +100,6 @@ await samva.email.send({
 - `inputContractId` follows new publications while the input shape stays put.
 - Naming both `publicationId` and `inputContractId` is rejected.
 
-See the [TypeScript SDK cookbook](./effect-sdk.md) siblings for the surrounding
-send paths, and the [email templates docs](https://samva.dev/docs) for the
-template API surface.
+See the runnable [`tsx-template-samva`](../examples/tsx-template-samva/)
+example for the full project, and the
+[email templates docs](https://samva.dev/docs) for the template API surface.
