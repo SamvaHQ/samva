@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "samva",
+      "name": "@samva/integrations",
       "devDependencies": {
         "@tsconfig/bun": "^1.0.10",
         "@types/bun": "^1.4.0",
