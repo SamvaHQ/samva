@@ -28,7 +28,7 @@ export type SamvaEmailAdapter = EmailAdapter<"samva", SamvaClient, SamvaSendResu
 
 const capabilities = {
   repeatedHeaders: false,
-  idempotency: "none",
+  idempotency: "native",
   scheduling: false,
   personalized: "expanded",
 } as const satisfies EmailAdapterCapabilities;
@@ -65,18 +65,18 @@ export function samva(options: SamvaAdapterOptions): SamvaEmailAdapter {
       validateMessage(message);
     },
     async send(message, context) {
-      if (context.idempotencyKey !== undefined) {
-        throw new EmailValidationError(
-          "The Samva Email SDK adapter does not support idempotency keys.",
-        );
-      }
       if (context.signal?.aborted) throw abortReason(context.signal);
 
       const payload = await toSamvaMessage(message);
+      const headers =
+        context.idempotencyKey === undefined
+          ? undefined
+          : { "idempotency-key": context.idempotencyKey };
       let result: SamvaSendResult;
       try {
         result = await client.email.send(payload, {
           ...(context.signal === undefined ? {} : { signal: context.signal }),
+          ...(headers === undefined ? {} : { headers }),
         });
       } catch (error) {
         if (isAbortFailure(error, context.signal)) throw abortReason(context.signal);

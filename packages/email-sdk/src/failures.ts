@@ -7,6 +7,7 @@ const knownNotSentTags = new Set([
   "EmailChannelError",
   "FlagDisabledError",
   "ForbiddenError",
+  "OnboardingReviewRequiredError",
   "PaymentRequiredError",
   "RateLimitedError",
   "ResourceNotFoundError",
@@ -39,12 +40,10 @@ function requestIdOf(error: ErrorRecord): string | undefined {
 }
 
 function isRetryableStatus(status: number | undefined): boolean {
+  // 409 is ConflictError: the SDK marks it non-retryable, and a reused
+  // idempotency key with changed content can never succeed on replay.
   return (
-    status === 408 ||
-    status === 409 ||
-    status === 425 ||
-    status === 429 ||
-    (status !== undefined && status >= 500)
+    status === 408 || status === 425 || status === 429 || (status !== undefined && status >= 500)
   );
 }
 
