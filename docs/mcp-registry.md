@@ -28,7 +28,7 @@ brew install mcp-publisher
 mcp-publisher validate server.json
 ```
 
-The future authenticated publish flow is:
+The authenticated publish flow is:
 
 ```sh
 export MCP_REGISTRY_PRIVATE_KEY='REPLACE_WITH_THE_OUT_OF_BAND_PRIVATE_KEY'
@@ -38,10 +38,11 @@ mcp-publisher login dns \
 mcp-publisher publish
 ```
 
-Do not run `mcp-publisher publish` as part of ordinary repository CI or while
-reviewing this packet. Publishing is an external registry mutation and remains
-a separate, explicit approval step after the manifest, endpoint, and domain
-authentication have been reviewed.
+The packet is published under the `dev.samva/mcp` registry name. Do not run
+`mcp-publisher publish` as part of ordinary repository CI or while reviewing
+this packet. Re-publishing an updated manifest is an external registry mutation
+and remains a separate, explicit approval step after the manifest, endpoint,
+and domain authentication have been reviewed.
 
 The official registry's [server.json specification](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md),
 [authentication guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/authentication.mdx),
