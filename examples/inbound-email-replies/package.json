@@ -1,0 +1,19 @@
+{
+  "name": "inbound-email-replies-samva",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable example that receives inbound email, verifies the signed webhook, and replies in-thread through Samva.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "samva": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.8"
+  }
+}

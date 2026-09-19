@@ -38,6 +38,7 @@ packages and examples use `samva@^0.3.0`; copyable external import maps pin
 - [`Effect SDK`](./cookbooks/effect-sdk.md)
 - [`Email SDK`](./cookbooks/email-sdk.md)
 - [`Hono on Cloudflare Workers`](./cookbooks/hono-cloudflare-workers.md)
+- [`Inbound email replies`](./cookbooks/inbound-email.md)
 - [`Next.js`](./cookbooks/nextjs.md)
 - [`Prisma`](./cookbooks/prisma.md)
 - [`React Email`](./cookbooks/react-email.md)
@@ -62,6 +63,8 @@ Integrations land as individual pull requests. See
   Samva community adapter.
 - [`hono-cloudflare-workers`](./examples/hono-cloudflare-workers) — Hono Worker
   with a JSON email endpoint.
+- [`inbound-email-replies`](./examples/inbound-email-replies) — receives an
+  inbound reply, verifies the signed webhook, and answers in-thread.
 - [`nextjs-transactional`](./examples/nextjs-transactional) — App Router
   contact form plus `/api/send` route handler using the Samva SDK.
 - [`react-email-samva`](./examples/react-email-samva) — React Email rendering
