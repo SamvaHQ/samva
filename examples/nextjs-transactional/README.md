@@ -8,7 +8,7 @@ It includes:
 - a Server Action contact form at `app/contact`;
 - a JSON Route Handler at `app/api/send`;
 - a `server-only` Samva client module in `lib/samva.ts`;
-- no database, no webhook receiver, and no `from` field.
+- no database, no webhook receiver, and an optional `from` left unset.
 
 ## Setup
 

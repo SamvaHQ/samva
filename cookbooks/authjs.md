@@ -209,8 +209,8 @@ is already built around that provider.
 
 ## Notes and FAQ
 
-**Why no `from` or `EMAIL_FROM`?** Samva sends from the verified sender on your
-account, so the Samva payload has no `from` field.
+**Why no `from` or `EMAIL_FROM`?** The `from` field is optional and defaults to the verified
+sender on your account, so this integration does not require one.
 The empty provider-level `from` above exists only to satisfy Auth.js' email
 provider shape.
 

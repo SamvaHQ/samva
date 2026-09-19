@@ -1,0 +1,11 @@
+/* Project Tailwind tokens. Local builds, previews and hosted builds consume this file.
+ * Use explicit dark: utilities with the dark tokens; token names do not imply variants.
+ */
+@theme {
+  --color-brand: #4f46e5;
+  --color-brand-foreground: #ffffff;
+  --color-brand-dark: #a5b4fc;
+  --color-brand-foreground-dark: #0b0d10;
+  --radius-card: 12px;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}

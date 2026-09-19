@@ -3,7 +3,7 @@
 Connect a coding agent to Samva's organization-scoped email tools at
 `https://mcp.samva.dev`. The bundle also includes Samva's canonical agent skill
 for choosing between the hosted MCP server, TypeScript SDKs, REST API, CLI,
-dashboard, and SML template editor.
+dashboard, and TSX template editor.
 
 ## Authentication
 

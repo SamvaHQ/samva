@@ -44,7 +44,7 @@ await samva.messages.send({
 
 `render` is async. Always `await` it.
 Samva sends from the verified sender on your account.
-There is no `from` field in the payload.
+The `from` field is optional and defaults to that sender.
 
 ## Add a plain-text part
 
@@ -173,8 +173,8 @@ Server Action, see the [Next.js cookbook](./nextjs.md).
 
 ## FAQ
 
-**Why no `from`?** Samva sends from the verified domain or sender on your
-account, so the sender is never in the payload. Configure senders at
+**Why is `from` optional?** Omit it and Samva sends from the verified domain or sender on your
+account. Configure senders at
 [samva.dev](https://samva.dev).
 
 **`render` returns a Promise.** It is async in v6. `await` it.

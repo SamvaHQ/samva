@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 ```
 
 Samva sends from the verified sender on your account.
-There is no `from` field.
+The `from` field is optional and defaults to that sender.
 
 You can also handle `user.updated` and `user.deleted`.
 For delete events, do not assume full user fields are present.

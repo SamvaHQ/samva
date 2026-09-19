@@ -21,8 +21,11 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
+    "package.json",
     "README.md",
-    "package.json"
+    "AGENTS.md",
+    "LICENSE"
   ],
   "type": "module",
   "sideEffects": false,
@@ -44,11 +47,11 @@
   },
   "devDependencies": {
     "@opencoredev/email-sdk": "^1.1.0",
-    "samva": "^0.3.0"
+    "samva": "^0.5.0"
   },
   "peerDependencies": {
     "@opencoredev/email-sdk": "^1.1.0",
-    "samva": "^0.3.0"
+    "samva": "^0.5.0"
   },
   "engines": {
     "node": ">=22"

@@ -39,7 +39,6 @@ The canonical MCP tool inventory marks these external deliveries as
 - `messages_send_email`
 - `scheduled_messages_schedule_email`
 - `campaigns_schedule_run`
-- `templates_send_test_email`
 - `webhooks_test`
 - `webhooks_retry_delivery`
 
@@ -49,7 +48,7 @@ caller supplies a stable key for the same logical input.
 
 `scheduled_messages_cancel` changes Samva state but is closed-world
 (`openWorldHint: false`). `webhooks_rotate_secret` is destructive and
-closed-world. Domain, sender, webhook, schedule, campaign, and template-version
+closed-world. Domain, sender, webhook, schedule, campaign, and template-workspace
 mutations should be confirmed deliberately from their current tool schema.
 
 ## Public resources

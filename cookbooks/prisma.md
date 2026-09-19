@@ -48,7 +48,7 @@ if (process.env.NODE_ENV !== "production") {
 ```
 
 Samva sends from the verified sender on your account.
-The send payload has no `from` field.
+The `from` field is optional and defaults to that sender.
 
 ## Query, then send
 
@@ -283,8 +283,8 @@ edge-ready. Samva is not the runtime constraint. The database connection is.
 
 ## FAQ
 
-**Where do I set the sender?** Configure the verified sender or domain in Samva.
-There is no `from` field to pass per send.
+**Where do I set the sender?** Configure the verified sender or domain in Samva, or pass an
+explicit `from` per send. When omitted, Samva uses the verified sender.
 
 **Should I send inside `$transaction`?** No. Email cannot be rolled back.
 Write the rows in a transaction. Let the transaction resolve. Then send.

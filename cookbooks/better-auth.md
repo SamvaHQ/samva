@@ -103,4 +103,4 @@ React Email rendering is optional.
 It uses `@react-email/render` when a template returns an element.
 
 Samva sends from the verified sender on your account.
-There is no `from` field.
+The `from` field is optional and defaults to that sender.

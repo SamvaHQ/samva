@@ -13,13 +13,13 @@ The payload is the same. This cookbook covers the Effect runtime.
 ## Setup
 
 ```sh
-bun add samva effect@4.0.0-rc.111
+bun add samva effect@4.0.0-rc.112
 ```
 
 Keep `SAMVA_API_KEY` on the server.
-Pin Effect 4 to `4.0.0-beta.102` to match the SDK peer dependency.
-Effect 4 is still in beta. HTTP client modules live under `effect/unstable/http`.
-`Client.layerFetch` already provides the fetch layer.
+Pin Effect 4 to `4.0.0-rc.112` to match the SDK peer dependency exactly.
+Effect 4 is a release candidate. HTTP client modules live under
+`effect/unstable/http`. `Client.layerFetch` already provides the fetch layer.
 
 ## First send
 
@@ -40,7 +40,8 @@ const message = await Effect.runPromise(program);
 console.log(message.id, message.status);
 ```
 
-There is no `from` field. Samva sends from the verified sender on your account.
+The `from` field is optional; omit it and Samva sends from the verified sender
+on your account.
 
 ## Layer-provided client
 
@@ -235,8 +236,9 @@ The [`examples/effect-sdk`](../examples/effect-sdk) app includes:
 
 ## FAQ
 
-**Why is there no `from`?** Samva sends from the verified sender on your
-account. Configure senders at [samva.dev](https://samva.dev).
+**Why is there no `from`?** The `from` field is optional. Omit it and Samva
+sends from the verified sender on your account. Configure senders at
+[samva.dev](https://samva.dev).
 
 **Where should the API key live?** Only on the server or in an edge environment
 binding. Do not expose it to browser code.

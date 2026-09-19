@@ -13,9 +13,9 @@ templates, handle delivery events, and verify signed webhooks.
 - `cookbooks/*.md` — documentation-first, copy-pasteable recipes.
 - `plugins/*` — coding-agent plugins and public documentation.
 
-The maintained integrations target the published Samva 0.3 email SDK. Workspace
-packages and examples use `samva@^0.3.0`; copyable external import maps pin
-`samva@0.3.0`.
+The maintained integrations target the published Samva 0.5 email SDK. Workspace
+packages and examples use `samva@^0.5.0`; copyable external import maps pin
+`samva@0.5.0`.
 
 ## Package integrations
 
@@ -45,6 +45,7 @@ packages and examples use `samva@^0.3.0`; copyable external import maps pin
 - [`Supabase Auth`](./cookbooks/supabase-auth.md)
 - [`SvelteKit`](./cookbooks/sveltekit.md)
 - [`TanStack Start`](./cookbooks/tanstack-start.md)
+- [`TSX templates`](./cookbooks/tsx-templates.md)
 
 Integrations land as individual pull requests. See
 [CONTRIBUTING.md](./CONTRIBUTING.md) to propose or build one.
@@ -75,6 +76,8 @@ Integrations land as individual pull requests. See
   form action and raw email endpoint.
 - [`tanstack-start-transactional`](./examples/tanstack-start-transactional) —
   TanStack Start server function and server route.
+- [`tsx-template-samva`](./examples/tsx-template-samva) — TSX template
+  authoring and preview with `@samva/vite`.
 
 ## Getting started
 

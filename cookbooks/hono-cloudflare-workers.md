@@ -12,16 +12,19 @@ bun add hono samva
 bun add -d wrangler @cloudflare/workers-types typescript
 ```
 
-Store secrets in Workers bindings. In production, put the key with Wrangler:
+Store secrets in Workers bindings. In production, put the API key and the
+webhook signing secret with Wrangler:
 
 ```sh
 wrangler secret put SAMVA_API_KEY
+wrangler secret put SAMVA_WEBHOOK_SECRET
 ```
 
 For local development, keep a `.dev.vars` file next to `wrangler.jsonc`:
 
 ```sh
 SAMVA_API_KEY="samva_sk_live_..."
+SAMVA_WEBHOOK_SECRET="whsec_your_webhook_signing_secret"
 ```
 
 Configure the Worker with a module entrypoint. You do not need `nodejs_compat`.
@@ -130,7 +133,8 @@ app.post("/send", async (c) => {
 export default app;
 ```
 
-There is no `from` field. Samva sends from the verified sender on your account.
+The `from` field is optional; omit it and Samva sends from the verified sender
+on your account.
 
 ## Edge-native send path
 
@@ -247,23 +251,34 @@ When you receive Samva webhooks in a Worker, read the raw body first.
 Do not parse JSON before verification. Use the `samva/webhooks` SDK subpath.
 
 ```ts
+import { verifyRequest, WebhookVerificationError } from "samva/webhooks";
+
 app.post("/webhooks/samva", async (c) => {
-  const payload = await c.req.text();
-  const signature = c.req.header("x-webhook-signature");
+  const secret = c.env.SAMVA_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error("SAMVA_WEBHOOK_SECRET is not configured for this Worker.");
+  }
 
-  void payload;
-  void signature;
-
-  return c.body(null, 204);
+  try {
+    const verified = await verifyRequest(c.req.raw, secret);
+    return c.json({ ok: true, id: verified.id, type: verified.event.type }, 202);
+  } catch (error) {
+    if (error instanceof WebhookVerificationError) {
+      return c.json({ ok: false, error: "Invalid webhook signature." }, 400);
+    }
+    throw error;
+  }
 });
 ```
 
-This snippet only shows the route. Verify the signature before you trust the event.
+`verifyRequest` reads the untouched raw request, so do not parse the body first.
+Reject unverified events with a 400 and act only on the verified `event`.
 
 ## FAQ
 
-**Why no `from`?** Samva sends from the verified sender on your account.
-Your Worker only supplies recipients and email content.
+**Why no `from`?** The `from` field is optional. Omit it and Samva sends from
+the verified sender on your account; your Worker only supplies recipients and
+email content unless it needs to select a specific verified sender.
 
 **Can I use `process.env.SAMVA_API_KEY`?** Not on Workers.
 Put the secret in Wrangler and read `c.env.SAMVA_API_KEY` inside the handler.

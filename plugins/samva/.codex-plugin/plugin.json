@@ -1,6 +1,6 @@
 {
   "name": "samva",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Integrate and operate Samva email with the canonical hosted MCP server and Samva agent skill.",
   "author": { "name": "Arya Labs, Inc.", "url": "https://samva.dev" },
   "homepage": "https://samva.dev/docs/developers/mcp",

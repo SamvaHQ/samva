@@ -10,9 +10,10 @@ cp examples/effect-sdk/.env.example examples/effect-sdk/.env
 ```
 
 Set `SAMVA_API_KEY` in `.env`. The key must belong to a Samva account with a
-verified sender. The email payload does not include `from`.
+verified sender. The `from` field is optional; when omitted, Samva sends from
+the verified sender.
 
-This example pins `effect@4.0.0-rc.111`, matching the current `samva/effect`
+This example pins `effect@4.0.0-rc.112`, matching the current `samva/effect`
 peer dependency. `Client.layerFetch` uses the platform fetch client.
 
 ## Send from a script
