@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish
+    name: publish
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.merged == true &&
@@ -32,32 +32,32 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
+      - name: setup bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.0
 
-      - name: Setup Node
+      - name: setup node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Install dependencies
+      - name: install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Version and publish packages
+      - name: version and publish
         if: github.event_name != 'workflow_dispatch' || inputs.dry_run != true
         run: bun run tegami ci
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Validate publish lock (dry run)
+      - name: validate publish lock (dry run)
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
         run: bun run tegami publish --dry-run
         env:

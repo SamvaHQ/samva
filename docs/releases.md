@@ -38,8 +38,8 @@ The public packages version independently:
 - `@samva/better-auth` — release group `better-auth`
 - `@samva/email-sdk` — release group `email-sdk`
 
-Pull requests that add Tegami changelog files get a release preview comment
-from the split `tegami-pr.yml` / `tegami-pr-comment.yml` workflows.
+Pull requests that add Tegami changelog files get a release plan comment from
+the split `release-plan.yml` / `release-plan-comment.yml` workflows.
 
 ## Queue a change
 
