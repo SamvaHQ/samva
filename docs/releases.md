@@ -7,8 +7,8 @@ GitHub Actions publishes the public packages through two workflows.
 `.github/workflows/prepare-release.yml` runs `bun run tegami version` on a
 nightly schedule or a manual dispatch. When `.tegami/` has pending changelog
 files it opens or updates a Version Packages pull request and writes
-`.tegami/publish-lock.yaml`. Merging that pull request is the human gate: the
-merge closes it on branch `tegami/version-packages`, which triggers
+`.tegami/publish-lock.yaml`. Merging that pull request is the usual human gate:
+the merge closes it on branch `tegami/version-packages`, which triggers
 `.github/workflows/publish.yml` and runs `bun run tegami ci` to publish from the
 lock. Ordinary pushes to `main` do not publish. Do not auto-merge that PR with
 `GITHUB_TOKEN` — GitHub will not re-run workflows for commits created by that
@@ -16,6 +16,13 @@ token, so publish would never start.
 
 To validate a pending lock without publishing, dispatch `publish.yml` with
 `dry_run` enabled; it runs `bun run tegami publish --dry-run` instead.
+
+`publish.yml` has exactly two merge triggers on `main`: a merged PR whose head
+branch is `tegami/version-packages`, or a merged same-repository PR carrying the
+`release` label. Apply the `release` label only when a maintainer intends that
+PR to publish — for example an attended release that bypasses the nightly
+Version Packages PR — because it starts the same trusted publish from the lock.
+Remove the label, or do not apply it, for a PR that should not release.
 
 Authentication is npm trusted publishing (OIDC). The workflow sets
 `id-token: write` and does not use an `NPM_TOKEN`. Each public package on
