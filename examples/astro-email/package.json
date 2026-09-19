@@ -14,7 +14,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.1",
     "astro": "^7.0.3",
-    "samva": "^0.3.0"
+    "samva": "^0.5.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
