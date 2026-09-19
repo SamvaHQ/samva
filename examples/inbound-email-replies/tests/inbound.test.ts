@@ -275,3 +275,28 @@ test("rejects a webhook whose signature does not match the secret", async () => 
     }),
   );
 });
+
+test("treats a redelivery after a successful send as a duplicate", async () => {
+  const { samva, requests } = createHarness();
+  const secret = generateWebhookSecret();
+  const processedWebhookIds = new Set<string>();
+
+  const first = await handleInboundReply(await signedRequest(secret, replyData()), {
+    samva,
+    webhookSecret: secret,
+    processedWebhookIds,
+  });
+  assert.equal(first.accepted, true);
+
+  const requestsAfterFirst = requests.length;
+
+  const redelivery = await handleInboundReply(await signedRequest(secret, replyData()), {
+    samva,
+    webhookSecret: secret,
+    processedWebhookIds,
+  });
+
+  assert.deepEqual(redelivery, { accepted: false, reason: "duplicate" });
+  assert.equal(requests.length, requestsAfterFirst);
+  assert.equal(processedWebhookIds.size, 1);
+});
