@@ -1,17 +1,31 @@
-name: Publish
+name: publish
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Validate the publish lock without publishing.
+        type: boolean
+        default: false
 
 concurrency:
   group: publish
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   publish:
-    name: Version and publish
+    name: Publish
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       (github.event.pull_request.head.ref == 'tegami/version-packages' ||
+        contains(github.event.pull_request.labels.*.name, 'release')))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -38,6 +52,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Version and publish packages
+        if: github.event_name != 'workflow_dispatch' || inputs.dry_run != true
         run: bun run tegami ci
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Validate publish lock (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
+        run: bun run tegami publish --dry-run
         env:
           GITHUB_TOKEN: ${{ github.token }}
