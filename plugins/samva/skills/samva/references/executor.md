@@ -22,5 +22,5 @@ underlying authority.
 - REST uses an organization API key in `X-API-Key`.
 
 After connecting, review the imported tool schemas and approval policies before enabling writes.
-Keep email sends approval-gated until the workspace's recipients, idempotency behavior, and sending
+Keep email sends approval-gated until the organization's recipients, idempotency behavior, and sending
 domain are verified.

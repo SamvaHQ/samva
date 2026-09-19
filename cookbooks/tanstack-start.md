@@ -311,8 +311,8 @@ TanStack Start.
 called with `useServerFn`. Use a server route for raw HTTP integrations and
 external triggers.
 
-**Where is `from`?** Samva sends from the verified sender on your account.
-The send payload does not include a `from` field.
+**Where is `from`?** `from` is optional. Omit it and Samva sends from the verified sender on
+your account.
 
 **Can I put the key in `VITE_SAMVA_API_KEY`?** No. `VITE_` variables are client
 visible. Use `process.env.SAMVA_API_KEY` from server-only code.

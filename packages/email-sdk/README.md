@@ -2,7 +2,7 @@
 
 Provider-owned Samva community adapter for
 [Email SDK](https://email-sdk.dev). It targets `@opencoredev/email-sdk@^1.1.0`
-and `samva@^0.3.0`.
+and `samva@^0.5.0`.
 
 This adapter is maintained by Samva as a community integration; it is not an
 official built-in Email SDK adapter.
@@ -62,14 +62,14 @@ Samva Promise `client`. An API key is required unless a client is injected.
 | In-memory attachments                         | Raw or base64 strings, `Uint8Array`, `ArrayBuffer`, and `Blob` become base64 with exact byte size. `contentType` is required. |
 | `headers`, `tags`, `sendAt`                   | Rejected before the Samva client is called.                                                                                   |
 | Attachment `path`, `contentId`, `disposition` | Rejected before the Samva client is called. URL attachment paths are not supported.                                           |
-| Send `idempotencyKey`                         | Rejected before the Samva client is called.                                                                                   |
+| Send `idempotencyKey`                         | Forwarded as Samva's `Idempotency-Key` header.                                                                                |
 
 Capabilities are declared exactly as follows:
 
 ```ts
 {
   repeatedHeaders: false,
-  idempotency: "none",
+  idempotency: "native",
   scheduling: false,
   personalized: "expanded",
 }
@@ -87,7 +87,8 @@ rejected delivery claims.
 Unsupported or lossy input throws `EmailValidationError` without calling
 Samva. API and transport failures become a redacted `EmailAdapterError` with
 status and `x-request-id` when available. Retryability is enabled for statuses
-408, 409, 425, 429, and 5xx. Ambiguous transport, server, and malformed-success
+408, 425, 429, and 5xx; a `409 ConflictError` is non-retryable because replaying
+the same request cannot succeed. Ambiguous transport, server, and malformed-success
 outcomes use `delivery: "unknown"`; fallback therefore stops unless the
 application explicitly opts into continuing after unknown delivery.
 

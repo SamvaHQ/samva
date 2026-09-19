@@ -1,0 +1,21 @@
+{
+  "name": "tsx-template-samva",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Author a Samva TSX email template and preview it with the @samva/vite editor.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@samva/markup": "^0.6.0"
+  },
+  "devDependencies": {
+    "@samva/cli": "^0.2.1",
+    "@samva/vite": "^0.6.0",
+    "@types/node": "^22.0.0",
+    "vite": "^8.2.2"
+  }
+}

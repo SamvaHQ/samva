@@ -1,7 +1,7 @@
 {
   "name": "samva",
   "displayName": "Samva",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "minClientVersions": { "cursor": "3.13.0" },
   "description": "Operate Samva email through its hosted MCP server and canonical agent skill.",
   "author": { "name": "Arya Labs, Inc." },

@@ -3,7 +3,7 @@
 Use the `samva` SDK from SvelteKit server code.
 Use form actions for in-app forms. Use `+server.ts` endpoints for JSON clients.
 Samva sends from the verified sender on your account.
-The payload has no `from` field.
+The `from` field is optional and defaults to that sender.
 
 ## Setup
 
@@ -320,8 +320,8 @@ For deeper Auth.js wiring and React Email templates, see the
 **Form action or `+server.ts`?** Use a form action for SvelteKit-owned forms.
 Use `+server.ts` for JSON clients, external services, and webhook endpoints.
 
-**Where is `from`?** Samva sends from the verified sender on your account at
-[samva.dev](https://samva.dev). Do not add a `from` field.
+**Where is `from`?** `from` is optional. Omit it and Samva sends from the verified sender on your account at
+[samva.dev](https://samva.dev).
 
 **`$env/static/private` or `$env/dynamic/private`?** Use dynamic for cloneable
 examples and hosts that inject secrets at runtime.

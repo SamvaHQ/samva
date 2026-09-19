@@ -14,7 +14,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-email": "^6.6.5",
-    "samva": "^0.3.0"
+    "samva": "^0.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

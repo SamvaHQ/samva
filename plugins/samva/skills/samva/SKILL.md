@@ -2,14 +2,14 @@
 name: samva
 description: >-
   Integrate and operate Samva email across the Promise and Effect TypeScript
-  SDKs, REST API, CLI, hosted MCP server, dashboard, and SML template editor.
+  SDKs, REST API, CLI, hosted MCP server, dashboard, and TSX template editor.
   Use for sending and tracking email, domains and senders, inbound receiving,
   webhooks, templates, schedules, campaigns, usage, readiness, authentication,
   or choosing the right Samva surface. Triggers on samva, samva.dev, the
   `samva` package, `@samva/cli`, mcp.samva.dev, SAMVA_API_KEY, SML, Samva
   Markup Language, and template editor agent.
 metadata:
-  version: 0.2.2
+  version: 0.3.0
 ---
 
 # Samva
@@ -28,7 +28,7 @@ What is the intent?
 ├─ Run or script terminal workflows           → CLI (`@samva/cli`)
 ├─ Give an AI agent live Samva tools           → hosted MCP (`https://mcp.samva.dev`)
 ├─ Configure or inspect resources visually     → dashboard (`https://samva.dev`)
-└─ Author or repair an SML email template      → template authoring reference
+└─ Author or repair a TSX email template      → template authoring reference
 ```
 
 | Surface     | Best for                                   | Authentication                   |
@@ -45,7 +45,7 @@ Read only the reference needed for the selected surface:
 - [SDK and REST](references/sdk.md): Promise SDK, Effect SDK, and direct HTTP.
 - [CLI](references/cli.md): installation, authentication, and shipped command families.
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
-- [Template authoring](references/template-authoring.md): revision-safe SML editing and QA.
+- [Template authoring](references/template-authoring.md): revision-safe TSX editing and QA.
 - [Authentication](references/auth.md): API keys, OAuth, and organization scoping.
 - [Executor](references/executor.md): add Samva's MCP or REST surface to an Executor workspace.
 

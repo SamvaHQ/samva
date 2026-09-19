@@ -7,7 +7,7 @@ for progressively enhanced forms.
 A plain API endpoint is the right alternative for headless JSON clients.
 
 Samva sends from the verified sender on your account.
-There is no `from` field in the payload.
+The `from` field is optional and defaults to that sender.
 The SDK is `fetch`-based.
 The same send code runs under `@astrojs/cloudflare`, `@astrojs/node`, and other
 SSR adapters.
@@ -337,7 +337,7 @@ Prefer `astro:env/server` with an
 `envField.string({ context: "server", access: "secret" })` schema.
 Never use `PUBLIC_SAMVA_API_KEY`.
 
-**Why no `from`?** Samva sends from the verified sender on your account at
+**Why is `from` optional?** Omit it and Samva sends from the verified sender on your account at
 [samva.dev](https://samva.dev).
 
 **Can this run on Cloudflare Workers?** Yes.

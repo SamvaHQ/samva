@@ -49,7 +49,7 @@ describe("samva", () => {
     expect(adapter.name).toBe("samva");
     expect(adapter.capabilities).toEqual({
       repeatedHeaders: false,
-      idempotency: "none",
+      idempotency: "native",
       scheduling: false,
       personalized: "expanded",
     });
@@ -215,16 +215,21 @@ describe("samva", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
-  it("rejects idempotency keys before calling Samva", async () => {
-    const send = vi.fn(async (_payload: unknown, _options?: { signal?: AbortSignal }) => ({
-      id: "message_1",
-    }));
+  it("forwards an idempotency key as the Samva Idempotency-Key header", async () => {
+    const send = vi.fn(
+      async (
+        _payload: unknown,
+        _options?: { signal?: AbortSignal; headers?: Record<string, string> },
+      ) => ({ id: "message_1" }),
+    );
     const adapter = samva({ client: injectedClient(send) });
 
-    await expect(
-      adapter.send(message, { ...context, idempotencyKey: "dedupe" }),
-    ).rejects.toBeInstanceOf(EmailValidationError);
-    expect(send).not.toHaveBeenCalled();
+    await adapter.send(message, { ...context, idempotencyKey: "dedupe" });
+
+    expect(send).toHaveBeenCalledOnce();
+    expect(send.mock.calls[0]![1]).toMatchObject({
+      headers: { "idempotency-key": "dedupe" },
+    });
   });
 
   it("forwards the AbortSignal and preserves Email SDK abort semantics", async () => {
@@ -380,6 +385,23 @@ describe("samva", () => {
         delivery: "unknown",
       },
     ],
+    [
+      "onboarding review",
+      {
+        _tag: "OnboardingReviewRequiredError",
+        statusCode: 403,
+        response: new Response(null, {
+          status: 403,
+          headers: { "x-request-id": "request_review" },
+        }),
+      },
+      {
+        status: 403,
+        requestId: "request_review",
+        retryable: false,
+        delivery: "not_sent",
+      },
+    ],
   ] as const)("maps %s failures safely", async (_name, failure, expected) => {
     const adapter = samva({
       client: injectedClient(async () => {
@@ -400,9 +422,13 @@ describe("samva", () => {
     expect(String(error)).not.toContain("provider body");
   });
 
-  it.each([408, 409, 425] as const)(
-    "marks transport status %i as retryable with unknown delivery",
-    async (status) => {
+  it.each([
+    { status: 408, retryable: true },
+    { status: 409, retryable: false },
+    { status: 425, retryable: true },
+  ] as const)(
+    "maps transport status $status to retryable=$retryable with unknown delivery",
+    async ({ status, retryable }) => {
       const adapter = samva({
         client: injectedClient(async () => {
           throw {
@@ -424,7 +450,7 @@ describe("samva", () => {
         adapter: "samva",
         status,
         requestId: `request_${status}`,
-        retryable: true,
+        retryable,
         delivery: "unknown",
       });
     },
