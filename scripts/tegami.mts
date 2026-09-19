@@ -52,16 +52,15 @@ const paper = tegami({
       provider: "github",
       workflow: "publish.yml",
     },
-    onBreakPeerDep: "error",
     bumpDep: ({ dependent, kind }) => {
-      if (dependent.manifest.private === true) return false;
+      if (!publicNames.has(dependent.name)) return false;
+      // Peer ranges are declared, not rewritten: a peer bump is a decision for
+      // the affected package's own changelog, matching the platform repo.
       switch (kind) {
         case "dependencies":
         case "optionalDependencies":
           return "patch";
-        case "peerDependencies":
-          return "major";
-        case "devDependencies":
+        default:
           return false;
       }
     },
