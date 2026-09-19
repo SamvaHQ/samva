@@ -1,8 +1,8 @@
-name: Tegami PR Comment
+name: release plan comment
 
 on:
   workflow_run:
-    workflows: ["Tegami PR"]
+    workflows: ["release plan"]
     types: [completed]
 
 permissions:
@@ -12,37 +12,37 @@ permissions:
 
 jobs:
   comment:
-    name: Post preview comment
+    name: comment release plan
     if: >
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - name: Setup Bun
+      - name: setup bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.0
 
-      - name: Setup Node
+      - name: setup node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
 
-      - name: Install dependencies
+      - name: install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Download preview
+      - name: download release plan
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tegami-pr-preview
-          path: ${{ runner.temp }}/tegami-pr-preview
+          name: release-plan
+          path: ${{ runner.temp }}/release-plan
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      - name: Post preview comment
-        run: bun run tegami pr comment "$RUNNER_TEMP/tegami-pr-preview/tegami-pr-preview.md"
+      - name: post release plan comment
+        run: bun run tegami pr comment "$RUNNER_TEMP/release-plan/release-plan.md"
         env:
           GITHUB_TOKEN: ${{ github.token }}
