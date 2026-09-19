@@ -131,9 +131,9 @@ await samva.email.send({
 });
 ```
 
-### Unified messages API (advanced)
+### Messages API (advanced)
 
-`email.send` is a thin wrapper over the unified endpoint. Use `messages.send` when you need the
+`email.send` is a thin wrapper over the messages endpoint. Use `messages.send` when you need the
 explicit channel shape:
 
 ```typescript

@@ -163,7 +163,7 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
   ] as const;
   for (const [label, manifest] of manifests) {
     if (manifest.name !== "samva") errors.push(`${label} name must be samva`);
-    if (manifest.version !== "0.2.2") errors.push(`${label} version must be 0.2.2`);
+    if (manifest.version !== "0.3.0") errors.push(`${label} version must be 0.3.0`);
   }
   await Promise.all([
     ...manifests.flatMap(([label, manifest]) => [
@@ -308,7 +308,7 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
   for (const required of [
     "messages_send_email",
     "email_domains_remove",
-    "templates_publish_document",
+    "templates_publish",
     "scheduled_messages_cancel",
     "campaigns_control_run",
   ]) {

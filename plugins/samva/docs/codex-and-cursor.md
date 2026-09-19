@@ -54,7 +54,7 @@ OAuth callback URLs.
 Both clients receive the current tool schemas and annotations from MCP
 `tools/list`; the package does not duplicate those schemas. The bundled skill
 helps an agent choose among MCP, the TypeScript SDKs, REST, CLI, dashboard, and
-SML template authoring, while the MCP connection performs live operations.
+TSX template authoring, while the MCP connection performs live operations.
 
 See [authentication and permissions](./auth-and-permissions.md) before using a
 write tool, and [verification](./verification.md) for synthetic examples.
