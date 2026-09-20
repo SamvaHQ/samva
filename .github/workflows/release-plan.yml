@@ -2,15 +2,27 @@ name: release plan
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, ready_for_review, reopened]
+    paths:
+      - ".tegami/**"
+      - "package.json"
+      - "bun.lock"
+      - "scripts/check-public-packages.mts"
+      - "scripts/tegami.mts"
+      - "packages/better-auth/**"
+      - "packages/email-sdk/**"
 
 permissions:
   contents: read
 
+concurrency:
+  group: release-plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   plan:
     name: plan release
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
