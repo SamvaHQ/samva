@@ -31,7 +31,8 @@ npmjs.com must list GitHub Actions trusted publisher
 environment name. Do not rename `publish.yml`; npm pins that filename.
 
 This repository is public, so npm attaches provenance attestations to trusted
-publishes. Current `0.1.1` tarballs were attended local publishes and have none.
+publishes. Current trusted CI publishes (`0.2.0`+) carry provenance; attended
+local `0.1.1` tarballs have none.
 
 The public packages version independently:
 
