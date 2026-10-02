@@ -216,6 +216,14 @@ describe("Samva agent plugin contract", () => {
       ]);
     });
 
+    it("rejects an emptied guide", async () => {
+      const root = await fixture();
+      await writeFile(resolve(root, guidePath), "");
+      expect(await validateAgentPlugin(root)).toContain(
+        "docs/chatgpt.md is missing email_check_readiness",
+      );
+    });
+
     it.each([
       ["README.md", "(./plugins/samva/docs/chatgpt.md)", "(./docs/chatgpt.md)"],
       ["plugins/samva/README.md", "(./docs/chatgpt.md)", "(./plugins/samva/docs/chatgpt.md)"],

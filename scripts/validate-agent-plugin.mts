@@ -373,9 +373,11 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
   ]);
   const publicDocs = await Promise.all(
     [...publicDocRequirements].map(async ([path, requirements]) => {
-      const text = await readText(errors, resolve(pluginRoot, path), path);
-      // An unreadable document already reported its read failure.
-      if (text !== "") {
+      const readErrors: Array<string> = [];
+      const text = await readText(readErrors, resolve(pluginRoot, path), path);
+      errors.push(...readErrors);
+      // An unreadable document already reported its read failure; an empty one still fails.
+      if (readErrors.length === 0) {
         for (const requirement of requirements) {
           if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
         }
