@@ -4,6 +4,8 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const canonicalEndpoint = "https://mcp.samva.dev";
+const chatgptPluginId = "plugin_asdk_app_6a8ebcc4c4c48191b5a3a53638f7b972";
+const chatgptListingUrl = `https://chatgpt.com/plugins/${chatgptPluginId}`;
 const cursorClientId = "samva-cursor-plugin";
 const oauthScopes = ["openid", "profile", "email", "offline_access"] as const;
 const expectedReferences = [
@@ -325,6 +327,19 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
 
   const publicDocRequirements = new Map([
     [
+      "docs/chatgpt.md",
+      [
+        chatgptListingUrl,
+        "./codex-and-cursor.md",
+        "./auth-and-permissions.md",
+        "../provenance.json",
+        "email_check_readiness",
+        "https://samva.dev/docs/developers/mcp",
+        "https://samva.dev/docs/developers/authentication",
+        "https://samva.dev/docs/sml/authoring-tsx",
+      ],
+    ],
+    [
       "docs/codex-and-cursor.md",
       [
         ".codex-plugin/plugin.json",
@@ -361,6 +376,31 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
       const text = await readText(errors, resolve(pluginRoot, path), path);
       for (const requirement of requirements) {
         if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
+      }
+    }),
+  );
+
+  const chatgptGuide = await readText(
+    errors,
+    resolve(pluginRoot, "docs/chatgpt.md"),
+    "docs/chatgpt.md",
+  );
+  const listingIds = [...chatgptGuide.matchAll(/chatgpt\.com\/plugins\/([^\s)]+)/g)].map(
+    (match) => match[1],
+  );
+  if (listingIds.some((id) => id !== chatgptPluginId)) {
+    errors.push("docs/chatgpt.md links a ChatGPT plugin other than the published Samva listing");
+  }
+
+  const entryPoints = new Map([
+    ["README.md", resolve(repositoryRoot, "README.md")],
+    ["plugins/samva/README.md", resolve(pluginRoot, "README.md")],
+  ]);
+  await Promise.all(
+    [...entryPoints].map(async ([label, path]) => {
+      const text = await readText(errors, path, label);
+      if (!/\(\.?\/?(?:plugins\/samva\/)?docs\/chatgpt\.md\)/.test(text)) {
+        errors.push(`${label} must link the ChatGPT guide`);
       }
     }),
   );

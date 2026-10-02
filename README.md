@@ -28,6 +28,9 @@ packages and examples use `samva@^0.5.0`; copyable external import maps pin
 
 - [`samva`](./plugins/samva) — OpenAI Codex and Cursor packaging for the
   canonical hosted MCP server and Samva agent skill.
+- [Samva in ChatGPT](./plugins/samva/docs/chatgpt.md) — the published ChatGPT
+  plugin is a separate listing from the Codex and Cursor package; the guide
+  covers connecting one organization and a read-only first check.
 
 ## Cookbooks
 
