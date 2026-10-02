@@ -3,10 +3,14 @@
 Samva's hosted MCP is organization-scoped. Choose the authentication mode by
 who is acting:
 
-| Mode    | Best for                              | Organization scope                    |
-| ------- | ------------------------------------- | ------------------------------------- |
-| OAuth   | Interactive work across organizations | User session plus active organization |
-| API key | Servers and unattended automation     | Organization bound to the key         |
+| Mode    | Best for                          | Organization scope             |
+| ------- | --------------------------------- | ------------------------------ |
+| OAuth   | A person working interactively    | Organization chosen at consent |
+| API key | Servers and unattended automation | Organization bound to the key  |
+
+An OAuth connection stays bound to the organization approved at consent;
+changing the active organization elsewhere does not move it. To work in another
+organization, create a separate connection.
 
 Keep API keys in private client secret storage. Never commit them to an MCP
 configuration, environment example, prompt, or evidence file.
@@ -58,5 +62,5 @@ The hosted server exposes five operating references:
 - `samva://guide/email`
 - `samva://guide/template-editor`
 - `samva://guide/scheduling`
-- `samva://reference/sml-agent-contract`
+- `samva://reference/contract`
 - `samva://reference/sml`

@@ -16,7 +16,9 @@ public package.
 An unauthenticated request advertises OAuth protected-resource metadata.
 OAuth-capable Claude clients follow that metadata to Samva's authorization
 server, complete interactive sign-in, and return with an organization-scoped
-session. Confirm the active organization before invoking a write tool.
+connection bound to the organization approved at consent. Confirm that
+organization before invoking a write tool; to use another one, create a separate
+connection.
 
 ## API-key clients
 

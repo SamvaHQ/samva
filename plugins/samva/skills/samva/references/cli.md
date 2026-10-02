@@ -56,35 +56,33 @@ device flow with `samva login --no-browser`; `--no-input`, `--json`, and `--json
 If a stored OAuth record is malformed, run `samva logout` and then `samva login`; API-key calls do
 not read or decode stored OAuth credentials.
 
-Profiles keep non-secret target and organization settings. Credentials are stored in the OS keyring.
+Profiles keep non-secret organization settings. OAuth credentials are stored only in the OS
+keyring, never in a file.
 
 ```bash
-samva profile create local --target local
-samva --profile local email doctor --json
+samva profile create acme --org acme
+samva --profile acme email doctor --json
 ```
 
 Resolution order is deterministic:
 
-| Setting            | Precedence                                                        |
-| ------------------ | ----------------------------------------------------------------- |
-| Profile            | `--profile`, `SAMVA_PROFILE`, active profile, `default`           |
-| API URL            | `--api-url`, `SAMVA_API_URL`, profile target, built-in target URL |
-| OAuth organization | `--org`, `SAMVA_ORG`, selected profile organization               |
-| Credential         | `SAMVA_API_KEY`, stored OAuth credential                          |
-
-`local` resolves to the Portless API origin `https://api.samva.localhost`.
-`production` resolves to `https://api.samva.dev`.
+| Setting            | Precedence                                              |
+| ------------------ | ------------------------------------------------------- |
+| Profile            | `--profile`, `SAMVA_PROFILE`, active profile, `default` |
+| API URL            | `--api-url`, `SAMVA_API_URL`, `https://api.samva.dev`   |
+| OAuth organization | `--org`, `SAMVA_ORG`, selected profile organization     |
+| Credential         | `SAMVA_API_KEY`, stored OAuth credential                |
 
 ## Command map
 
 | Intent                   | Commands                                                                                                                      |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | Session and organization | `samva login`, `logout`, and `org` with `list`, `use`, or `current`                                                           |
-| Email send and readiness | `samva email send`, `email doctor`, `email domains`, `email senders`, `email receiving`, `email design`, and `email tracking` |
+| Email send and readiness | `samva email send`, `email doctor`, `email domains`, `email senders`, `email receiving`, `email review`, and `email tracking` |
 | Message inspection       | `samva messages` with `list`, `get`, `events`, or `wait`                                                                      |
-| Scheduled email          | `samva scheduled-messages` with `create`, `list`, `get`, or `cancel`                                                          |
+| Scheduled email          | `samva scheduled-messages` with `create`, `list`, `get`, `cancel`, or `resume`                                                |
 | Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, and the `runs` group                                     |
-| Templates                | `samva templates` with local-authoring and remote lifecycle commands                                                          |
+| Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, and remote lifecycle commands        |
 | Customer webhooks        | `samva webhooks` with `list`, `get`, `test`, `logs`, `stats`, `retry`, `rotate-secret`, `create`, `update`, or `remove`       |
 | Execution profiles       | `samva profile` with `list`, `show`, `create`, `use`, or `delete`                                                             |
 | Machine help             | `samva help --json`                                                                                                           |
@@ -110,23 +108,46 @@ render-email | samva email send \
   --html -
 ```
 
+## Author templates locally
+
+A template is a TSX file in the static profile, so the CLI reads and renders it without running it.
+Run these in the template project; they look in `templates/` and `emails/`.
+
+```bash
+samva templates init --name "Order shipped"
+samva templates dev
+samva templates check --json
+samva templates render order-shipped --fixture no-tracking --locale de-DE --time-zone Europe/Berlin
+samva templates snapshot order-shipped --fixture no-tracking
+samva templates publish --commit HEAD
+samva templates types --out src/samva-templates.ts
+```
+
+`check` prints every finding as `file:line:column` with a diagnostic code and a fix; repair the
+location it names and run it again. `snapshot` writes desktop and mobile PNGs in light and dark to
+`.samva/snapshots`. `publish` needs a clean, pushed commit. See
+[template authoring](template-authoring.md) for the language.
+
 ## Test a webhook endpoint
 
 ```bash
 samva webhooks test <webhook-id> --dry-run
 samva webhooks test <webhook-id> --data '{"event":"webhook.test"}' --json
-samva webhooks test <webhook-id> --data @payload.json --json
+samva webhooks logs <webhook-id> --json
 ```
 
-The command sends a signed request by default. `--dry-run` only validates and previews the API
-request. A non-2xx response, timeout, or transport failure exits `1`; machine modes keep the
-complete test result on stdout and write the typed diagnostic to stderr.
+`webhooks test` acts by default: Samva queues a signed `webhook.test` event through the normal
+delivery and retry lifecycle, and the command returns at once with the queued `eventId` and
+`deliveryId` and exit `0`. It does not wait for the endpoint; read its response with
+`samva webhooks logs <webhook-id>`. `--dry-run` only validates and previews the request, offline.
 
 `--to` is repeatable. Inline email requires `--subject` plus exactly one of `--html` or `--text`.
 Pass `-` as the value to read that body from stdin: `--text -` reads a plain-text body and `--html -`
 reads an HTML body. Only one body may come from stdin, so passing both `--text -` and `--html -` is
 rejected. Template email uses exactly one of `--template-id` or `--template-slug`, optional
-`--template-data`, and omits `--subject`.
+`--template-data`, and omits `--subject`. A template send also takes `--locale` (BCP 47, for example
+`de-DE`) and `--time-zone` (IANA, for example `Europe/Berlin`) to format dates and money for the
+recipient; both are rejected on inline content.
 
 Use one stable `--idempotency-key` per logical send. An identical retry returns the original
 message; a retry with changed recipients, content, template, or variables conflicts. `--wait` polls
@@ -144,7 +165,7 @@ samva email send --to ada@example.com --subject "Hello" --text "Hi" --dry-run --
 samva scheduled-messages cancel <scheduled-message-id> --yes --json
 
 # Prevent all prompting and browser launches.
-samva --no-input profile delete local --yes
+samva --no-input profile delete acme --yes
 ```
 
 `--dry-run` is available on supported mutations and previews the intended request. `email send
@@ -197,7 +218,7 @@ subcommand, such as a bare `samva` or a group like `samva email`, prints its hel
 samva email doctor --json
 ```
 
-`email doctor` reports the resolved profile, target, API URL, auth source, organization access,
+`email doctor` reports the resolved profile, API URL, auth source, organization access,
 sending domains, senders, and domain-verification readback. It is read-only. It does not inspect
 receiving configuration, send an email, mutate configuration, verify DNS, replay fixtures, or verify
 provider readiness. Use `samva email receiving status <domain-id>` for a domain's receiving

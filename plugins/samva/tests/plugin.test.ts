@@ -134,6 +134,22 @@ describe("Samva agent plugin contract", () => {
     );
   });
 
+  it("rejects the removed workspace reconcile tool in the inventory", async () => {
+    const root = await fixture();
+    const path = resolve(root, "plugins/samva/skills/samva/references/mcp.md");
+    const reference = await readFile(path, "utf8");
+    await writeFile(
+      path,
+      reference.replace(
+        "`messages_list_email_events`",
+        "`messages_list_email_events`, `templates_reconcile_workspace`",
+      ),
+    );
+    expect(await validateAgentPlugin(root)).toContain(
+      "MCP inventory includes unavailable templates_reconcile_workspace",
+    );
+  });
+
   it("allows unavailable tool names in explanatory prose outside the inventory", async () => {
     const root = await fixture();
     const path = resolve(root, "plugins/samva/skills/samva/references/mcp.md");

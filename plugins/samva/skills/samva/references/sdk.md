@@ -20,7 +20,7 @@ npm install samva
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect
+bun add samva effect@4.0.0-rc.117
 ```
 
 ## Promise client
@@ -35,14 +35,13 @@ The root entrypoint and `samva/promises` expose the same Promise client.
 
 `createClient` takes exactly one auth mode:
 
-- `{ apiKey }` — an API key (starts with `samva_sk_live_` or `samva_sk_test_`). The organization is
+- `{ apiKey }`: an API key (starts with `samva_sk_live_` or `samva_sk_test_`). The organization is
   derived from the key; sent as the `X-API-Key` header.
-- `{ authToken }` — an OAuth bearer token (e.g. minted by `samva login`). Sent
-  as `Authorization: Bearer …`; the org is resolved per request, so pass the
-  active org with `headers: { "x-org-slug": "<slug>" }`.
+- `{ authToken }`: an OAuth bearer token, such as a `samva login` session. Sent as
+  `Authorization: Bearer ...`; the org is resolved per request, so pass the active org with
+  `headers: { "x-org-slug": "<slug>" }`.
 
-`baseUrl` defaults to `https://api.samva.dev`; override it for local
-development.
+`baseUrl` defaults to `https://api.samva.dev`; override it for testing.
 
 ## Send an email
 
@@ -51,13 +50,15 @@ The `email.send` helper takes a flat object. `to` accepts a string address, a
 those.
 
 ```typescript
-const message = await samva.email.send({
-  to: "ada@example.com",
-  subject: "Welcome to Samva",
-  html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
-  idempotencyKey: "welcome:customer-123",
-  // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
-});
+const message = await samva.email.send(
+  {
+    to: "ada@example.com",
+    subject: "Welcome to Samva",
+    html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
+    // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
+  },
+  { headers: { "Idempotency-Key": "welcome:customer-123" } },
+);
 
 console.log("Message id:", message.id);
 ```
@@ -86,8 +87,9 @@ try {
 Use `samva.raw` only for the generated `{ data, error, request, response }` envelope and
 transport-level access.
 
-Keep one stable `idempotencyKey` with each retryable logical send. An identical replay returns the
-original message; reusing the key with changed input returns a conflict.
+Keep one stable `Idempotency-Key` header with each retryable logical send. An identical replay
+returns the original message; reusing the key with changed input returns a `ConflictError`. Every
+error class and its fields: `https://samva.dev/docs/developers/error-reference`.
 
 ## Effect client
 
@@ -153,12 +155,16 @@ console.log(status.status); // pending → processing → sent → delivered
 
 ## Other services
 
-The client also exposes `domains` and `senders` (under `email`), `webhooks`,
-`contacts`, `conversations`, `apiKeys`, `organizations`, `scheduledMessages`
-(`create`, `list`, `get`, `cancel`), `campaigns` (`create`, `list`, `get`,
-`update`, `archive`, plus `scheduleRun`, `listRuns`, `getRun`, `pauseRun`,
-`resumeRun`, `cancelRun`, `listRecipients`). All methods take flat parameters,
-return decoded success values, and throw typed errors.
+The client's namespaces are `analytics`, `apiKeys`, `attachments`, `campaigns`,
+`contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
+facade plus domains, senders, tracking, review, and blocks), `media`,
+`messages`, `operations`, `organizations`, `scheduledMessages`, `templates`,
+`unsubscribeGroups`, and `webhooks`. Each method is named for the API operation
+it calls, so `samva.contacts.bulkImport` is documented at
+`https://samva.dev/docs/api-reference/contacts/bulkImport`. All methods take
+flat parameters, return decoded success values, and throw typed errors. The
+Effect module for a namespace is its kebab-cased path, such as
+`samva/effect/unsubscribe-groups`.
 
 ## REST equivalent
 
