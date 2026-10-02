@@ -45,7 +45,7 @@ Read only the reference needed for the selected surface:
 - [SDK and REST](references/sdk.md): Promise SDK, Effect SDK, and direct HTTP.
 - [CLI](references/cli.md): installation, authentication, and shipped command families.
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
-- [Template authoring](references/template-authoring.md): revision-safe TSX editing and QA.
+- [Template authoring](references/template-authoring.md): the static TSX profile, the check-render-look loop, and revision-safe editing.
 - [Authentication](references/auth.md): API keys, OAuth, and organization scoping.
 - [Executor](references/executor.md): add Samva's MCP or REST surface to an Executor workspace.
 

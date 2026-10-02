@@ -58,5 +58,5 @@ The hosted server exposes five operating references:
 - `samva://guide/email`
 - `samva://guide/template-editor`
 - `samva://guide/scheduling`
-- `samva://reference/sml-agent-contract`
+- `samva://reference/contract`
 - `samva://reference/sml`
