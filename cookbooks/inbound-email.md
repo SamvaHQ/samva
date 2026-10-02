@@ -97,7 +97,7 @@ const sent = await samva.email.send(
     html: "<p>Thanks for your reply. We will follow up shortly.</p>",
     inReplyToMessageId: reply.messageId,
   },
-  { headers: { "idempotency-key": verified.id } },
+  { idempotencyKey: verified.id },
 );
 ```
 
@@ -114,7 +114,7 @@ than once, and a transient send failure can be retried.
 
 - Keep a durable set of processed webhook ids with a unique constraint. Use
   `verified.id`, which is stable across retries.
-- Pass that id as the `idempotency-key` header on the send.
+- Pass that id as the `idempotencyKey` option on the send.
 - Record completion only after the send succeeds. A failed send stays
   unprocessed and can be retried.
 

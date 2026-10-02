@@ -68,7 +68,6 @@ const createHarness = (
       if (url.pathname.endsWith("/receiving")) {
         return json({
           success: true,
-          ruleName: "inbound-replies",
           recipients: ["support@example.com"],
         });
       }
