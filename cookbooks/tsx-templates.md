@@ -76,6 +76,8 @@ The compiler reads the file and never runs it, so nothing computes at send time.
 - map over input lists with `.map`, and filter first with `.filter(...)`;
 - format with `fmt.money`, `fmt.number`, `fmt.date`, `fmt.time`, `fmt.plural` and `fmt.list`,
   imported from `@samva/markup/fmt`;
+- do arithmetic on bound numbers inside a formatter argument or a condition
+  (`fmt.money(item.price * item.quantity, input.currency)`);
 - call partials: functions from props to JSX in other project files.
 
 ```tsx title="templates/receipt.tsx (body)"

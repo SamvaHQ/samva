@@ -26,7 +26,7 @@ theme.css                         imports starter.css; its own @theme overrides 
 
 A template default-exports `defineTemplate({ id, schema, fixtures, email })`. The `email` channel
 holds `subject`, an optional `preheader`, and the `body`. The compiler reads the file and never runs
-it, so a body binds input values, uses `&&` and `?:`, maps over input lists, and calls `fmt.*`;
+it, so a body binds input values, uses `&&` and `?:`, maps over input lists, and calls `fmt.*` (with arithmetic on bound numbers inside its arguments);
 compute anything else in the caller and send it in the input. Only `@samva/markup` and files in
 this project can be imported.
 
@@ -48,13 +48,21 @@ and dark, to `.samva/snapshots`, and needs `playwright` in the project or a syst
 
 ## Publish and send
 
-Connect the project to a Samva-managed Git repository with `samva templates init`, then push and
-publish the exact commit:
+Published templates live in a Samva-managed Git repository. `samva templates init` creates one
+from the canonical starter, which registers `templates/welcome.tsx`, and clones it. Copy this
+example's templates and theme into the clone, register the second entry, then push and publish:
 
 ```sh
-git push origin main
-bunx samva templates publish --commit HEAD
+bunx samva templates init --name "Welcome email" --dir ../welcome-email
+cp -R templates theme.css starter.css ../welcome-email/
+cd ../welcome-email
+bunx samva templates add templates/receipt.tsx
+git add -A && git commit -m "feat: welcome and receipt templates" && git push origin main
+bunx samva templates publish --all
 ```
+
+`add` registers the entry under its `defineTemplate` id, and `publish --all` publishes every
+registered template at the pushed commit.
 
 Generate typed inputs for the application that sends them:
 
