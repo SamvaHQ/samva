@@ -211,17 +211,25 @@ describe("Samva agent plugin contract", () => {
       const root = await fixture();
       await rm(resolve(root, guidePath));
       const errors = await validateAgentPlugin(root);
-      expect(errors.some((error) => error.startsWith("Cannot read docs/chatgpt.md:"))).toBe(true);
+      expect(errors.filter((error) => error.includes("docs/chatgpt.md"))).toEqual([
+        expect.stringMatching(/^Cannot read docs\/chatgpt\.md:/),
+      ]);
     });
 
-    it.each(["README.md", "plugins/samva/README.md"])(
-      "rejects %s when it stops linking the guide",
-      async (path) => {
+    it.each([
+      ["README.md", "(./plugins/samva/docs/chatgpt.md)", "(./docs/chatgpt.md)"],
+      ["plugins/samva/README.md", "(./docs/chatgpt.md)", "(./plugins/samva/docs/chatgpt.md)"],
+    ])(
+      "rejects %s when its guide link is missing or resolves to the wrong path",
+      async (path, link, wrongLink) => {
         const root = await fixture();
         const file = resolve(root, path);
         const text = await readFile(file, "utf8");
-        await writeFile(file, text.replaceAll("docs/chatgpt.md", "docs/removed.md"));
-        expect(await validateAgentPlugin(root)).toContain(`${path} must link the ChatGPT guide`);
+        const message = `${path} must link the ChatGPT guide as ${link}`;
+        await writeFile(file, text.replaceAll(link, wrongLink));
+        expect(await validateAgentPlugin(root)).toContain(message);
+        await writeFile(file, text.replaceAll(link, "(./removed.md)"));
+        expect(await validateAgentPlugin(root)).toContain(message);
       },
     );
   });

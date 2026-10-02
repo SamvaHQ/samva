@@ -371,20 +371,20 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
       ["Automated package conformance", "Synthetic read examples", "Synthetic write examples"],
     ],
   ]);
-  await Promise.all(
+  const publicDocs = await Promise.all(
     [...publicDocRequirements].map(async ([path, requirements]) => {
       const text = await readText(errors, resolve(pluginRoot, path), path);
-      for (const requirement of requirements) {
-        if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
+      // An unreadable document already reported its read failure.
+      if (text !== "") {
+        for (const requirement of requirements) {
+          if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
+        }
       }
+      return [path, text] as const;
     }),
   );
 
-  const chatgptGuide = await readText(
-    errors,
-    resolve(pluginRoot, "docs/chatgpt.md"),
-    "docs/chatgpt.md",
-  );
+  const chatgptGuide = new Map(publicDocs).get("docs/chatgpt.md") ?? "";
   const listingIds = [...chatgptGuide.matchAll(/chatgpt\.com\/plugins\/([^\s)]+)/g)].map(
     (match) => match[1],
   );
@@ -392,16 +392,14 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
     errors.push("docs/chatgpt.md links a ChatGPT plugin other than the published Samva listing");
   }
 
-  const entryPoints = new Map([
-    ["README.md", resolve(repositoryRoot, "README.md")],
-    ["plugins/samva/README.md", resolve(pluginRoot, "README.md")],
-  ]);
+  const entryPoints = [
+    ["README.md", resolve(repositoryRoot, "README.md"), "(./plugins/samva/docs/chatgpt.md)"],
+    ["plugins/samva/README.md", resolve(pluginRoot, "README.md"), "(./docs/chatgpt.md)"],
+  ] as const;
   await Promise.all(
-    [...entryPoints].map(async ([label, path]) => {
+    entryPoints.map(async ([label, path, link]) => {
       const text = await readText(errors, path, label);
-      if (!/\(\.?\/?(?:plugins\/samva\/)?docs\/chatgpt\.md\)/.test(text)) {
-        errors.push(`${label} must link the ChatGPT guide`);
-      }
+      if (!text.includes(link)) errors.push(`${label} must link the ChatGPT guide as ${link}`);
     }),
   );
 
