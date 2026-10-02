@@ -4,6 +4,8 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const canonicalEndpoint = "https://mcp.samva.dev";
+const chatgptPluginId = "plugin_asdk_app_6a8ebcc4c4c48191b5a3a53638f7b972";
+const chatgptListingUrl = `https://chatgpt.com/plugins/${chatgptPluginId}`;
 const cursorClientId = "samva-cursor-plugin";
 const oauthScopes = ["openid", "profile", "email", "offline_access"] as const;
 const expectedReferences = [
@@ -325,6 +327,19 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
 
   const publicDocRequirements = new Map([
     [
+      "docs/chatgpt.md",
+      [
+        chatgptListingUrl,
+        "./codex-and-cursor.md",
+        "./auth-and-permissions.md",
+        "../provenance.json",
+        "email_check_readiness",
+        "https://samva.dev/docs/developers/mcp",
+        "https://samva.dev/docs/developers/authentication",
+        "https://samva.dev/docs/sml/authoring-tsx",
+      ],
+    ],
+    [
       "docs/codex-and-cursor.md",
       [
         ".codex-plugin/plugin.json",
@@ -356,12 +371,37 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
       ["Automated package conformance", "Synthetic read examples", "Synthetic write examples"],
     ],
   ]);
-  await Promise.all(
+  const publicDocs = await Promise.all(
     [...publicDocRequirements].map(async ([path, requirements]) => {
-      const text = await readText(errors, resolve(pluginRoot, path), path);
-      for (const requirement of requirements) {
-        if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
+      const readErrors: Array<string> = [];
+      const text = await readText(readErrors, resolve(pluginRoot, path), path);
+      errors.push(...readErrors);
+      // An unreadable document already reported its read failure; an empty one still fails.
+      if (readErrors.length === 0) {
+        for (const requirement of requirements) {
+          if (!text.includes(requirement)) errors.push(`${path} is missing ${requirement}`);
+        }
       }
+      return [path, text] as const;
+    }),
+  );
+
+  const chatgptGuide = new Map(publicDocs).get("docs/chatgpt.md") ?? "";
+  const listingIds = [...chatgptGuide.matchAll(/chatgpt\.com\/plugins\/([^\s)]+)/g)].map(
+    (match) => match[1],
+  );
+  if (listingIds.some((id) => id !== chatgptPluginId)) {
+    errors.push("docs/chatgpt.md links a ChatGPT plugin other than the published Samva listing");
+  }
+
+  const entryPoints = [
+    ["README.md", resolve(repositoryRoot, "README.md"), "(./plugins/samva/docs/chatgpt.md)"],
+    ["plugins/samva/README.md", resolve(pluginRoot, "README.md"), "(./docs/chatgpt.md)"],
+  ] as const;
+  await Promise.all(
+    entryPoints.map(async ([label, path, link]) => {
+      const text = await readText(errors, path, label);
+      if (!text.includes(link)) errors.push(`${label} must link the ChatGPT guide as ${link}`);
     }),
   );
 

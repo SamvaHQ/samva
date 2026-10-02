@@ -5,6 +5,10 @@ Connect a coding agent to Samva's organization-scoped email tools at
 for choosing between the hosted MCP server, TypeScript SDKs, REST API, CLI,
 dashboard, and TSX template editor.
 
+This package is the Codex and Cursor distribution. Samva's published ChatGPT
+plugin is a separate listing with its own version and bundled skill snapshot;
+see [Samva in ChatGPT](./docs/chatgpt.md).
+
 ## Authentication
 
 The MCP configurations contain no secrets. On first use, an OAuth-capable
@@ -27,12 +31,13 @@ retryable sends, and follow the revision-safe workflow for template edits.
 | Cursor       | `.cursor-plugin/plugin.json` | `mcp.json`        |
 
 Both manifests load `skills/samva/SKILL.md` and its six references. See
-[`provenance.json`](./provenance.json) for the source commit, public skill
-archive, version, and digests.
+[`provenance.json`](./provenance.json) for the pinned source commit, public
+skill archive, version, and digests of the skill snapshot in this package.
 
 ## Public documentation
 
-The [`docs`](./docs) directory explains Codex and Cursor package loading,
-direct Claude MCP connection, authentication and permission boundaries, and
-synthetic verification examples. Run `bun run validate:agent-plugin` from the
-repository root for the automated packaging checks.
+The [`docs`](./docs) directory explains Codex and Cursor package loading, the
+published ChatGPT plugin, direct Claude MCP connection, authentication and
+permission boundaries, and synthetic verification examples. Run
+`bun run validate:agent-plugin` from the repository root for the automated
+packaging checks.

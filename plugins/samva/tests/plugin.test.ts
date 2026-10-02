@@ -16,6 +16,7 @@ const fixture = async (): Promise<string> => {
   await cp(resolve(repositoryRoot, ".cursor-plugin"), resolve(root, ".cursor-plugin"), {
     recursive: true,
   });
+  await cp(resolve(repositoryRoot, "README.md"), resolve(root, "README.md"));
   return root;
 };
 
@@ -158,5 +159,86 @@ describe("Samva agent plugin contract", () => {
     await writeFile(path, "This plugin supports SMS.\n");
     const errors = await validateAgentPlugin(root);
     expect(errors).toContain("Unsupported product claim in docs/unsupported.md");
+  });
+
+  describe("published ChatGPT plugin distribution", () => {
+    const guidePath = "plugins/samva/docs/chatgpt.md";
+    const listingUrl =
+      "https://chatgpt.com/plugins/plugin_asdk_app_6a8ebcc4c4c48191b5a3a53638f7b972";
+
+    it("states the portable package version apart from the listing version", async () => {
+      const manifest = JSON.parse(
+        await readFile(resolve(repositoryRoot, "plugins/samva/.codex-plugin/plugin.json"), "utf8"),
+      ) as { version: string };
+      const guide = await readFile(resolve(repositoryRoot, guidePath), "utf8");
+      expect(guide).toContain(`\`${manifest.version}\``);
+      expect(guide).toContain("`1.0.0`");
+    });
+
+    it("rejects a guide that links another ChatGPT plugin", async () => {
+      const root = await fixture();
+      const path = resolve(root, guidePath);
+      const guide = await readFile(path, "utf8");
+      await writeFile(path, guide.replaceAll(listingUrl, "https://chatgpt.com/plugins/other"));
+      const errors = await validateAgentPlugin(root);
+      expect(errors).toContain(
+        "docs/chatgpt.md links a ChatGPT plugin other than the published Samva listing",
+      );
+      expect(errors).toContain(`docs/chatgpt.md is missing ${listingUrl}`);
+    });
+
+    it("rejects a guide that drops current documentation links", async () => {
+      const root = await fixture();
+      const path = resolve(root, guidePath);
+      const guide = await readFile(path, "utf8");
+      await writeFile(path, guide.replaceAll("https://samva.dev/docs/developers/mcp", "MCP docs"));
+      expect(await validateAgentPlugin(root)).toContain(
+        "docs/chatgpt.md is missing https://samva.dev/docs/developers/mcp",
+      );
+    });
+
+    it("rejects a guide that loses the read-only first check", async () => {
+      const root = await fixture();
+      const path = resolve(root, guidePath);
+      const guide = await readFile(path, "utf8");
+      await writeFile(path, guide.replaceAll("email_check_readiness", "readiness"));
+      expect(await validateAgentPlugin(root)).toContain(
+        "docs/chatgpt.md is missing email_check_readiness",
+      );
+    });
+
+    it("rejects a missing guide", async () => {
+      const root = await fixture();
+      await rm(resolve(root, guidePath));
+      const errors = await validateAgentPlugin(root);
+      expect(errors.filter((error) => error.includes("docs/chatgpt.md"))).toEqual([
+        expect.stringMatching(/^Cannot read docs\/chatgpt\.md:/),
+      ]);
+    });
+
+    it("rejects an emptied guide", async () => {
+      const root = await fixture();
+      await writeFile(resolve(root, guidePath), "");
+      expect(await validateAgentPlugin(root)).toContain(
+        "docs/chatgpt.md is missing email_check_readiness",
+      );
+    });
+
+    it.each([
+      ["README.md", "(./plugins/samva/docs/chatgpt.md)", "(./docs/chatgpt.md)"],
+      ["plugins/samva/README.md", "(./docs/chatgpt.md)", "(./plugins/samva/docs/chatgpt.md)"],
+    ])(
+      "rejects %s when its guide link is missing or resolves to the wrong path",
+      async (path, link, wrongLink) => {
+        const root = await fixture();
+        const file = resolve(root, path);
+        const text = await readFile(file, "utf8");
+        const message = `${path} must link the ChatGPT guide as ${link}`;
+        await writeFile(file, text.replaceAll(link, wrongLink));
+        expect(await validateAgentPlugin(root)).toContain(message);
+        await writeFile(file, text.replaceAll(link, "(./removed.md)"));
+        expect(await validateAgentPlugin(root)).toContain(message);
+      },
+    );
   });
 });
