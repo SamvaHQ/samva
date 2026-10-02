@@ -215,21 +215,18 @@ describe("samva", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
-  it("forwards an idempotency key as the Samva Idempotency-Key header", async () => {
+  it("forwards an idempotency key as the Samva idempotencyKey option", async () => {
     const send = vi.fn(
-      async (
-        _payload: unknown,
-        _options?: { signal?: AbortSignal; headers?: Record<string, string> },
-      ) => ({ id: "message_1" }),
+      async (_payload: unknown, _options?: { signal?: AbortSignal; idempotencyKey?: string }) => ({
+        id: "message_1",
+      }),
     );
     const adapter = samva({ client: injectedClient(send) });
 
     await adapter.send(message, { ...context, idempotencyKey: "dedupe" });
 
     expect(send).toHaveBeenCalledOnce();
-    expect(send.mock.calls[0]![1]).toMatchObject({
-      headers: { "idempotency-key": "dedupe" },
-    });
+    expect(send.mock.calls[0]![1]).toMatchObject({ idempotencyKey: "dedupe" });
   });
 
   it("forwards the AbortSignal and preserves Email SDK abort semantics", async () => {

@@ -68,15 +68,13 @@ export function samva(options: SamvaAdapterOptions): SamvaEmailAdapter {
       if (context.signal?.aborted) throw abortReason(context.signal);
 
       const payload = await toSamvaMessage(message);
-      const headers =
-        context.idempotencyKey === undefined
-          ? undefined
-          : { "idempotency-key": context.idempotencyKey };
       let result: SamvaSendResult;
       try {
         result = await client.email.send(payload, {
           ...(context.signal === undefined ? {} : { signal: context.signal }),
-          ...(headers === undefined ? {} : { headers }),
+          ...(context.idempotencyKey === undefined
+            ? {}
+            : { idempotencyKey: context.idempotencyKey }),
         });
       } catch (error) {
         if (isAbortFailure(error, context.signal)) throw abortReason(context.signal);
