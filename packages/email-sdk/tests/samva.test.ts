@@ -303,7 +303,7 @@ describe("samva", () => {
     [
       "rate limit",
       new RateLimitedError(
-        { operation: "messages.send", retryAfterSeconds: 10 },
+        { retryAfterSeconds: 10 },
         {
           response: new Response(null, {
             status: 429,
@@ -316,7 +316,7 @@ describe("samva", () => {
     [
       "validation",
       new ValidationError(
-        { operation: "messages.send", message: "invalid", fields: null },
+        { message: "invalid", fields: null },
         {
           response: new Response(null, {
             status: 422,
@@ -335,7 +335,6 @@ describe("samva", () => {
       "provider transport",
       new EmailChannelError(
         {
-          operation: "messages.send",
           message: "provider timeout",
           reason: "transport",
           statusCode: 503,
@@ -357,7 +356,7 @@ describe("samva", () => {
     [
       "ambiguous server",
       new InternalError(
-        { operation: "messages.send", message: "server failed" },
+        { message: "server failed" },
         {
           response: new Response(null, {
             status: 500,
@@ -383,6 +382,23 @@ describe("samva", () => {
         requestId: "request_malformed",
         retryable: true,
         delivery: "unknown",
+      },
+    ],
+    [
+      "delivery unavailable",
+      {
+        _tag: "DeliveryUnavailableError",
+        statusCode: 503,
+        response: new Response(null, {
+          status: 503,
+          headers: { "x-request-id": "request_unavailable" },
+        }),
+      },
+      {
+        status: 503,
+        requestId: "request_unavailable",
+        retryable: true,
+        delivery: "not_sent",
       },
     ],
     [

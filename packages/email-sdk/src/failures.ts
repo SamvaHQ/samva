@@ -4,6 +4,7 @@ type ErrorRecord = Record<string, unknown>;
 
 const knownNotSentTags = new Set([
   "ConflictError",
+  "DeliveryUnavailableError",
   "EmailChannelError",
   "FlagDisabledError",
   "ForbiddenError",
