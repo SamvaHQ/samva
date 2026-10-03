@@ -110,7 +110,7 @@ export async function handleInboundReply(
       html: "<p>Thanks for your reply. We will follow up shortly.</p>",
       inReplyToMessageId: reply.messageId,
     },
-    { headers: { "idempotency-key": verified.id } },
+    { idempotencyKey: verified.id },
   );
 
   input.processedWebhookIds.add(verified.id);

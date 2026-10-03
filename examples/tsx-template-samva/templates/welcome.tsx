@@ -1,14 +1,10 @@
 /** @jsxImportSource @samva/markup/email */
+import { defineTemplate } from "@samva/markup";
 import { Button, Email, Section } from "@samva/markup/email/components";
 import { jsonSchema } from "@samva/markup/input-schema";
-import { defineEmail } from "@samva/markup/template";
 
-/**
- * One ordinary TSX email entry. The stable id is project-unique; the schema is
- * the input contract, fixtures drive previews, and render receives validated
- * JSON and returns the subject, optional preheader, body, and optional text.
- */
-export default defineEmail({
+/** The canonical one-email starter entry. */
+export default defineTemplate({
   id: "welcome",
   schema: jsonSchema<{
     firstName: string;
@@ -36,30 +32,36 @@ export default defineEmail({
       ctaUrl: "https://app.example.com/team",
     },
   },
-  render: (input) => ({
-    subject: `Welcome to ${input.workspace}`,
-    preheader: `Welcome aboard, ${input.firstName}`,
-    body: (
-      <Email lang="en" className="font-body bg-gray-100 dark:bg-gray-900">
+  email: {
+    subject: (input) => `Welcome to ${input.workspace}`,
+    preheader: (input) => `Welcome aboard, ${input.firstName}`,
+    body: (input) => (
+      <Email lang="en" className="font-body bg-background dark:bg-background-dark">
         <Section
           width={600}
           tableStyle={{ width: "100%", maxWidth: 600 }}
-          className="rounded-lg bg-white px-8 py-6 dark:bg-gray-800"
+          className="rounded-card bg-surface dark:bg-surface-dark px-8 py-6"
         >
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="font-heading text-foreground dark:text-foreground-dark text-2xl font-bold">
             Welcome, {input.firstName}
           </h1>
-          <p className="text-base text-gray-700 dark:text-gray-200">
+          <p className="text-muted dark:text-muted-dark text-base">
             Thanks for joining <strong>Samva</strong>. Your workspace {input.workspace} is ready —
-            open the <a href="https://samva.dev/docs">docs</a> to begin.
+            open the{" "}
+            <a href="https://samva.dev/docs" className="text-accent dark:text-accent-dark">
+              docs
+            </a>{" "}
+            to begin.
           </p>
           <Button
             href={input.ctaUrl}
             width={200}
             height={48}
-            backgroundColor="#4f46e5"
-            color="#ffffff"
+            backgroundColor="var(--color-brand)"
+            color="var(--color-brand-foreground)"
+            fontFamily="var(--font-body)"
             borderRadius={6}
+            style={{ borderRadius: "var(--radius-button)" }}
             className="bg-brand text-brand-foreground dark:bg-brand-dark dark:text-brand-foreground-dark font-semibold"
           >
             Open dashboard
@@ -67,5 +69,5 @@ export default defineEmail({
         </Section>
       </Email>
     ),
-  }),
+  },
 });

@@ -1,0 +1,24 @@
+/* This starter's look. Every color and font in templates/ reads these theme variables; a brand imported after
+ * this file in theme.css replaces the ones it sets, and theme.css's own @theme overrides both. */
+@theme {
+  --color-brand: #4f46e5;
+  --color-brand-dark: #a5b4fc;
+  --color-brand-foreground: #ffffff;
+  --color-brand-foreground-dark: #0b0d10;
+  --color-accent: #4f46e5;
+  --color-accent-dark: #a5b4fc;
+  --color-background: #f3f4f6;
+  --color-background-dark: #111827;
+  --color-surface: #ffffff;
+  --color-surface-dark: #1f2937;
+  --color-foreground: #111827;
+  --color-foreground-dark: #ffffff;
+  --color-muted: #374151;
+  --color-muted-dark: #e5e7eb;
+  --color-border: #e5e7eb;
+  --color-border-dark: #374151;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --radius-button: 6px;
+  --radius-card: 12px;
+}
