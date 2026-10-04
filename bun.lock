@@ -208,11 +208,11 @@
       "name": "tsx-template-samva",
       "version": "0.0.0",
       "dependencies": {
-        "@samva/markup": "^0.10.0",
+        "@samva/markup": "^0.11.0",
       },
       "devDependencies": {
-        "@samva/cli": "^0.6.0",
-        "@samva/vite": "^0.10.0",
+        "@samva/cli": "^0.6.1",
+        "@samva/vite": "^0.11.0",
         "@types/node": "^22.0.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
@@ -801,21 +801,21 @@
 
     "@samva/better-auth": ["@samva/better-auth@workspace:packages/better-auth"],
 
-    "@samva/cli": ["@samva/cli@0.6.0", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.6.0", "@samva/cli-darwin-x64": "0.6.0", "@samva/cli-linux-arm64": "0.6.0", "@samva/cli-linux-x64": "0.6.0" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-kq4t8+pVibdn8WKSRIgEiI3SU6YF5Haz+nBukkrKVge9YTwmB0TBndaAPfwhbbsiTgMJwvLozsL47+tidmwWNg=="],
+    "@samva/cli": ["@samva/cli@0.6.1", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.6.1", "@samva/cli-darwin-x64": "0.6.1", "@samva/cli-linux-arm64": "0.6.1", "@samva/cli-linux-x64": "0.6.1" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-qv16wANxFu8CAFJGStzFSbDSPMfy3NgIzfctvcLvuPNljaI8ALuD9J4XfgiBUFp+hSB00+JqQQha2W7vs1gA/g=="],
 
-    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.6.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-Q50y0U/IULcVQ9pAvflenvtuP1+/RZ+70Brn6gip8aRyWH0BP/Wa2reu1sKrUWaQgdHANj5P4SptUf5L0WkiDg=="],
+    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.6.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-g4Qu3lBXO/J/4lY50JBr+6JBTlZDK0dUa91PUc3D/l3WdltnmB1E/S46av32haE5Txl5DWmvDBpHt4CGHMx9wg=="],
 
-    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.6.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-/xFK8LQoKTe2EABXq5yyqs/6BN82H6hjkrTjAtjN1yIK0g7We84A77x3NO51XMADU2Vc4OHClSxCniRTBRwjrw=="],
+    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.6.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-NCHoaptonmkgDCySuPWydYxTJHM14RhLPtRNkyFrqOlPjxfx0P5MVgcZG7AJ/ktloczJiaAXxnk9aB6OHDixMw=="],
 
-    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.6.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-1B2zbrG04EBXF73fg53RJy9pdiz0ZzrBqN1mPVAg60otPFSNbKYqu3rHG6mwu/AnoFwj8nTaC0IpX4NU2I/apg=="],
+    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.6.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-qEjxxL6nTiYJ/sRXLqlPBEmg174XNyWEnJ8YRCIO+5bl4RSj+mp460zd/U8Ghy/IE2D4nYrVu5wcrm2Mwr33wg=="],
 
-    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.6.0", "", { "os": "linux", "cpu": "x64" }, "sha512-Gsd0I2i/Nox95Ev63THPDYkU+wFckj3Vo9weUpjLwqevO7GC9Rbic6PD79C+Dl/o3C2bon+m1bmhR5TEnN3+Lg=="],
+    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.6.1", "", { "os": "linux", "cpu": "x64" }, "sha512-j1Byv5Npi0iEQhSBifLuhagp94bnR+tyFNp6mJCws44LLpUWV4+CZFO0udfw0k+d+nRfycLH2juURDQNrbVsJg=="],
 
     "@samva/email-sdk": ["@samva/email-sdk@workspace:packages/email-sdk"],
 
-    "@samva/markup": ["@samva/markup@0.10.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-niaFEn8WgqNWuVmZeg5dNr81re14T5kEye0caoAiZcctnxJfVx3O0Tj8LK6X9ZnA43HRZA+4UkOzi6RMopcPcw=="],
+    "@samva/markup": ["@samva/markup@0.11.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-rHfKmJQOVYDg0vLCu605o15M6VFHAOB5rkB2vAbIjlq1x34xch5VfqBWP2fcPR02GybfRI8rn8oEMslFD+7NZA=="],
 
-    "@samva/vite": ["@samva/vite@0.10.0", "", { "dependencies": { "@samva/markup": "^0.10.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-mCZXoq+xAUQjoVnk9YAf/YsqyiCKNBN69uJNP6+CgzFXRuNGIGO+wzNQ6lA2WJGPrN+WYGmagSUvSnIeX1QdzA=="],
+    "@samva/vite": ["@samva/vite@0.11.0", "", { "dependencies": { "@samva/markup": "^0.11.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-Rjs+kCvHI4jhivXaRJEifaijSxv44/1tIfCk6wp8/lzEodudWTwEHD7b6ml2H8CZ5sNeU950h3WmqrdDerryfQ=="],
 
     "@samva/webhooks": ["@samva/webhooks@0.8.0", "", { "peerDependencies": { "effect": "4.0.0-rc.117" }, "optionalPeers": ["effect"] }, "sha512-8+ohrzj2kJxQkuRzGjQgbLbmCiLsuLa9Ipf9cXiQMHOY5nD028LwoJkMvN3uTiDuhO+QQGAcfS8PqJfa6swnCA=="],
 
