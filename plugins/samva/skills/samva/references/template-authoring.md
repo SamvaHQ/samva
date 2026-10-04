@@ -14,7 +14,7 @@ reference. These resource URIs are stable.
 
 ```tsx
 import { defineTemplate } from "@samva/markup";
-import { Button, Email, Section } from "@samva/markup/email/components";
+import { Button, Email, Section } from "@samva/markup/email";
 import { fmt } from "@samva/markup/fmt";
 import { jsonSchema } from "@samva/markup/input-schema";
 
