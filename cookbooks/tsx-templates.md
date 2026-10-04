@@ -32,7 +32,7 @@ and an `email` channel of functions of the input.
 ```tsx title="templates/welcome.tsx"
 /** @jsxImportSource @samva/markup/email */
 import { defineTemplate } from "@samva/markup";
-import { Email, Section } from "@samva/markup/email/components";
+import { Email, Section } from "@samva/markup/email";
 import { jsonSchema } from "@samva/markup/input-schema";
 
 export default defineTemplate({

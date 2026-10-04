@@ -1,6 +1,6 @@
 /** @jsxImportSource @samva/markup/email */
 import { defineTemplate } from "@samva/markup";
-import { Button, Email, Section } from "@samva/markup/email/components";
+import { Button, Email, Section } from "@samva/markup/email";
 import { jsonSchema } from "@samva/markup/input-schema";
 
 /** The canonical one-email starter entry. */
