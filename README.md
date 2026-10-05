@@ -4,7 +4,8 @@ Open-source packages, examples, cookbooks, and agent plugins for integrating
 [Samva](https://samva.dev) into real applications.
 
 Use these to send transactional email, connect auth email flows, work with
-templates, handle delivery events, and verify signed webhooks.
+templates, handle delivery events, and verify signed webhooks. Ask questions
+about the code on [DeepWiki](https://deepwiki.com/SamvaHQ/samva).
 
 ## Structure
 
@@ -94,6 +95,14 @@ bun run test
 bun run lint
 bun run format:check
 ```
+
+## Related open source
+
+- [SML](https://github.com/SamvaHQ/SML) — the markup, Vite plugin, and editor
+  behind Samva's TSX templates.
+- [DomainKit](https://github.com/AryaLabsHQ/domainkit) — Samva sets up customer
+  domains with DomainKit. See
+  [how it works](https://domain-kit.dev/customers/samva).
 
 ## Contributing
 
