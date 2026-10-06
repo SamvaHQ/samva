@@ -2,8 +2,8 @@
 
 Samva email templates are ordinary TSX projects. You author the source, check and preview it
 locally, push it to Git, and publish an immutable publication that sends render. The
-`samva-integrations` [`tsx-template-samva`](../examples/tsx-template-samva/) example is the runnable
-version of this page.
+[`tsx-template-samva`](../examples/tsx-template-samva/) example in this repository is the
+runnable version of this page.
 
 ## Install the authoring toolchain
 
