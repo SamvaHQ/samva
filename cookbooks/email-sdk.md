@@ -71,8 +71,10 @@ const email = createEmailClient({
 - Attachments require `contentType`; raw or base64 strings and Web API binary
   values are converted to base64 with exact byte size.
 - Unsupported or lossy fields fail before the Samva client is called. This
-  includes headers, tags, schedules, attachment paths and inline metadata, and
-  send idempotency keys.
+  includes headers, tags, schedules, and attachment paths and inline metadata.
+- A send `idempotencyKey` is forwarded as Samva's `Idempotency-Key` header.
+  Pass it in Email SDK send options (`email.send(message, { idempotencyKey })`),
+  not as a message field.
 - Email SDK expands personalized sends to one Samva call per recipient.
 
 ## Fallback safety
