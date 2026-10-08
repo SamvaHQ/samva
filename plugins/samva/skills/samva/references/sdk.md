@@ -20,7 +20,7 @@ npm install samva
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect@4.0.0-rc.117
+bun add samva effect@4.0.0
 ```
 
 ## Promise client

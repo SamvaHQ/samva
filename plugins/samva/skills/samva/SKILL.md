@@ -59,6 +59,9 @@ Read only the reference needed for the selected surface:
 4. Read a resource after mutating it when later work depends on its current status or revision.
 5. Keep secrets in environment variables. Production API keys start with `samva_sk_live_`; keys
    outside production start with `samva_sk_test_`.
+6. When the API, an SDK method, a CLI command, or an MCP tool is confusing, broken, or missing
+   something, tell Samva: `POST /v1/feedback`, `samva.feedback.send`, or `feedback_send`. Name the
+   operation and the resource id, and leave out secrets and recipients' personal data.
 
 Production API base URL: `https://api.samva.dev/v1`.
 

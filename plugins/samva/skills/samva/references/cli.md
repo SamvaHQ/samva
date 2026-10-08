@@ -85,6 +85,7 @@ Resolution order is deterministic:
 | Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, and remote lifecycle commands        |
 | Customer webhooks        | `samva webhooks` with `list`, `get`, `test`, `logs`, `stats`, `retry`, `rotate-secret`, `create`, `update`, or `remove`       |
 | Execution profiles       | `samva profile` with `list`, `show`, `create`, `use`, or `delete`                                                             |
+| Feedback                 | `samva feedback send`                                                                                                         |
 | Machine help             | `samva help --json`                                                                                                           |
 
 ## Send and wait
@@ -185,14 +186,16 @@ contains only result data, while warnings and execution failures go to stderr as
 ## Pagination and exit codes
 
 ```bash
-# Read one bounded page.
-samva messages list --page 1 --limit 50 --json
+# Read one bounded page, then the next one from its nextCursor.
+samva messages list --limit 50 --json
+samva messages list --limit 50 --cursor <nextCursor> --json
 
 # Traverse every page as streamable JSON Lines.
 samva messages list --all --jsonl
 ```
 
-Lists are paginated by default. `--all` is intentionally allowed only with `--jsonl`; bounded and
+Lists are paginated by default. `samva messages list` pages by cursor: a page answers
+`{items, nextCursor}`, and `nextCursor` is null on the last page. `--all` is intentionally allowed only with `--jsonl`; bounded and
 unbounded streams use the same flat outer result envelope.
 
 |  Code | Meaning                                                                      |
