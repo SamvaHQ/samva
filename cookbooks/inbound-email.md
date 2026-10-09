@@ -42,8 +42,8 @@ A signing secret is returned only when the endpoint is created. Store it and rea
 it back from your secret manager on later runs. If a previous setup run lost it,
 rotate it with `samva.webhooks.regenerateSecret`.
 
-Setup should converge. List existing endpoints first, reuse the one named
-`Inbound replies`, and reconcile its URL, event types, channels, and status with
+Setup should converge. List existing endpoints first, following `nextCursor`
+until the page that holds the one named `Inbound replies`, reuse it, and reconcile its URL, event types, channels, and status with
 `samva.webhooks.update`. That keeps a partial run from colliding with the
 organization's unique endpoint name or delivering inbound mail to a stale
 receiver.
@@ -68,7 +68,8 @@ Return a non-2xx status for an invalid signature so the sender retries or alerts
 ## Read the conversation and reply in-thread
 
 The event carries the inbound `messageId`, `conversationId`, and sender. Load the
-conversation and its messages, then send with `conversationId` and
+conversation and its first page of messages (`{ items, nextCursor }`, oldest
+first; each body is at `samva.messages.getContent`), then send with `conversationId` and
 `inReplyToMessageId` so the reply joins the same thread.
 
 ```ts

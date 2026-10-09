@@ -14,9 +14,9 @@ about the code on [DeepWiki](https://deepwiki.com/SamvaHQ/samva).
 - `cookbooks/*.md` — documentation-first, copy-pasteable recipes.
 - `plugins/*` — coding-agent plugins and public documentation.
 
-The maintained integrations target the published Samva 0.8 email SDK. Workspace
-packages and examples use `samva@^0.8.0`; copyable external import maps pin
-`samva@0.8.0`.
+The maintained integrations target the published Samva 0.11 SDK. Workspace
+packages and examples use `samva@^0.11.0`; copyable external import maps pin
+`samva@0.11.0`.
 
 ## Package integrations
 

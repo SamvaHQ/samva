@@ -300,7 +300,7 @@ describe("samva", () => {
     [
       "rate limit",
       new RateLimitedError(
-        { retryAfterSeconds: 10 },
+        { message: "rate limited", retryAfterSeconds: 10 },
         {
           response: new Response(null, {
             status: 429,

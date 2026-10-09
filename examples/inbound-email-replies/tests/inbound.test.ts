@@ -21,6 +21,8 @@ const json = (body: unknown, status = 200) =>
 const createHarness = (
   options: {
     readonly existingEndpoints?: ReadonlyArray<{ id: string; name: string }>;
+    // Serve existing endpoints one per page to exercise cursor paging.
+    readonly pageSize?: number;
     readonly failingSends?: number;
   } = {},
 ) => {
@@ -46,10 +48,13 @@ const createHarness = (
       });
 
       if (request.method === "GET" && url.pathname === "/v1/webhooks") {
-        const items = options.existingEndpoints ?? [];
+        const all = options.existingEndpoints ?? [];
+        const size = options.pageSize ?? Math.max(all.length, 1);
+        const start = Number(url.searchParams.get("cursor") ?? 0);
+        const next = start + size;
         return json({
-          items,
-          pagination: { page: 1, limit: 20, total: items.length, totalPages: 1 },
+          items: all.slice(start, next),
+          nextCursor: next < all.length ? String(next) : null,
         });
       }
       if (request.method === "POST" && url.pathname === "/v1/webhooks") {
@@ -65,7 +70,7 @@ const createHarness = (
           status: "active",
         });
       }
-      if (url.pathname.endsWith("/receiving")) {
+      if (url.pathname.endsWith("/enable-receiving")) {
         return json({
           success: true,
           recipients: ["support@example.com"],
@@ -79,7 +84,7 @@ const createHarness = (
         return json({ id: "msg_reply", status: "queued" }, 201);
       }
       if (url.pathname.endsWith("/messages")) {
-        return json({ items: [], pagination: { hasMore: false } });
+        return json({ items: [], nextCursor: null });
       }
       return json({ id: "conv_01", status: "active" });
     },
@@ -153,7 +158,7 @@ test("configures inbound receiving and replies from a verified conversation", as
     [
       "GET /v1/webhooks",
       "POST /v1/webhooks",
-      "POST /v1/email/domains/domain_01/receiving",
+      "POST /v1/email/domains/domain_01/enable-receiving",
       "GET /v1/conversations/conv_01",
       "GET /v1/conversations/conv_01/messages",
       "POST /v1/messages",
@@ -185,7 +190,7 @@ test("reuses and reconciles an endpoint from a partial run instead of creating a
     [
       "GET /v1/webhooks",
       "PATCH /v1/webhooks/webhook_existing",
-      "POST /v1/email/domains/domain_01/receiving",
+      "POST /v1/email/domains/domain_01/enable-receiving",
     ],
   );
   assert.deepEqual(requests[1]?.body, {
@@ -199,6 +204,28 @@ test("reuses and reconciles an endpoint from a partial run instead of creating a
     catchAll: true,
     endpointId: "webhook_existing",
   });
+});
+
+test("finds an existing endpoint on a later page of the list", async () => {
+  const { samva, requests } = createHarness({
+    pageSize: 1,
+    existingEndpoints: [
+      { id: "webhook_other", name: "Billing" },
+      { id: "webhook_existing", name: "Inbound replies" },
+    ],
+  });
+
+  await configureInboundEmail(samva, DOMAIN_INPUT);
+
+  assert.deepEqual(
+    requests.map(({ method, path }) => `${method} ${path}`),
+    [
+      "GET /v1/webhooks",
+      "GET /v1/webhooks",
+      "PATCH /v1/webhooks/webhook_existing",
+      "POST /v1/email/domains/domain_01/enable-receiving",
+    ],
+  );
 });
 
 test("ignores an auto-reply without reading or sending", async () => {

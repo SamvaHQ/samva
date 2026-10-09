@@ -36,9 +36,13 @@ export async function configureInboundEmail(
   // colliding with the organization's unique endpoint name. Reconcile its full
   // configuration, because a rerun with a new URL or subscription must not keep
   // delivering inbound mail to a stale receiver.
-  const existing = (await samva.webhooks.list()).items.find(
-    (endpoint) => endpoint.name === ENDPOINT_NAME,
-  );
+  let existing: { readonly id: string; readonly name: string } | undefined;
+  let cursor: string | undefined;
+  do {
+    const page = await samva.webhooks.list({ cursor });
+    existing = page.items.find((endpoint) => endpoint.name === ENDPOINT_NAME);
+    cursor = page.nextCursor ?? undefined;
+  } while (!existing && cursor);
 
   const endpoint = existing
     ? {
