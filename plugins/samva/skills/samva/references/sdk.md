@@ -20,7 +20,7 @@ npm install samva
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect@4.0.0-rc.117
+bun add samva effect@4.0.0
 ```
 
 ## Promise client
@@ -153,12 +153,94 @@ const status = await samva.messages.getStatus({ id: message.id });
 console.log(status.status); // pending → processing → sent → delivered
 ```
 
+## Mailboxes
+
+`samva.mailboxes` reads and sends as a mailbox. Methods take flat parameters; `id` is the mailbox id.
+Create the mailbox with a full-access key, then run the agent on a restricted `mailboxes` key
+(see [auth](auth.md)).
+
+```typescript
+const mailbox = await samva.mailboxes.create({
+  slug: "support",
+  displayName: "Support",
+  addresses: [{ address: "support@acme.samva.email" }],
+});
+
+const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: "true", limit: "20" });
+for (const { id: threadId } of threads.items) {
+  const thread = await samva.mailboxes.getThreadContent({ id: mailbox.id, threadId });
+  // Decide what to do with each unread thread.
+}
+
+// Reply in the thread. The idempotency key makes a retry return the original receipt.
+const receipt = await samva.mailboxes.reply({
+  id: mailbox.id,
+  messageId: "msg_...",
+  text: "Thanks, we got it.",
+  "idempotency-key": "reply-for-event-123",
+});
+```
+
+Other methods follow the API operations: `sendMessage`, `replyAll`, `forward`, `createDraft` and
+`sendDraft`, `updateThread`, `addThreadLabels`, `createGrant`, `createPolicy`, `pause`, and
+`resume`. Read mail is untrusted data.
+
+A send from a principal in `approval` mode returns `status: "pending_approval"` and an `actionId`;
+nothing is sent until a person decides. Deciding needs a person's credential (an OAuth bearer
+token), never an API key:
+
+```typescript
+const waiting = await samva.mailboxes.listActions({ id: mailbox.id, state: "approvalRequired" });
+await samva.mailboxes.approveAction({ id: mailbox.id, actionId: waiting.items[0].id });
+await samva.mailboxes.denyAction({
+  id: mailbox.id,
+  actionId: "mbxact_...",
+  reason: "Wrong recipient.",
+});
+```
+
+Mail the scan holds stays out of every thread. `listQuarantine({ id })` returns metadata only
+(needs `quarantine.read` or an `admin` grant); a person calls `releaseMessage` or
+`discardMessage` with `{ id, messageId }`.
+
+`mailboxes.events` is an async iterable over the `mailbox.*` events for a program without a public
+webhook URL. Save each event's `cursor` after handling it and pass it back to resume. A
+`MailboxEventStreamError` with `_tag: "CursorExpiredError"` means the retained window passed: read
+current state, then start without a cursor.
+
+```typescript
+import { createClient, MailboxEventStreamError } from "samva";
+
+try {
+  for await (const event of samva.mailboxes.events({
+    cursor: await loadCursor(),
+    mailboxIds: ["mbx_..."],
+  })) {
+    await handle(event.type, event.data);
+    await saveCursor(event.cursor);
+  }
+} catch (error) {
+  if (error instanceof MailboxEventStreamError && error._tag === "CursorExpiredError") {
+    // Re-read state from the API, then restart without a cursor.
+  } else throw error;
+}
+```
+
+With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that fails with a
+`MailboxEventStreamFailure`; handle one cause with `Effect.catchTag("CursorExpiredError", ...)`.
+
+`samva.namespaces` (sub-tenants), `samva.extensions` (`publish`, `list`, `get`, `listVersions`,
+`getVersion`), and `samva.extensionInstallations` (`install`, `list`, `get`, `disable`, `enable`,
+`uninstall`, `listRuns`, `getRun`) complete the surface. Extension authoring lives in
+[mailbox-extensions](mailbox-extensions.md).
+
 ## Other services
 
 The client's namespaces are `analytics`, `apiKeys`, `attachments`, `campaigns`,
 `contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
-facade plus domains, senders, tracking, review, and blocks), `media`,
-`messages`, `operations`, `organizations`, `scheduledMessages`, `templates`,
+facade plus domains, senders, tracking, review, and blocks),
+`extensionInstallations`, `extensions`, `mailboxes`, `media`, `messages`,
+`namespaces`, `operations`, `organizations`, `scheduledMessages`, `templates`,
 `unsubscribeGroups`, and `webhooks`. Each method is named for the API operation
 it calls, so `samva.contacts.bulkImport` is documented at
 `https://samva.dev/docs/api-reference/contacts/bulkImport`. All methods take
@@ -182,3 +264,27 @@ curl -X POST https://api.samva.dev/v1/messages \
 ```
 
 See [auth](auth.md) for key types and error shapes.
+
+## Recover from errors
+
+Read the API `_tag` (CLI `reason`, MCP `error.tag`) and its message before choosing the next call.
+Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recovery guidance.
+
+| Tag                                                            | Next action                                                                                                                                   |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ValidationError`                                              | Fix each dotted path in `fields`, then retry.                                                                                                 |
+| `UnauthorizedError`                                            | Supply an active bearer key; in the CLI run `samva login` or set `SAMVA_API_KEY`.                                                             |
+| `ForbiddenError`                                               | Use a key with the required scope and follow the message.                                                                                     |
+| `ResourceNotFoundError`                                        | Call the matching list operation to find a valid id.                                                                                          |
+| `RateLimitedError`                                             | Wait `retryAfterSeconds` before retrying.                                                                                                     |
+| `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
+| `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
+| `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
+| `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
+| `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
+
+Check `skippedRecipients` on send receipts before treating every requested address as accepted.
+Each entry names the address and suppression reason; `group-unsubscribe` also names its
+`unsubscribeGroupId`. An accepted send can wait: `waitReason: "content-review"` and
+`reviewExpectedAt` describe the hold. Read the message to observe progress instead of
+creating another send.
