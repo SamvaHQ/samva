@@ -12,6 +12,7 @@ const expectedReferences = [
   "auth.md",
   "cli.md",
   "executor.md",
+  "mailbox-extensions.md",
   "mcp.md",
   "sdk.md",
   "template-authoring.md",
@@ -165,7 +166,7 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
   ] as const;
   for (const [label, manifest] of manifests) {
     if (manifest.name !== "samva") errors.push(`${label} name must be samva`);
-    if (manifest.version !== "0.3.0") errors.push(`${label} version must be 0.3.0`);
+    if (manifest.version !== "0.4.0") errors.push(`${label} version must be 0.4.0`);
   }
   await Promise.all([
     ...manifests.flatMap(([label, manifest]) => [
