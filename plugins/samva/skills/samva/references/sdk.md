@@ -167,10 +167,10 @@ const mailbox = await samva.mailboxes.create({
 });
 
 const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: "true", limit: "20" });
-const thread = await samva.mailboxes.getThreadContent({
-  id: mailbox.id,
-  threadId: threads.items[0].id,
-});
+for (const { id: threadId } of threads.items) {
+  const thread = await samva.mailboxes.getThreadContent({ id: mailbox.id, threadId });
+  // Decide what to do with each unread thread.
+}
 
 // Reply in the thread. The idempotency key makes a retry return the original receipt.
 const receipt = await samva.mailboxes.reply({
