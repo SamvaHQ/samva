@@ -118,6 +118,20 @@
         "vitest": "^4.1.8",
       },
     },
+    "examples/mailbox-agent": {
+      "name": "mailbox-agent-samva",
+      "version": "0.0.0",
+      "dependencies": {
+        "@samva/mailbox": "^0.1.1",
+        "samva": "^0.11.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.4.0",
+        "@types/node": "^24.0.0",
+        "typescript": "^5.9.2",
+        "vitest": "^4.1.8",
+      },
+    },
     "examples/nextjs-transactional": {
       "name": "nextjs-transactional-samva",
       "version": "0.0.0",
@@ -813,6 +827,8 @@
 
     "@samva/email-sdk": ["@samva/email-sdk@workspace:packages/email-sdk"],
 
+    "@samva/mailbox": ["@samva/mailbox@0.1.1", "", { "dependencies": { "@samva/webhooks": "0.11.0" } }, "sha512-ZGoxIoiz0vHMM16eC2V6rdl1xtxBJRrwCdZvwicicNLP6LAUXp089pkwEH/EyKvBI/yLIMxTTEANjvckkeYOgw=="],
+
     "@samva/markup": ["@samva/markup@0.11.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-rHfKmJQOVYDg0vLCu605o15M6VFHAOB5rkB2vAbIjlq1x34xch5VfqBWP2fcPR02GybfRI8rn8oEMslFD+7NZA=="],
 
     "@samva/vite": ["@samva/vite@0.11.0", "", { "dependencies": { "@samva/markup": "^0.11.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-Rjs+kCvHI4jhivXaRJEifaijSxv44/1tIfCk6wp8/lzEodudWTwEHD7b6ml2H8CZ5sNeU950h3WmqrdDerryfQ=="],
@@ -1481,6 +1497,8 @@
 
     "magicast": ["magicast@0.5.4", "", { "dependencies": { "@babel/parser": "^7.29.7", "@babel/types": "^7.29.7", "source-map-js": "^1.2.1" } }, "sha512-llBEhWm1SacoRwgHUoQJYtwp4PBLF4faQi5TCpIGyGs9n4y5+juI0tDgyKIfpqxckRHaHzouUEph3THklWh03w=="],
 
+    "mailbox-agent-samva": ["mailbox-agent-samva@workspace:examples/mailbox-agent"],
+
     "marked": ["marked@15.0.12", "", { "bin": { "marked": "bin/marked.js" } }, "sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA=="],
 
     "mdast-util-to-hast": ["mdast-util-to-hast@13.2.1", "", { "dependencies": { "@types/hast": "^3.0.0", "@types/mdast": "^4.0.0", "@ungap/structured-clone": "^1.0.0", "devlop": "^1.0.0", "micromark-util-sanitize-uri": "^2.0.0", "trim-lines": "^3.0.0", "unist-util-position": "^5.0.0", "unist-util-visit": "^5.0.0", "vfile": "^6.0.0" } }, "sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA=="],
@@ -2016,6 +2034,8 @@
     "inbound-email-replies-samva/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "magicast/@babel/parser": ["@babel/parser@7.29.8", "", { "dependencies": { "@babel/types": "^7.29.8" }, "bin": "./bin/babel-parser.js" }, "sha512-E8lTAYNB1KW+FH+VGJuZM1ioAx2E6oVlvQFRrf5P8ZZmsiJXYAD9vTFV7yyEURNzgh1dFqMZuO6tUwcARbqFCA=="],
+
+    "mailbox-agent-samva/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "micromatch/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
 
