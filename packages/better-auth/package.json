@@ -49,12 +49,12 @@
   "devDependencies": {
     "@react-email/render": "^2.0.0",
     "better-auth": "^1.7.2",
-    "samva": "^0.8.0"
+    "samva": "^0.11.0"
   },
   "peerDependencies": {
     "@react-email/render": "^2.0.0",
     "better-auth": "^1.7.2",
-    "samva": "^0.8.0"
+    "samva": "^0.11.0"
   },
   "peerDependenciesMeta": {
     "@react-email/render": {
