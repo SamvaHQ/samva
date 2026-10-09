@@ -12,6 +12,6 @@
   },
   "tasks": {
     "serve": "supabase functions serve send-email --no-verify-jwt",
-    "typecheck": "deno check --node-modules-dir=none --no-lock supabase/functions/send-email/index.ts"
+    "typecheck": "deno check --node-modules-dir=none --no-lock --min-dep-age=0 supabase/functions/send-email/index.ts"
   }
 }
