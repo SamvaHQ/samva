@@ -12,6 +12,7 @@ const knownNotSentTags = new Set([
   "PaymentRequiredError",
   "RateLimitedError",
   "ResourceNotFoundError",
+  "SenderNotReadyError",
   "UnauthorizedError",
   "ValidationError",
 ]);

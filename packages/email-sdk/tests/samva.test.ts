@@ -2,6 +2,7 @@ import {
   createEmailClient,
   EmailAbortError,
   EmailAdapterError,
+  EmailRouteError,
   EmailValidationError,
 } from "@opencoredev/email-sdk";
 import type { EmailAdapterContext, EmailMessage } from "@opencoredev/email-sdk";
@@ -434,6 +435,56 @@ describe("samva", () => {
     expect((error as Error).cause).toBeUndefined();
     expect(String(error)).not.toContain("provider body");
   });
+
+  it.each([
+    { tag: "SenderNotReadyError", status: 503, retryable: true, delivery: "not_sent" },
+    { tag: "RateLimitedError", status: 429, retryable: true, delivery: "not_sent" },
+    { tag: "OnboardingReviewRequiredError", status: 403, retryable: false, delivery: "not_sent" },
+    { tag: "InternalError", status: 503, retryable: true, delivery: "unknown" },
+    { tag: "SamvaTransportError", status: 503, retryable: true, delivery: "unknown" },
+  ] as const)(
+    "applies default fallback safety for $tag",
+    async ({ tag, status, retryable, delivery }) => {
+      const adapter = samva({
+        client: injectedClient(async () => {
+          throw {
+            _tag: tag,
+            status,
+            response: new Response(null, {
+              status,
+              headers: { "x-request-id": "request_refusal" },
+            }),
+          };
+        }),
+      });
+      const error = await Promise.resolve(adapter.send(message, context)).catch(
+        (caught: unknown) => caught,
+      );
+      expect(error).toBeInstanceOf(EmailAdapterError);
+      expect(error).toMatchObject({ status, requestId: "request_refusal", retryable, delivery });
+
+      const fallbackSend = vi.fn(async () => ({ adapter: "backup", id: "backup_message" }));
+      const client = createEmailClient({
+        adapters: [
+          adapter,
+          { name: "backup", capabilities: adapter.capabilities, send: fallbackSend },
+        ],
+        fallback: { adapters: ["backup"] },
+        retry: { maxAttempts: 1 },
+        telemetry: false,
+      });
+      if (delivery === "not_sent") {
+        await expect(client.send(message)).resolves.toMatchObject({
+          adapter: "backup",
+          id: "backup_message",
+        });
+        expect(fallbackSend).toHaveBeenCalledOnce();
+      } else {
+        await expect(client.send(message)).rejects.toBeInstanceOf(EmailRouteError);
+        expect(fallbackSend).not.toHaveBeenCalled();
+      }
+    },
+  );
 
   it.each([
     { status: 408, retryable: true },
