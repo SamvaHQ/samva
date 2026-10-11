@@ -1,0 +1,47 @@
+{
+  "strictness": 2,
+  "commentTypes": ["logic", "syntax"],
+  "triggerOnUpdates": true,
+  "statusCheck": true,
+  "disabledLabels": ["no-greptile"],
+  "ignorePatterns": "**/node_modules/**\n**/.turbo/**\n**/dist/**\n**/build/**\n**/coverage/**\n**/.scratchpad/**\n**/*.tsbuildinfo\n**/bun.lock\n**/.wrangler/**\n**/.svelte-kit/**\n**/.claude/workflows/**\n**/pkg.tgz",
+  "instructions": "SamvaHQ/samva publishes integration packages, runnable examples, documentation-first cookbooks, and the Samva agent plugin. CONTRIBUTING.md owns repository conventions; each package AGENTS.md owns that package; code wins over prose. The workspace requires Bun >= 1.4.0 and Node >= 24.10.0. Review credential boundaries, lossy adapter behavior, and whether a change still belongs in a package, example, or cookbook. Skip style and anything oxlint, oxfmt, or the typechecker already enforce.",
+  "rules": [
+    {
+      "id": "integrations-server-side-keys",
+      "rule": "API keys stay on the server. Flag a key, Authorization value, or SAMVA_API_KEY in client code, a PUBLIC_ variable, a committed env file, an MCP configuration, a prompt, or an evidence file. @samva/email-sdk and @samva/better-auth do not read environment variables or load .env files; callers pass apiKey or an injected client. plugins/samva may name the public OAuth client id samva-cursor-plugin and must not embed a key. Details: CONTRIBUTING.md, packages/email-sdk/AGENTS.md, packages/better-auth/AGENTS.md, and plugins/samva/docs/auth-and-permissions.md.",
+      "scope": ["packages/**", "examples/**", "cookbooks/**", "plugins/**"],
+      "severity": "high"
+    },
+    {
+      "id": "integrations-loud-rejection",
+      "rule": "Integrations reject inputs they cannot honor instead of dropping them, and they never fall back to stub or demo delivery. @samva/email-sdk rejects custom headers, tags, sendAt, attachment path, contentId, disposition, and reply-to display names with EmailValidationError before calling Samva, and it requires an apiKey unless a client is injected. @samva/better-auth fails before send on a missing recipient, an empty HTML body, or an organization invitation without appUrl or templates.organizationInvitation, and withSamva fills only callbacks the caller left unset. Details: packages/email-sdk/AGENTS.md and packages/better-auth/AGENTS.md.",
+      "scope": ["packages/**"],
+      "severity": "high"
+    },
+    {
+      "id": "integrations-redacted-errors",
+      "rule": "Samva API and transport failures in @samva/email-sdk become a redacted EmailAdapterError. The retained fields are status, requestId, retryable, and delivery (not_sent or unknown); the message does not echo the provider body. Flag an error path that keeps a provider body, an API key, or an Authorization header. Details: packages/email-sdk/AGENTS.md.",
+      "scope": ["packages/email-sdk/**"],
+      "severity": "high"
+    },
+    {
+      "id": "integrations-ownership",
+      "rule": "A package owns its seam only. @samva/better-auth owns callback wiring and rendering; @samva/email-sdk owns normalization and the Email SDK adapter. Samva owns delivery, templates, events, and visibility. Auth token generation and validation stay in the upstream library. Webhook receivers verify signatures by default. Agent-facing outbound sends default to draft or approval. Package tests mock Samva responses instead of calling the network. Details: CONTRIBUTING.md.",
+      "scope": ["packages/**", "examples/**", "cookbooks/**"],
+      "severity": "medium"
+    },
+    {
+      "id": "integrations-surface-shape",
+      "rule": "packages/* stay publishable @samva/* integrations whose README covers install, usage, configuration, and safety notes. examples/* stay complete runnable apps. cookbooks/*.md stay documentation-first copy-paste recipes. Flag a cookbook checked in as an app, an example reduced to a snippet, or a package that ships a demo sender. Details: CONTRIBUTING.md and README.md.",
+      "scope": ["packages/**", "examples/**", "cookbooks/**"],
+      "severity": "medium"
+    },
+    {
+      "id": "integrations-workspace-runtime",
+      "rule": "The workspace floor is Bun >= 1.4.0 and Node >= 24.10.0, as declared in the root package.json engines and CONTRIBUTING.md. Flag a change that lowers that floor.",
+      "scope": ["package.json", ".github/workflows/**", "CONTRIBUTING.md"],
+      "severity": "medium"
+    }
+  ]
+}
