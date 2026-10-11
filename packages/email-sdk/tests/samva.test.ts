@@ -436,6 +436,55 @@ describe("samva", () => {
     expect(String(error)).not.toContain("provider body");
   });
 
+  it("falls back after the real Samva client decodes a sender-readiness HTTP refusal", async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            _tag: "SenderNotReadyError",
+            message: "The sender is getting ready.",
+            sender: "hello@samva.dev",
+            retryAfterSeconds: 10,
+          }),
+          {
+            status: 503,
+            headers: {
+              "content-type": "application/json",
+              "x-request-id": "request_readiness",
+              "retry-after": "10",
+            },
+          },
+        ),
+    );
+    const adapter = samva({
+      apiKey: "samva_sk_test_example",
+      baseUrl: "https://samva.test",
+      fetch: fetcher as unknown as typeof fetch,
+    });
+    await expect(adapter.send(message, context)).rejects.toMatchObject({
+      status: 503,
+      requestId: "request_readiness",
+      retryable: true,
+      delivery: "not_sent",
+    });
+    const fallbackSend = vi.fn(async () => ({ adapter: "backup", id: "backup_message" }));
+    const client = createEmailClient({
+      adapters: [
+        adapter,
+        { name: "backup", capabilities: adapter.capabilities, send: fallbackSend },
+      ],
+      fallback: { adapters: ["backup"] },
+      retry: { maxAttempts: 1 },
+      telemetry: false,
+    });
+    await expect(client.send(message)).resolves.toMatchObject({
+      adapter: "backup",
+      id: "backup_message",
+    });
+    expect(fallbackSend).toHaveBeenCalledOnce();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
   it.each([
     { tag: "SenderNotReadyError", status: 503, retryable: true, delivery: "not_sent" },
     { tag: "RateLimitedError", status: 429, retryable: true, delivery: "not_sent" },
