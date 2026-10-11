@@ -1,3 +1,11 @@
+## @samva/email-sdk@0.4.0
+
+### Preserve safe fallback for sender readiness
+
+Classify `SenderNotReadyError` as `delivery: "not_sent"` so Email SDK can safely fall back to another provider when a Samva sending identity is still getting ready.
+
+Require the Samva SDK 0.13 series so consumers can receive the typed sender-readiness error.
+
 ## @samva/email-sdk@0.3.0
 
 ### Target the Samva 0.11 SDK
