@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "path": "CONTRIBUTING.md",
+      "description": "Repository conventions: Bun >= 1.4.0 and Node >= 24.10.0, published @samva/* packages, runnable examples, documentation-first cookbooks, loud rejection, and webhook verification.",
+      "scope": ["**/*"]
+    },
+    {
+      "path": "README.md",
+      "description": "Repository map for packages, examples, cookbooks, and the agent plugin.",
+      "scope": ["**/*"]
+    },
+    {
+      "path": "packages/better-auth/AGENTS.md",
+      "description": "Better Auth callback wiring: server-side API keys, missing-callback fills, and loud failures before send.",
+      "scope": ["packages/better-auth/**"]
+    },
+    {
+      "path": "packages/email-sdk/AGENTS.md",
+      "description": "Email SDK adapter: loud rejection of unsupported fields, redacted EmailAdapterError, and no env loading.",
+      "scope": ["packages/email-sdk/**"]
+    }
+  ]
+}
