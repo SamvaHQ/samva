@@ -28,7 +28,12 @@ export default defineExtension({
 
       // The client derives the Idempotency-Key from the event id, so a retry cannot double-send.
       const receipt = await samva.messages.reply(received.mailboxId, received.messageId, { text });
-      log(receipt.status, receipt.actionId);
+      if (receipt.state === "approvalRequired") {
+        log("Waiting for approval", receipt.actionId);
+      } else {
+        const action = await samva.actions.get(received.mailboxId, receipt.actionId);
+        log(action.state, receipt.actionId);
+      }
     },
   },
 });

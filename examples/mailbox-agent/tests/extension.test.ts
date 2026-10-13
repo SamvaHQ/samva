@@ -33,7 +33,9 @@ test("replies to the received message with an event-derived idempotency key", as
   const client = createTestClient({
     "POST /v1/mailboxes/mbx_01/messages/msg_01/reply": {
       actionId: "mbxact_01",
-      status: "pending_approval",
+      state: "approvalRequired",
+      messageId: null,
+      acceptedAt: null,
     },
   });
 
@@ -45,7 +47,7 @@ test("replies to the received message with an event-derived idempotency key", as
   assert.equal(call?.method, "POST");
   assert.equal(call?.path, "/v1/mailboxes/mbx_01/messages/msg_01/reply");
   assert.equal(call?.idempotencyKey, `${event.id}:reply:1`);
-  assert.deepEqual(result.logs, ["pending_approval mbxact_01"]);
+  assert.deepEqual(result.logs, ["Waiting for approval mbxact_01"]);
 });
 
 test("does not reply to an automated sender", async () => {
@@ -55,4 +57,37 @@ test("does not reply to an automated sender", async () => {
 
   assert.equal(result.ok, true);
   assert.equal(result.calls.length, 0);
+});
+
+test("follows a queued reply action instead of reporting a sent message", async () => {
+  const result = await runExtension(extension, receivedEvent(), {
+    client: createTestClient({
+      "POST /v1/mailboxes/mbx_01/messages/msg_01/reply": {
+        actionId: "mbxact_01",
+        state: "queued",
+        messageId: null,
+        acceptedAt: null,
+        problem: {
+          code: "rateLimited",
+          message: "Wait for rate capacity",
+          error: {
+            _tag: "RateLimitedError",
+            message: "Wait for rate capacity",
+            retryAfterSeconds: 10,
+          },
+        },
+      },
+      "GET /v1/mailboxes/mbx_01/actions/mbxact_01": { id: "mbxact_01", state: "queued" },
+    }),
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    result.calls.map(({ method, path }) => ({ method, path })),
+    [
+      { method: "POST", path: "/v1/mailboxes/mbx_01/messages/msg_01/reply" },
+      { method: "GET", path: "/v1/mailboxes/mbx_01/actions/mbxact_01" },
+    ],
+  );
+  assert.deepEqual(result.logs, ["queued mbxact_01"]);
 });

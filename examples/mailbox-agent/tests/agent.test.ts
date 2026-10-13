@@ -1,10 +1,10 @@
 import { strict as assert } from "node:assert";
 
 import { MailboxEventStreamError } from "samva";
-import type { MailboxEvent, MailboxEventStreamOptions } from "samva";
+import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
 import { test } from "vitest";
 
-import { runMailboxAgent } from "../src/agent";
+import { handleEvent, runMailboxAgent } from "../src/agent";
 import type { CursorStore, MailboxAgentClient } from "../src/agent";
 
 const received = (id: string, overrides: Record<string, unknown> = {}): MailboxEvent => ({
@@ -53,9 +53,34 @@ const failing = (tag: "CursorExpiredError" | "UnauthorizedError"): Stream =>
     throw new MailboxEventStreamError({ _tag: tag, message: tag });
   };
 
-const createHarness = (streams: ReadonlyArray<Stream>) => {
+const sendReceipt = (
+  state: MailboxSendReceipt["state"] = "approvalRequired",
+): MailboxSendReceipt => ({
+  actionId: "mbxact_01",
+  state,
+  messageId: state === "accepted" || state === "completed" ? "msg_reply" : null,
+  acceptedAt: state === "accepted" || state === "completed" ? "2026-10-13T12:00:00.000Z" : null,
+  draftId: null,
+  threadId: "thr_01",
+  executeUntil: state === "approvalRequired" ? null : "2026-10-13T12:15:00.000Z",
+  retryAt: null,
+  problem: null,
+  retryEligible: false,
+  decision: null,
+  waitReason: null,
+  reviewExpectedAt: null,
+  skippedRecipients: [],
+  createdAt: "2026-10-13T12:00:00.000Z",
+  updatedAt: "2026-10-13T12:00:00.000Z",
+});
+
+const createHarness = (
+  streams: ReadonlyArray<Stream>,
+  actionState: MailboxSendReceipt["state"] = "queued",
+) => {
   const replies: Array<Record<string, unknown>> = [];
   const connects: MailboxEventStreamOptions[] = [];
+  const actionReads: Array<{ id: string; actionId: string }> = [];
   let next = 0;
   const client: MailboxAgentClient = {
     mailboxes: {
@@ -67,12 +92,29 @@ const createHarness = (streams: ReadonlyArray<Stream>) => {
       },
       reply: async (params) => {
         replies.push(params);
-        return { status: "pending_approval", actionId: "mbxact_01" };
+        return sendReceipt();
+      },
+      getAction: async (params) => {
+        actionReads.push(params);
+        return {
+          id: params.actionId,
+          type: "reply",
+          state: actionState,
+          send: sendReceipt(actionState),
+          intent: null,
+          source: "externalAgent",
+          proposedBy: { kind: "apiKey", id: "key_01" },
+          threadId: "thr_01",
+          draftId: null,
+          decision: null,
+          createdAt: "2026-10-13T12:00:00.000Z",
+          updatedAt: "2026-10-13T12:00:00.000Z",
+        };
       },
       listThreads: async () => ({ items: [{ id: "thr_01" }] }),
     },
   };
-  return { client, replies, connects };
+  return { client, replies, connects, actionReads };
 };
 
 test("replies in approval mode and saves the cursor after handling", async () => {
@@ -144,4 +186,35 @@ test("rethrows other stream errors", async () => {
   const { store } = memoryStore();
 
   await assert.rejects(runMailboxAgent(client, { mailboxId: "mbx_01", store, log: () => {} }));
+});
+
+test.each(["queued", "accepted", "completed", "notSent", "uncertain"] as const)(
+  "follows a %s receipt without claiming recipient delivery",
+  async (state) => {
+    const { client, actionReads } = createHarness([], state);
+    client.mailboxes.reply = async () => sendReceipt(state);
+    const lines: string[] = [];
+
+    await handleEvent(client, received("evt_1"), (line) => lines.push(line));
+
+    assert.deepEqual(actionReads, [{ id: "mbx_01", actionId: "mbxact_01" }]);
+    assert.deepEqual(lines, [`reply to msg_evt_1: ${state}, action mbxact_01`]);
+  },
+);
+
+test("replays a lost reply response with the same key and body", async () => {
+  const { client } = createHarness([]);
+  const calls: unknown[] = [];
+  client.mailboxes.reply = async (params) => {
+    calls.push(params);
+    if (calls.length === 1) throw new Error("response lost");
+    return sendReceipt();
+  };
+  const event = received("evt_1");
+
+  await assert.rejects(handleEvent(client, event, () => {}));
+  await handleEvent(client, event, () => {});
+
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0], calls[1]);
 });
