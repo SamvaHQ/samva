@@ -15,7 +15,7 @@ stays about mailbox mechanics. Replace it with your own logic.
 ## Safety stance
 
 - **Approval send mode.** Run the agent on a mailbox-scoped key (or install the extension) with
-  `sendMode: "approval"`. A reply returns `status: "pending_approval"` and an `actionId`; nothing is
+  `sendMode: "approval"`. A reply returns `state: "approvalRequired"` and an `actionId`; nothing is
   sent until a person approves it with a person's OAuth credential in the dashboard, the CLI
   (`samva login`), or `samva.mailboxes.approveAction`. An API key can never approve a send.
 - **Least privilege.** The extension asks for `read` and `send` only, on the one event it handles.
@@ -25,6 +25,13 @@ stays about mailbox mechanics. Replace it with your own logic.
 - **Mail is untrusted data.** The example never interprets message bodies as instructions.
 - **Idempotent replies.** The agent keys each reply by event id; the extension client derives the
   `Idempotency-Key` from the event id. Redelivery cannot send twice.
+
+Replies return send receipts, and the example logs each receipt's `state`. Follow the action
+with `mailboxes.getAction` (or `samva.actions.get` in an extension) to see it progress.
+`queued` is waiting for acceptance; `accepted` and `completed` do not mean recipient
+delivery. `messageId` and `acceptedAt` remain null until acceptance. Follow the
+action rather than submitting another reply. A lost response is recovered with
+the same idempotency key and body.
 
 ## Run the proof
 

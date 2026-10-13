@@ -22,7 +22,7 @@ bun add samva
 bun add @samva/mailbox # only to author extensions
 ```
 
-`samva.mailboxes` needs `samva` 0.11 or later.
+These examples use `samva` 0.14 or later and `@samva/mailbox` 0.2 or later.
 
 ## Create a mailbox and a scoped key
 
@@ -101,10 +101,31 @@ const receipt = await samva.mailboxes.reply({
   "idempotency-key": `reply:${event.id}`,
 });
 
-if (receipt.status === "pending_approval") {
+if (receipt.state === "approvalRequired") {
   console.log("Waiting for a person to approve", receipt.actionId);
+} else {
+  const action = await samva.mailboxes.getAction({ id: mailbox.id, actionId: receipt.actionId });
+  console.log(action.state);
 }
 ```
+
+Mailbox sends, replies, reply-all, forwards, and draft sends return a receipt with
+`state`: `approvalRequired`, `queued`, `accepted`, `completed`, `notSent`, or `uncertain`.
+HTTP 202 means the action is in progress. `messageId` and `acceptedAt` are null until
+acceptance; `accepted` and `completed` do not mean recipient delivery. Follow the
+same action with `mailboxes.getAction({ id, actionId })`; send actions include the
+receipt under `send`. `approveAction` returns an action with this nested receipt.
+
+Rate limits, sender readiness, and pending onboarding review queue the send for
+automatic retry until `executeUntil`. Read `retryAt` and `problem.error._tag` for the
+wait and its cause. Policy refusal returns 403, validation 422, and competing
+actions 409. If a response is lost, repeat the same idempotency key and body.
+Do not submit a replacement send to recover accepted or uncertain work.
+
+Only a permitted person can call `mailboxes.cancelAction({ id, actionId })` or
+`mailboxes.retryAction({ id, actionId })`. Cancel requires a definitely unsent action;
+retry requires an eligible ended execution and preserves the content and deadline.
+Automatic waits need no manual retry.
 
 In approval mode nothing is sent until a person decides. Deciding needs a
 person's OAuth credential, never an API key:
@@ -121,7 +142,7 @@ await person.mailboxes.approveAction({ id: mailbox.id, actionId: waiting.items[0
 ```
 
 Key the reply by the event id. Events are delivered at least once, and a retry
-with the same key returns the original receipt.
+with the same key and body returns the original action's current receipt.
 
 ## Extensions
 
@@ -145,7 +166,7 @@ export default defineExtension({
       const receipt = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
         text: "Thanks, we got it.",
       });
-      log(receipt.status, receipt.actionId);
+      log(receipt.state, receipt.actionId);
     },
   },
 });

@@ -13,7 +13,7 @@
     },
     "bundle": {
       "algorithm": "sha256-file-list-v1",
-      "digest": "sha256:a2dd0f44275b84bc8bf0f74e11fe6f817af7b0f686e352a2c63fb16bb18b8078"
+      "digest": "sha256:28408c161fd9ea132d2e5a00194e6b7e72dc471e2ed4c4cc77373250e012d163"
     }
   }
 }

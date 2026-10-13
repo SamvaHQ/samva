@@ -121,6 +121,8 @@ const signedRequest = async (secret: string, data: Record<string, unknown>) => {
 
 const replyData = (overrides: Record<string, unknown> = {}) => ({
   messageId: "msg_inbound",
+  channel: "email",
+  organizationId: "org_01",
   conversationId: "conv_01",
   from: "ada@example.com",
   subject: "Question",

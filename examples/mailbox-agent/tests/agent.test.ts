@@ -1,10 +1,10 @@
 import { strict as assert } from "node:assert";
 
 import { MailboxEventStreamError } from "samva";
-import type { MailboxEvent, MailboxEventStreamOptions } from "samva";
+import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
 import { test } from "vitest";
 
-import { runMailboxAgent } from "../src/agent";
+import { handleEvent, runMailboxAgent } from "../src/agent";
 import type { CursorStore, MailboxAgentClient } from "../src/agent";
 
 const received = (id: string, overrides: Record<string, unknown> = {}): MailboxEvent => ({
@@ -53,6 +53,27 @@ const failing = (tag: "CursorExpiredError" | "UnauthorizedError"): Stream =>
     throw new MailboxEventStreamError({ _tag: tag, message: tag });
   };
 
+const sendReceipt = (
+  state: MailboxSendReceipt["state"] = "approvalRequired",
+): MailboxSendReceipt => ({
+  actionId: "mbxact_01",
+  state,
+  messageId: state === "accepted" || state === "completed" ? "msg_reply" : null,
+  acceptedAt: state === "accepted" || state === "completed" ? "2026-10-13T12:00:00.000Z" : null,
+  draftId: null,
+  threadId: "thr_01",
+  executeUntil: state === "approvalRequired" ? null : "2026-10-13T12:15:00.000Z",
+  retryAt: null,
+  problem: null,
+  retryEligible: false,
+  decision: null,
+  waitReason: null,
+  reviewExpectedAt: null,
+  skippedRecipients: [],
+  createdAt: "2026-10-13T12:00:00.000Z",
+  updatedAt: "2026-10-13T12:00:00.000Z",
+});
+
 const createHarness = (streams: ReadonlyArray<Stream>) => {
   const replies: Array<Record<string, unknown>> = [];
   const connects: MailboxEventStreamOptions[] = [];
@@ -67,7 +88,7 @@ const createHarness = (streams: ReadonlyArray<Stream>) => {
       },
       reply: async (params) => {
         replies.push(params);
-        return { status: "pending_approval", actionId: "mbxact_01" };
+        return sendReceipt();
       },
       listThreads: async () => ({ items: [{ id: "thr_01" }] }),
     },
@@ -86,7 +107,7 @@ test("replies in approval mode and saves the cursor after handling", async () =>
   assert.equal(replies[0]?.["idempotency-key"], "reply:evt_1");
   assert.equal(replies[0]?.messageId, "msg_evt_1");
   assert.deepEqual(saved, ["cursor-evt_1"]);
-  assert.match(lines[0] ?? "", /waits for approval: action mbxact_01/);
+  assert.match(lines[0] ?? "", /approvalRequired, action mbxact_01/);
 });
 
 test("resumes from the stored cursor and scopes the stream to one mailbox", async () => {
@@ -144,4 +165,34 @@ test("rethrows other stream errors", async () => {
   const { store } = memoryStore();
 
   await assert.rejects(runMailboxAgent(client, { mailboxId: "mbx_01", store, log: () => {} }));
+});
+
+test.each(["queued", "accepted", "completed", "notSent", "uncertain"] as const)(
+  "logs a %s receipt without claiming recipient delivery",
+  async (state) => {
+    const { client } = createHarness([]);
+    client.mailboxes.reply = async () => sendReceipt(state);
+    const lines: string[] = [];
+
+    await handleEvent(client, received("evt_1"), (line) => lines.push(line));
+
+    assert.deepEqual(lines, [`reply to msg_evt_1: ${state}, action mbxact_01`]);
+  },
+);
+
+test("replays a lost reply response with the same key and body", async () => {
+  const { client } = createHarness([]);
+  const calls: unknown[] = [];
+  client.mailboxes.reply = async (params) => {
+    calls.push(params);
+    if (calls.length === 1) throw new Error("response lost");
+    return sendReceipt();
+  };
+  const event = received("evt_1");
+
+  await assert.rejects(handleEvent(client, event, () => {}));
+  await handleEvent(client, event, () => {});
+
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0], calls[1]);
 });
