@@ -20,10 +20,11 @@ export default defineExtension({
   },
   on: {
     "mailbox.message.received": async (event, { samva, log }) => {
-      await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
+      const reply = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
         text: "Thanks, we got it.",
       });
-      log("Acknowledged", event.data.message.id);
+      // "approvalRequired" waits for a person; "queued" retries until it sends.
+      log(`Reply ${reply.state}`, event.data.message.id);
     },
   },
 });
