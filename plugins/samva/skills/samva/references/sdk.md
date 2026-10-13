@@ -161,12 +161,16 @@ Create the mailbox with a full-access key, then run the agent on a restricted `m
 
 ```typescript
 const mailbox = await samva.mailboxes.create({
-  address: "support@acme.samva.email",
+  endpoint: { channel: "email", address: "support@acme.samva.email" },
   name: "Support",
 });
 
-// A mailbox starts with one address. Add or remove others by the address id.
-await samva.mailboxes.createAddress({ id: mailbox.id, address: "billing@acme.samva.email" });
+// A mailbox starts with one endpoint. Add, update, or remove others by the endpoint id.
+await samva.mailboxes.createEndpoint({
+  id: mailbox.id,
+  channel: "email",
+  address: "billing@acme.samva.email",
+});
 
 const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: "true", limit: "20" });
 for (const { id: threadId } of threads.items) {
