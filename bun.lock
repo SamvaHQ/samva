@@ -251,7 +251,7 @@
     },
     "packages/email-sdk": {
       "name": "@samva/email-sdk",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "devDependencies": {
         "@opencoredev/email-sdk": "^1.1.0",
         "samva": "^0.14.0",
