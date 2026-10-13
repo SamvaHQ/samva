@@ -35,9 +35,8 @@ import { createClient } from "samva";
 const samva = createClient({ apiKey: process.env.SAMVA_ADMIN_API_KEY! });
 
 const mailbox = await samva.mailboxes.create({
-  slug: "support",
-  displayName: "Support",
-  addresses: [{ address: "support@acme.samva.email" }],
+  address: "support@acme.samva.email",
+  name: "Support",
 });
 
 const key = await samva.apiKeys.create({

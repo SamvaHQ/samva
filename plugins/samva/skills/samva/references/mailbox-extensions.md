@@ -20,15 +20,10 @@ export default defineExtension({
   },
   on: {
     "mailbox.message.received": async (event, { samva, log }) => {
-      const receipt = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
+      await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
         text: "Thanks, we got it.",
       });
-      if (receipt.state === "approvalRequired") {
-        log("Waiting for approval", receipt.actionId);
-      } else {
-        const action = await samva.actions.get(event.data.mailboxId, receipt.actionId);
-        log(action.state, receipt.actionId);
-      }
+      log("Acknowledged", event.data.message.id);
     },
   },
 });
@@ -40,29 +35,11 @@ export default defineExtension({
   `mailbox.action.pending_approval`, `mailbox.message.quarantined`, `mailbox.message.released`,
   `mailbox.message.discarded`.
 - The context has `samva`, `log(...)`, `event`, and `attempt`. The `samva` client exposes
-  `messages.get|reply|replyAll|forward|send`, `actions.get`, and `threads.get|list|messages|content|update`.
+  `messages.get|reply|replyAll|forward|send`, `actions.get|cancel|retry`, and
+  `threads.get|list|messages|content|update`.
 - Sends carry an `Idempotency-Key` of `<event id>:<method>:<n>`, so a rerun that makes the same
   calls in the same order does not send twice. Keep send order and inputs stable across retries, or
   pass your own `idempotencyKey`. Other side effects need their own deduplication. Throwing fails the event and Samva retries.
-
-Sends return a receipt with `state` and `actionId`. `messageId` and `acceptedAt`
-are null until acceptance. Follow `samva.actions.get(mailboxId, actionId)`;
-`accepted` and `completed` do not mean recipient delivery. Rate limits, sender
-readiness, and pending onboarding review wait automatically until `executeUntil`.
-`problem.error` is a `SendRefusal` (exported by `@samva/mailbox`); narrow by `_tag`:
-
-```typescript
-const refusal = receipt.problem?.error;
-if (refusal?._tag === "RateLimitedError") {
-  log("Queued", refusal.retryAfterSeconds, receipt.retryAt);
-}
-```
-
-Policy refusal returns 403, validation 422, and competing actions 409. Recover a
-lost response with the same idempotency key and body. `actions.cancel` and
-`actions.retry` require a permitted person; an extension cannot use them.
-`mailbox.action.pending_approval` is the approval event; its action state is
-`approvalRequired`. `mailbox.message.sent` reports mailbox completion.
 
 ## Run
 
