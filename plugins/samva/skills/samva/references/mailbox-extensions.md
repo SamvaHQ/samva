@@ -23,7 +23,7 @@ export default defineExtension({
       const reply = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
         text: "Thanks, we got it.",
       });
-      // "approvalRequired" waits for a person; "queued" retries until it sends.
+      // "approvalRequired" waits for a person; "queued" retries until its `executeUntil` deadline.
       log(`Reply ${reply.state}`, event.data.message.id);
     },
   },
