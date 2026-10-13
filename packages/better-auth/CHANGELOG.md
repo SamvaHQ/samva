@@ -1,3 +1,9 @@
+## @samva/better-auth@0.4.0
+
+### Require Samva 0.15
+
+The integrations require `samva` 0.15 for their SDK dependency.
+
 ## @samva/better-auth@0.3.0
 
 ### Target the Samva 0.11 SDK

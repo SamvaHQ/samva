@@ -1,3 +1,9 @@
+## @samva/email-sdk@0.5.0
+
+### Require Samva 0.15
+
+The integrations require `samva` 0.15 for their SDK dependency.
+
 ## @samva/email-sdk@0.4.0
 
 ### Preserve safe fallback for sender readiness
