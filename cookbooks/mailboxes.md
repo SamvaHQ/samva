@@ -22,7 +22,7 @@ bun add samva
 bun add @samva/mailbox # only to author extensions
 ```
 
-These examples use `samva` 0.14 or later and `@samva/mailbox` 0.2 or later.
+These examples use `samva` 0.15 or later and `@samva/mailbox` 0.2.1 or later.
 
 ## Create a mailbox and a scoped key
 
@@ -35,9 +35,8 @@ import { createClient } from "samva";
 const samva = createClient({ apiKey: process.env.SAMVA_ADMIN_API_KEY! });
 
 const mailbox = await samva.mailboxes.create({
-  slug: "support",
-  displayName: "Support",
-  addresses: [{ address: "support@acme.samva.email" }],
+  address: "support@acme.samva.email",
+  name: "Support",
 });
 
 const key = await samva.apiKeys.create({
