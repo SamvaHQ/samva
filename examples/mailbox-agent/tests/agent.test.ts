@@ -74,13 +74,9 @@ const sendReceipt = (
   updatedAt: "2026-10-13T12:00:00.000Z",
 });
 
-const createHarness = (
-  streams: ReadonlyArray<Stream>,
-  actionState: MailboxSendReceipt["state"] = "queued",
-) => {
+const createHarness = (streams: ReadonlyArray<Stream>) => {
   const replies: Array<Record<string, unknown>> = [];
   const connects: MailboxEventStreamOptions[] = [];
-  const actionReads: Array<{ id: string; actionId: string }> = [];
   let next = 0;
   const client: MailboxAgentClient = {
     mailboxes: {
@@ -94,27 +90,10 @@ const createHarness = (
         replies.push(params);
         return sendReceipt();
       },
-      getAction: async (params) => {
-        actionReads.push(params);
-        return {
-          id: params.actionId,
-          type: "reply",
-          state: actionState,
-          send: sendReceipt(actionState),
-          intent: null,
-          source: "externalAgent",
-          proposedBy: { kind: "apiKey", id: "key_01" },
-          threadId: "thr_01",
-          draftId: null,
-          decision: null,
-          createdAt: "2026-10-13T12:00:00.000Z",
-          updatedAt: "2026-10-13T12:00:00.000Z",
-        };
-      },
       listThreads: async () => ({ items: [{ id: "thr_01" }] }),
     },
   };
-  return { client, replies, connects, actionReads };
+  return { client, replies, connects };
 };
 
 test("replies in approval mode and saves the cursor after handling", async () => {
@@ -128,7 +107,7 @@ test("replies in approval mode and saves the cursor after handling", async () =>
   assert.equal(replies[0]?.["idempotency-key"], "reply:evt_1");
   assert.equal(replies[0]?.messageId, "msg_evt_1");
   assert.deepEqual(saved, ["cursor-evt_1"]);
-  assert.match(lines[0] ?? "", /waits for approval: action mbxact_01/);
+  assert.match(lines[0] ?? "", /approvalRequired, action mbxact_01/);
 });
 
 test("resumes from the stored cursor and scopes the stream to one mailbox", async () => {
@@ -189,15 +168,14 @@ test("rethrows other stream errors", async () => {
 });
 
 test.each(["queued", "accepted", "completed", "notSent", "uncertain"] as const)(
-  "follows a %s receipt without claiming recipient delivery",
+  "logs a %s receipt without claiming recipient delivery",
   async (state) => {
-    const { client, actionReads } = createHarness([], state);
+    const { client } = createHarness([]);
     client.mailboxes.reply = async () => sendReceipt(state);
     const lines: string[] = [];
 
     await handleEvent(client, received("evt_1"), (line) => lines.push(line));
 
-    assert.deepEqual(actionReads, [{ id: "mbx_01", actionId: "mbxact_01" }]);
     assert.deepEqual(lines, [`reply to msg_evt_1: ${state}, action mbxact_01`]);
   },
 );

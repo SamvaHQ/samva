@@ -1,7 +1,7 @@
 ---
 packages:
-  "@samva/better-auth": patch
-  "@samva/email-sdk": patch
+  "@samva/better-auth": minor
+  "@samva/email-sdk": minor
 ---
 
 ## Require Samva 0.14

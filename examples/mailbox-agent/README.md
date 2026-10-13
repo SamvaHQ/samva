@@ -26,8 +26,8 @@ stays about mailbox mechanics. Replace it with your own logic.
 - **Idempotent replies.** The agent keys each reply by event id; the extension client derives the
   `Idempotency-Key` from the event id. Redelivery cannot send twice.
 
-Replies return send receipts. The example branches on `state` and reads non-approval
-actions with `mailboxes.getAction` (or `samva.actions.get` in the extension).
+Replies return send receipts, and the example logs each receipt's `state`. Follow the action
+with `mailboxes.getAction` (or `samva.actions.get` in an extension) to see it progress.
 `queued` is waiting for acceptance; `accepted` and `completed` do not mean recipient
 delivery. `messageId` and `acceptedAt` remain null until acceptance. Follow the
 action rather than submitting another reply. A lost response is recovered with

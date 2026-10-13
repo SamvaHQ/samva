@@ -1,10 +1,5 @@
 import { MailboxEventStreamError } from "samva";
-import type {
-  MailboxAction,
-  MailboxEvent,
-  MailboxEventStreamOptions,
-  MailboxSendReceipt,
-} from "samva";
+import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
 
 import { composeReply, parseReceivedMessage } from "./reply";
 
@@ -25,7 +20,6 @@ export interface MailboxAgentClient {
       text: string;
       "idempotency-key": string;
     }): Promise<MailboxSendReceipt>;
-    getAction(params: { id: string; actionId: string }): Promise<MailboxAction>;
     listThreads(params: {
       id: string;
       unread: "true";
@@ -66,15 +60,8 @@ export const handleEvent = async (
     "idempotency-key": `reply:${event.id}`,
   });
 
-  if (receipt.state === "approvalRequired") {
-    log(`reply to ${received.messageId} waits for approval: action ${receipt.actionId}`);
-  } else {
-    const action = await client.mailboxes.getAction({
-      id: received.mailboxId,
-      actionId: receipt.actionId,
-    });
-    log(`reply to ${received.messageId}: ${action.state}, action ${receipt.actionId}`);
-  }
+  // `queued` is not acceptance, and `accepted` is not recipient delivery; follow the action for both.
+  log(`reply to ${received.messageId}: ${receipt.state}, action ${receipt.actionId}`);
 };
 
 /**
