@@ -20,6 +20,8 @@ Use Samva's organization-scoped email surfaces for transactional sends,
 templates, scheduled email, campaigns, inbound receiving, webhooks, mailboxes for agents, and
 operational checks.
 
+SDK guidance targets Samva 0.18, the only supported SDK minor.
+
 ## Choose the surface
 
 ```text

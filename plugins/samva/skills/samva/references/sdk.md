@@ -2,6 +2,7 @@
 
 Use the Promise SDK for async/await TypeScript and the native Effect SDK for Effect applications.
 Both ship in the **`samva`** npm package and call `https://api.samva.dev`.
+These integrations support only the current SDK minor, Samva 0.18.
 
 - [Install](#install)
 - [Promise client](#promise-client)
@@ -14,13 +15,13 @@ Both ship in the **`samva`** npm package and call `https://api.samva.dev`.
 ## Install
 
 ```bash
-npm install samva
+npm install samva@^0.18.0
 ```
 
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect@4.0.0
+bun add samva@^0.18.0 effect@4.0.0
 ```
 
 ## Promise client
@@ -62,6 +63,10 @@ const message = await samva.email.send(
 
 console.log("Message id:", message.id);
 ```
+
+`email.send` and `messages.send` return a `MessageReceipt`: `id`, `status`,
+`waitReason`, `reviewExpectedAt`, `skippedRecipients`, and `createdAt`. Fetch
+message details or delivery status separately when needed.
 
 Ergonomic calls return decoded success values directly. API failures throw generated plain-JavaScript
 classes:
@@ -116,7 +121,10 @@ Provide `Client.layerFetch(...)` once around the program that uses Samva. Import
 the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 `Contacts.findOrCreate(...)`. Paginated operations expose `pages` and `items` Streams. Page and
 limit inputs use their public wire-string representation. Only annotated absolute instants become
-`Date`; sensitive outputs become `Redacted`.
+`Date` (such as `ScheduledMessages.get`'s `scheduledFor`); sensitive outputs become
+`Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
+where the secret is needed. Unannotated timestamps stay strings, including
+`MessageReceipt.createdAt` returned by `Email.send`.
 
 ## Send to a contact
 
@@ -242,12 +250,13 @@ With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that f
 
 ## Other services
 
-The client's namespaces are `analytics`, `apiKeys`, `attachments`, `campaigns`,
+The client's namespaces are `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
 `contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
 facade plus domains, senders, tracking, review, and blocks),
-`extensionInstallations`, `extensions`, `mailboxes`, `media`, `messages`,
-`namespaces`, `operations`, `organizations`, `scheduledMessages`, `templates`,
-`unsubscribeGroups`, and `webhooks`. Each method is named for the API operation
+`events`, `extensionInstallations`, `extensions`, `feedback`, `journeys`,
+`mailboxes`, `media`, `messages`,
+`namespaces`, `operations`, `organizations`, `scheduledMessages`, `subscriptions`, `templates`,
+`unsubscribeGroups`, `webhooks`, and `whoami`. Each method is named for the API operation
 it calls, so `samva.contacts.bulkImport` is documented at
 `https://samva.dev/docs/api-reference/contacts/bulkImport`. All methods take
 flat parameters, return decoded success values, and throw typed errors. The
