@@ -13,7 +13,7 @@ import {
   SamvaTransportError,
   ValidationError,
 } from "samva";
-import type { SamvaClient } from "samva";
+import type { MessageReceipt, SamvaClient } from "samva";
 import { describe, expect, it, vi } from "vitest";
 
 import { samva, samvaPlugin } from "../src";
@@ -58,7 +58,14 @@ describe("samva", () => {
   });
 
   it("maps supported fields exactly and normalizes the result", async () => {
-    const raw = { id: "message_1", status: "queued", recipients: [{ status: "queued" }] };
+    const raw = {
+      id: "message_1",
+      status: "queued",
+      waitReason: null,
+      reviewExpectedAt: null,
+      skippedRecipients: [],
+      createdAt: "2026-10-16T12:00:00.000Z",
+    } satisfies MessageReceipt;
     const send = vi.fn(async (_payload: unknown, _options?: { signal?: AbortSignal }) => raw);
     const adapter = samva({ client: injectedClient(send) });
 
@@ -273,7 +280,15 @@ describe("samva", () => {
     let request: Request | undefined;
     const fetcher = vi.fn(async (input: RequestInfo | URL) => {
       request = input as Request;
-      return new Response(JSON.stringify({ id: "message_http" }), {
+      const receipt = {
+        id: "message_http",
+        status: "queued",
+        waitReason: null,
+        reviewExpectedAt: null,
+        skippedRecipients: [{ address: "linus@example.com", reason: "unsubscribe" }],
+        createdAt: "2026-10-16T12:00:00.000Z",
+      } satisfies MessageReceipt;
+      return new Response(JSON.stringify(receipt), {
         status: 201,
         headers: { "content-type": "application/json" },
       });
@@ -286,9 +301,20 @@ describe("samva", () => {
       headers: { "x-adapter-test": "yes" },
     });
 
-    await expect(
-      adapter.send(message, { ...context, signal: controller.signal }),
-    ).resolves.toMatchObject({ adapter: "samva", id: "message_http" });
+    await expect(adapter.send(message, { ...context, signal: controller.signal })).resolves.toEqual(
+      {
+        adapter: "samva",
+        id: "message_http",
+        raw: {
+          id: "message_http",
+          status: "queued",
+          waitReason: null,
+          reviewExpectedAt: null,
+          skippedRecipients: [{ address: "linus@example.com", reason: "unsubscribe" }],
+          createdAt: "2026-10-16T12:00:00.000Z",
+        },
+      },
+    );
     expect(fetcher).toHaveBeenCalledOnce();
     expect(request && new URL(request.url).origin).toBe("https://samva.test");
     expect(request?.headers.get("x-api-key")).toBe("samva_sk_test_example");
