@@ -222,11 +222,11 @@
       "name": "tsx-template-samva",
       "version": "0.0.0",
       "dependencies": {
-        "@samva/markup": "^0.11.0",
+        "@samva/markup": "^0.13.0",
       },
       "devDependencies": {
-        "@samva/cli": "^0.12.0",
-        "@samva/vite": "^0.11.0",
+        "@samva/cli": "^0.14.0",
+        "@samva/vite": "^0.13.0",
         "@types/node": "^22.0.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
@@ -234,7 +234,7 @@
     },
     "packages/better-auth": {
       "name": "@samva/better-auth",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "devDependencies": {
         "@react-email/render": "^2.0.0",
         "better-auth": "^1.7.2",
@@ -251,7 +251,7 @@
     },
     "packages/email-sdk": {
       "name": "@samva/email-sdk",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "devDependencies": {
         "@opencoredev/email-sdk": "^1.1.0",
         "samva": "^0.18.0",
@@ -815,23 +815,23 @@
 
     "@samva/better-auth": ["@samva/better-auth@workspace:packages/better-auth"],
 
-    "@samva/cli": ["@samva/cli@0.12.0", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.12.0", "@samva/cli-darwin-x64": "0.12.0", "@samva/cli-linux-arm64": "0.12.0", "@samva/cli-linux-x64": "0.12.0" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-ymhCIx9mY0SXeFfW7OLWGxO/oHAaFkGAPaQmpPWTq6oRrqIVBJaObxbdTxhQN/UmW1mgFmBPRaGnlp4S3KoU9w=="],
+    "@samva/cli": ["@samva/cli@0.14.0", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.14.0", "@samva/cli-darwin-x64": "0.14.0", "@samva/cli-linux-arm64": "0.14.0", "@samva/cli-linux-x64": "0.14.0" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-gfPRJDRX+eHI4IVygQ4TgT9xCjMMR5ZmhItKFetOTi+6nQq4yD3gMSICTDEc4i+n3H7TdfcpuUWFBbTzLTAOeA=="],
 
-    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.12.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tMVECTkAVBDGiMPv2Mno94MBH6m6xry4QgI8qy3kyVEPtLw/9v20kjjzaau5VKvvv/1YGBaMa2cjbbzEgmUF2w=="],
+    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.14.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-zkc5YA6fuN2KrrvV8QHSodlneKavRPvIuIEEVYjAWYJHg9r97x2bpn9OhjeRbbjKJt5Bg8qteNLzUGJEDR/HOQ=="],
 
-    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.12.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-g0u+cGgjigXS3gUzVWBbTx1W8T/7GriR4p6Ub8OCj06CmV8UaOKsFmMRRb7rfaZZ3PGUVpwuz90issaoDFhiFQ=="],
+    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.14.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-uVpmwPWyldL6Q0o5DYyhpv2W66Tp0TAnCY/djzIqFWZeyweovToQi3L5lAbqfwazDD6mYDvQ5qGKiupQMU9+XA=="],
 
-    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.12.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-9PiiH2vCyvRw1rMzi3FP0/zcu3ix0Qkf0biq15x9hvD6TOo3uSaemvQXeP3hvKu9P+uAC8k2hM46bUfL4Yc0+g=="],
+    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.14.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-lRRGusfwmomv+u5AwwwuPlTa+PEkR3vLn7zZ01WNP7DS97qLf8ptOM3xe9t1eZR8Jp1At8LaYcx3kbLP5O6EbA=="],
 
-    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.12.0", "", { "os": "linux", "cpu": "x64" }, "sha512-D8UI9RNhCoRvsGE2gG6chMP0cT2TqQ2Siot74YvMf7A5ZmB1FBkOviCQOrT+54BLhayCVLo0ABJcsN539dOEFg=="],
+    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.14.0", "", { "os": "linux", "cpu": "x64" }, "sha512-UsqXQA0Q3NVJr+y2euYE8UvQeLwMSr118PXA//tJqUPTm/In7f0En8V9tyh2wRY0E1bEhrIRGWYBSnry2+kfeA=="],
 
     "@samva/email-sdk": ["@samva/email-sdk@workspace:packages/email-sdk"],
 
     "@samva/mailbox": ["@samva/mailbox@0.3.2", "", { "dependencies": { "@samva/webhooks": "0.18.0" } }, "sha512-/5x8ZMsKdbwkjqcukBIhEadrBXiyxuECfj/3B0mREECP3/tJjDYqP3ou/r1rvjG3qGox3HCSiqtd5eK24NIygQ=="],
 
-    "@samva/markup": ["@samva/markup@0.11.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-rHfKmJQOVYDg0vLCu605o15M6VFHAOB5rkB2vAbIjlq1x34xch5VfqBWP2fcPR02GybfRI8rn8oEMslFD+7NZA=="],
+    "@samva/markup": ["@samva/markup@0.13.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-Zky5ahGnbQGv11cLrfD9d265EPakhiyXMnx6iywhBRGTULk0dnfaV8vGklhR/NtZAfmhFKr0T8Rm9+q9+MDCJQ=="],
 
-    "@samva/vite": ["@samva/vite@0.11.0", "", { "dependencies": { "@samva/markup": "^0.11.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-Rjs+kCvHI4jhivXaRJEifaijSxv44/1tIfCk6wp8/lzEodudWTwEHD7b6ml2H8CZ5sNeU950h3WmqrdDerryfQ=="],
+    "@samva/vite": ["@samva/vite@0.13.0", "", { "dependencies": { "@samva/markup": "^0.13.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-IKdbZpZBqniDj7w6cbz45f+pkGV48vuP3TthkywNIHTUPZxST97CQDCW1x90zVSbNLQvNTETodBJ89or4lDxbg=="],
 
     "@samva/webhooks": ["@samva/webhooks@0.18.0", "", { "peerDependencies": { "effect": "4.0.0" }, "optionalPeers": ["effect"] }, "sha512-xEv0nzbX9P8lkeWX74fvR1a0htukfSSLBueTrSEDbEAsX2zy57WIAo0Zxrho/m/i7c+54Aat/6j1m24qXpsgyQ=="],
 
