@@ -13,7 +13,7 @@ The payload is the same. This cookbook covers the Effect runtime.
 ## Setup
 
 ```sh
-bun add samva effect@4.0.0
+bun add samva@^0.18.0 effect@4.0.0
 ```
 
 Keep `SAMVA_API_KEY` on the server.
@@ -122,8 +122,11 @@ const handledByCategory = sendWelcome("ada@example.com").pipe(
 );
 ```
 
-Timestamps use ISO 8601 strings. `message.createdAt` can be returned directly or
-parsed into a `Date` when your application needs date operations.
+Absolute-instant inputs take a `Date` (for example, `ScheduledMessages.create`'s
+`scheduledFor`), and sensitive outputs are `Redacted` (for example,
+`ApiKeys.create` returns a redacted `key`). Unwrap a sensitive value with
+`Redacted.value` only where it is needed. Response timestamps are ISO 8601
+strings: `Email.send` returns a `MessageReceipt` whose `createdAt` is a string.
 
 ```ts
 const message = await Effect.runPromise(
