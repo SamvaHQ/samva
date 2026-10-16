@@ -122,12 +122,11 @@ const handledByCategory = sendWelcome("ada@example.com").pipe(
 );
 ```
 
-The Effect SDK decodes annotated absolute instants as `Date` (for example,
-`ScheduledMessages.get` returns a `Date` in `scheduledFor`) and sensitive outputs
-as `Redacted` (for example, `ApiKeys.create` returns a redacted `key`).
-Unwrap a sensitive value with `Redacted.value` only where it is needed.
-Unannotated timestamp fields remain strings: `Email.send` returns a
-`MessageReceipt` whose `createdAt` is an ISO 8601 string.
+Absolute-instant inputs take a `Date` (for example, `ScheduledMessages.create`'s
+`scheduledFor`), and sensitive outputs are `Redacted` (for example,
+`ApiKeys.create` returns a redacted `key`). Unwrap a sensitive value with
+`Redacted.value` only where it is needed. Response timestamps are ISO 8601
+strings: `Email.send` returns a `MessageReceipt` whose `createdAt` is a string.
 
 ```ts
 const message = await Effect.runPromise(
