@@ -1,3 +1,9 @@
+## @samva/email-sdk@0.6.0
+
+### Require Samva 0.18
+
+The integrations require `samva@^0.18.0`. Only the current Samva SDK minor is supported while Samva is 0.x.
+
 ## @samva/email-sdk@0.5.0
 
 ### Require Samva 0.15
