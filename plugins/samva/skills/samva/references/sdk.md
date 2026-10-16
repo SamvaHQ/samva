@@ -63,6 +63,10 @@ const message = await samva.email.send(
 console.log("Message id:", message.id);
 ```
 
+`email.send` and `messages.send` return a `MessageReceipt`: `id`, `status`,
+`waitReason`, `reviewExpectedAt`, `skippedRecipients`, and `createdAt`. Fetch
+message details or delivery status separately when needed.
+
 Ergonomic calls return decoded success values directly. API failures throw generated plain-JavaScript
 classes:
 
@@ -115,8 +119,23 @@ const program = Email.send(
 Provide `Client.layerFetch(...)` once around the program that uses Samva. Import other domains with
 the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 `Contacts.findOrCreate(...)`. Paginated operations expose `pages` and `items` Streams. Page and
-limit inputs use their public wire-string representation. Only annotated absolute instants become
-`Date`; sensitive outputs become `Redacted`.
+limit inputs use their public wire-string representation. Annotated absolute-instant inputs take a
+`Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
+`Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
+where the secret is needed. Response timestamps stay ISO 8601 strings, including
+`MessageReceipt.createdAt`.
+
+In a Cloudflare Worker or other serverless function, import focused entrypoints rather than the
+`samva/effect` barrel, which loads every domain. In a Worker, provide the Layer per request and pass
+`{ signal: request.signal }` to `Effect.runPromise`; in a long-lived process, build it once in a
+module-scope `ManagedRuntime`.
+
+Use `samva/effect/errors` for error constructors such as `InternalError` and `MediaUploadError`.
+They are the same constructors the operations use; `Effect.catchTag` needs no constructor import.
+The focused entry avoids domain modules, though native imports still initialize shared schemas.
+Bundlers discard unused operation wrappers and their exclusive API groups: importing only
+`Email.send` retains Messages and Media, without email administration operations. A retained group
+still carries its schemas.
 
 ## Send to a contact
 
@@ -242,12 +261,12 @@ With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that f
 
 ## Other services
 
-The client's namespaces are `analytics`, `apiKeys`, `attachments`, `campaigns`,
+The client's namespaces are `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
 `contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
-facade plus domains, senders, tracking, review, and blocks),
-`extensionInstallations`, `extensions`, `mailboxes`, `media`, `messages`,
-`namespaces`, `operations`, `organizations`, `scheduledMessages`, `templates`,
-`unsubscribeGroups`, and `webhooks`. Each method is named for the API operation
+facade plus domains, senders, tracking, review, and blocks), `events`,
+`extensionInstallations`, `extensions`, `feedback`, `journeys`, `mailboxes`, `media`,
+`messages`, `namespaces`, `operations`, `organizations`, `scheduledMessages`,
+`subscriptions`, `templates`, `unsubscribeGroups`, `webhooks`, and `whoami`. Each method is named for the API operation
 it calls, so `samva.contacts.bulkImport` is documented at
 `https://samva.dev/docs/api-reference/contacts/bulkImport`. All methods take
 flat parameters, return decoded success values, and throw typed errors. The
