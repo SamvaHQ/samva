@@ -224,6 +224,10 @@ await samva.mailboxes.denyAction({
 });
 ```
 
+A decided action carries `resolution`: `outcome` (`approved`, `denied`, or `cancelled`), the
+resolving `actor`, `resolvedAt`, and the denial `reason`. It is `null` while the action waits. The
+`mailbox.action.resolved` event carries the same object when a held send ends.
+
 Mail the scan holds stays out of every thread. `listQuarantine({ id })` returns metadata only
 (needs `quarantine.read` or an `admin` grant); a person calls `releaseMessage` or
 `discardMessage` with `{ id, messageId }`.
