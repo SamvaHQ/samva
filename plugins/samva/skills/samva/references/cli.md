@@ -167,14 +167,19 @@ location it names and run it again. `snapshot` writes desktop and mobile PNGs in
 ```bash
 samva api-keys create --name ci --grant email=write --dry-run
 samva api-keys create --name ci --grant email=write --json | jq -r .data.key
+samva api-keys create --name agent --mailbox-permission read --mailbox-permission send --mailbox mbx_... --send-mode approval
+samva api-keys update <key-id> --send-mode send
 samva api-keys list --status active --json
 samva api-keys rotate <key-id> --yes --json | jq -r .data.key
 samva api-keys revoke <key-id> --yes
 ```
 
-`create` needs `--name` and exactly one of `--full-access` or repeatable `--grant <resource>=read|write`
-(neither or both exits `2`); `--description` and `--expires-at` (ISO 8601) are optional. Grants are
-fixed at creation, and mailbox or namespace scope goes through `samva api`. The secret is returned
+`create` needs `--name` and either `--full-access` or restricted access: repeatable
+`--grant <resource>=read|write` and/or repeatable `--mailbox-permission read|update|send|quarantine.read`,
+optionally confined with repeatable `--mailbox <id>`, `--send-mode approval`, and `--namespace <id>`
+(no access, both kinds, or `--mailbox`/`--send-mode` without a permission exits `2`);
+`--description` and `--expires-at` (ISO 8601) are optional. `update` changes name, description, and a
+mailbox key's `--send-mode` (a person signed in); all other access is fixed at creation. The secret is returned
 once, by `create` and `rotate`: `data.key` with `--json`, a stdout field in human mode with the
 warning on stderr. Rotation stops the old key at once. `rotate` and `revoke` need `--yes` outside a
 terminal; all mutations take `--dry-run`. The API, not the CLI, refuses a key with more access than
@@ -210,22 +215,22 @@ no API call. A timeout or terminal failure keeps the last message output and exi
 ## Mailboxes and extensions
 
 `samva mailboxes` reads and sends as a mailbox. `list`, `threads`, and quarantine `list` page with
-`--limit`, `--cursor`, and `--all --jsonl`. `threads --mailbox <id>` filters with `--folder`,
+`--limit`, `--cursor`, and `--all --jsonl`. `threads <mailbox-id>` filters with `--folder`,
 `--label`, `--unread`, and `--starred`.
 
 ```bash
 samva mailboxes create --address support@acme.samva.email --name Support
 samva mailboxes get mbx_...
 samva mailboxes update mbx_... --data '{"name":"Support","metadata":{"team":"support"}}'
-samva mailboxes endpoints add --mailbox mbx_... --address billing@acme.samva.email
-samva mailboxes endpoints update mbxep_... --mailbox mbx_... --display-name "Billing" --default
-samva mailboxes endpoints remove mbxep_... --mailbox mbx_... --yes
+samva mailboxes endpoints add mbx_... --address billing@acme.samva.email
+samva mailboxes endpoints update mbx_... mbxep_... --display-name "Billing" --default
+samva mailboxes endpoints remove mbx_... mbxep_... --yes
 samva mailboxes pause mbx_...
 samva mailboxes resume mbx_...
-samva mailboxes threads --mailbox mbx_... --unread
-samva mailboxes read <message-id> --mailbox mbx_...
-samva mailboxes reply <message-id> --mailbox mbx_... --text "Thanks." --idempotency-key reply-123
-samva mailboxes send --mailbox mbx_... --to ada@example.com --subject Hello --text "Hi"
+samva mailboxes threads mbx_... --unread
+samva mailboxes read mbx_... <message-id>
+samva mailboxes reply mbx_... <message-id> --text "Thanks." --idempotency-key reply-123
+samva mailboxes send mbx_... --to ada@example.com --subject Hello --text "Hi"
 ```
 
 `send` and `reply` take exactly one of `--text` or `--html`, plus `--idempotency-key`; `reply --all`
@@ -240,13 +245,13 @@ removes a key. A mailbox keeps at least one endpoint; each endpoint has a defaul
 a sender name, else the mailbox `name`. `endpoints update` takes `--display-name`,
 `--clear-display-name`, and `--default`.
 
-`actions list --mailbox <id> [--state <state>]` pages with `--limit`, `--cursor`, and
-`--all --jsonl`. `actions approve <action-id> --mailbox <id>` and
-`actions deny <action-id> --mailbox <id> [--reason <reason>]` require a person signed in with
+`actions list <mailbox-id> [--state <state>]` pages with `--limit`, `--cursor`, and
+`--all --jsonl`. `actions approve <mailbox-id> <action-id>` and
+`actions deny <mailbox-id> <action-id> [--reason <reason>]` require a person signed in with
 `samva login`, different from the proposer. Preview with `--dry-run`; pass `--yes` to confirm in
 automation.
 
-`samva mailboxes events [--mailbox <id>]... [--cursor <cursor>] [--limit <n>]` tails the event
+`samva mailboxes events [<mailbox-id>...] [--cursor <cursor>] [--limit <n>]` tails the event
 stream with `--jsonl` envelopes (`--json` is refused). A dropped connection reconnects by itself
 from the last handled cursor (an event can repeat; none is lost) and `--jsonl` writes each
 reconnect to stderr as a `type: "warning"` envelope with `reason: "mailbox_events_reconnecting"`.
@@ -254,8 +259,8 @@ A close that retrying cannot fix exits with the server's tag as `reason` and the
 cursor on stderr or in `details.lastCursor`; resume with `--cursor`. Pass `--no-reconnect` to exit
 `1` on the first drop instead. An expired cursor exits 1: restart without `--cursor`.
 
-Held mail: `samva mailboxes quarantine list --mailbox <id>` shows metadata only. `quarantine
-release <id> --mailbox <id>` and `quarantine discard <id> --mailbox <id>` need a person signed in
+Held mail: `samva mailboxes quarantine list <mailbox-id>` shows metadata only. `quarantine
+release <mailbox-id> <message-id>` and `quarantine discard <mailbox-id> <message-id>` need a person signed in
 with `samva login`; an API key cannot.
 
 `samva extensions` is the authoring loop for `@samva/mailbox` (see
