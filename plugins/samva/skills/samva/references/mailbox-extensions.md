@@ -33,8 +33,8 @@ export default defineExtension({
 - `permissions` are `read` (required), `update`, `send`, and `quarantine.read`. Every key in `on`
   must appear in `events`; an event without a handler is acknowledged.
 - Event types: `mailbox.message.received`, `mailbox.message.sent`,
-  `mailbox.action.pending_approval`, `mailbox.message.quarantined`, `mailbox.message.released`,
-  `mailbox.message.discarded`.
+  `mailbox.action.pending_approval`, `mailbox.action.resolved`, `mailbox.message.quarantined`,
+  `mailbox.message.released`, `mailbox.message.discarded`.
 - The context has `samva`, `log(...)`, `event`, and `attempt`. The `samva` client exposes
   `messages.get|reply|replyAll|forward|send`, `actions.get|cancel|retry`, and
   `threads.get|list|messages|content|update`.

@@ -247,9 +247,12 @@ a sender name, else the mailbox `name`. `endpoints update` takes `--display-name
 automation.
 
 `samva mailboxes events [--mailbox <id>]... [--cursor <cursor>] [--limit <n>]` tails the event
-stream with `--jsonl` envelopes (`--json` is refused). A dropped stream exits with the server's
-tag as `reason` and the last handled cursor on stderr or in `details.lastCursor`; resume with
-`--cursor`. An expired cursor exits 1: restart without `--cursor`.
+stream with `--jsonl` envelopes (`--json` is refused). A dropped connection reconnects by itself
+from the last handled cursor (an event can repeat; none is lost) and `--jsonl` writes each
+reconnect to stderr as a `type: "warning"` envelope with `reason: "mailbox_events_reconnecting"`.
+A close that retrying cannot fix exits with the server's tag as `reason` and the last handled
+cursor on stderr or in `details.lastCursor`; resume with `--cursor`. Pass `--no-reconnect` to exit
+`1` on the first drop instead. An expired cursor exits 1: restart without `--cursor`.
 
 Held mail: `samva mailboxes quarantine list --mailbox <id>` shows metadata only. `quarantine
 release <id> --mailbox <id>` and `quarantine discard <id> --mailbox <id>` need a person signed in
