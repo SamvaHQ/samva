@@ -36,19 +36,19 @@ export default defineTemplate({
     subject: (input) => `Welcome to ${input.workspace}`,
     preheader: (input) => `Welcome aboard, ${input.firstName}`,
     body: (input) => (
-      <Email lang="en" className="font-body bg-background dark:bg-background-dark">
+      <Email lang="en" className="font-sans bg-background">
         <Section
           width={600}
           tableStyle={{ width: "100%", maxWidth: 600 }}
-          className="rounded-card bg-surface dark:bg-surface-dark px-8 py-6"
+          className="rounded-card bg-card px-8 py-6"
         >
-          <h1 className="font-heading text-foreground dark:text-foreground-dark text-2xl font-bold">
+          <h1 className="font-heading text-foreground text-2xl font-bold">
             Welcome, {input.firstName}
           </h1>
-          <p className="text-muted dark:text-muted-dark text-base">
+          <p className="text-muted-foreground text-base">
             Thanks for joining <strong>Samva</strong>. Your workspace {input.workspace} is ready —
             open the{" "}
-            <a href="https://samva.dev/docs" className="text-accent dark:text-accent-dark">
+            <a href="https://samva.dev/docs" className="text-accent">
               docs
             </a>{" "}
             to begin.
@@ -57,12 +57,12 @@ export default defineTemplate({
             href={input.ctaUrl}
             width={200}
             height={48}
-            backgroundColor="var(--color-brand)"
-            color="var(--color-brand-foreground)"
-            fontFamily="var(--font-body)"
+            backgroundColor="var(--color-primary)"
+            color="var(--color-primary-foreground)"
+            fontFamily="var(--font-sans)"
             borderRadius={6}
-            style={{ borderRadius: "var(--radius-button)" }}
-            className="bg-brand text-brand-foreground dark:bg-brand-dark dark:text-brand-foreground-dark font-semibold"
+            style={{ borderRadius: "var(--radius)" }}
+            className="bg-primary text-primary-foreground font-semibold"
           >
             Open dashboard
           </Button>
