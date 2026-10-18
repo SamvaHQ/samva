@@ -30,7 +30,7 @@ retryable sends, and follow the revision-safe workflow for template edits.
 | OpenAI Codex | `.codex-plugin/plugin.json`  | `.mcp.json`       |
 | Cursor       | `.cursor-plugin/plugin.json` | `mcp.json`        |
 
-Both manifests load `skills/samva/SKILL.md` and its six references. See
+Both manifests load `skills/samva/SKILL.md` and its seven references. See
 [`provenance.json`](./provenance.json) for the pinned source commit, public
 skill archive, version, and digests of the skill snapshot in this package.
 

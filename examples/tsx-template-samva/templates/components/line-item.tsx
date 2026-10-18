@@ -8,7 +8,7 @@ export const LineItem = (props: {
   price: number;
   currency: string;
 }) => (
-  <p className="text-muted dark:text-muted-dark text-base">
+  <p className="text-muted-foreground text-base">
     {props.quantity} × {props.name}: {fmt.money(props.price * props.quantity, props.currency)}
   </p>
 );

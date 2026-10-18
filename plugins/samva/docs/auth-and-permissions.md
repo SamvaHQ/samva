@@ -26,6 +26,20 @@ contacts, messages and events, inbound email, templates, campaigns, webhooks,
 usage, and readiness data. The MCP surface does not expose billing status,
 entitlements, or billing-portal actions.
 
+Webhook signing secrets can be retrieved again with `webhooks_get_secret`,
+`samva webhooks secret <webhook-id>`, or the SDK's
+`client.webhooks.getSecret({ id })`. The native Effect equivalent is
+`Webhooks.getSecret({ id })` from `samva/effect/webhooks`; its `secret` is
+`Redacted`. The SDK and CLI return `secret`, `createdAt`, and
+`previousExpiresAt`; MCP returns `webhookId` and `signingSecret`. Reading the
+secret requires `webhooks:update` permission. Treat the result as a credential:
+keep it out of prompts, logs, and evidence files.
+
+`samva webhooks secret --json` returns those fields inside `data`. API-key
+secrets are shown once, on create or rotation; reading an API key does not
+return its secret. See the
+[webhook signing guide](https://samva.dev/docs/platform/webhooks).
+
 Use synthetic recipient addresses, content, domains, templates, and webhook
 endpoints when exploring the integration. Do not inspect or send customer data
 unless the task explicitly requires it and the caller is authorized for that

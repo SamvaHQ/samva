@@ -65,15 +65,13 @@ export default defineTemplate({
   email: {
     subject: (input) => `Your receipt: ${fmt.money(input.total, input.currency)}`,
     body: (input) => (
-      <Email lang="en" className="font-body bg-background dark:bg-background-dark">
+      <Email lang="en" className="font-sans bg-background">
         <Section
           width={600}
           tableStyle={{ width: "100%", maxWidth: 600 }}
-          className="rounded-card bg-surface dark:bg-surface-dark px-8 py-6"
+          className="rounded-card bg-card px-8 py-6"
         >
-          <h1 className="font-heading text-foreground dark:text-foreground-dark text-2xl font-bold">
-            Thanks, {input.name}
-          </h1>
+          <h1 className="font-heading text-foreground text-2xl font-bold">Thanks, {input.name}</h1>
           {input.items.length > 0 ? (
             input.items.map((item) => (
               <LineItem
@@ -84,9 +82,9 @@ export default defineTemplate({
               />
             ))
           ) : (
-            <p className="text-muted dark:text-muted-dark text-base">Nothing in this order.</p>
+            <p className="text-muted-foreground text-base">Nothing in this order.</p>
           )}
-          <p className="text-foreground dark:text-foreground-dark text-base font-semibold">
+          <p className="text-foreground text-base font-semibold">
             Total {fmt.money(input.total, input.currency)}
           </p>
           {input.receiptUrl && (
@@ -94,11 +92,11 @@ export default defineTemplate({
               href={input.receiptUrl}
               width={200}
               height={48}
-              backgroundColor="var(--color-brand)"
-              color="var(--color-brand-foreground)"
-              fontFamily="var(--font-body)"
+              backgroundColor="var(--color-primary)"
+              color="var(--color-primary-foreground)"
+              fontFamily="var(--font-sans)"
               borderRadius={6}
-              className="bg-brand text-brand-foreground dark:bg-brand-dark dark:text-brand-foreground-dark font-semibold"
+              className="bg-primary text-primary-foreground font-semibold"
             >
               View receipt
             </Button>

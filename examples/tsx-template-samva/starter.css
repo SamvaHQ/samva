@@ -1,24 +1,28 @@
-/* This starter's look. Every color and font in templates/ reads these theme variables; a brand imported after
- * this file in theme.css replaces the ones it sets, and theme.css's own @theme overrides both. */
+/* Project defaults; theme.css can override these after importing this file. */
 @theme {
-  --color-brand: #4f46e5;
-  --color-brand-dark: #a5b4fc;
-  --color-brand-foreground: #ffffff;
-  --color-brand-foreground-dark: #0b0d10;
+  --color-primary: #4f46e5;
+  --color-primary-foreground: #ffffff;
   --color-accent: #4f46e5;
-  --color-accent-dark: #a5b4fc;
   --color-background: #f3f4f6;
-  --color-background-dark: #111827;
-  --color-surface: #ffffff;
-  --color-surface-dark: #1f2937;
+  --color-card: #ffffff;
   --color-foreground: #111827;
-  --color-foreground-dark: #ffffff;
-  --color-muted: #374151;
-  --color-muted-dark: #e5e7eb;
+  --color-muted-foreground: #374151;
   --color-border: #e5e7eb;
-  --color-border-dark: #374151;
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --radius-button: 6px;
+  --radius: 6px;
   --radius-card: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-primary: #a5b4fc;
+    --color-primary-foreground: #0b0d10;
+    --color-accent: #a5b4fc;
+    --color-background: #111827;
+    --color-card: #1f2937;
+    --color-foreground: #ffffff;
+    --color-muted-foreground: #e5e7eb;
+    --color-border: #374151;
+  }
 }
