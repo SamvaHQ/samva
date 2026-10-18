@@ -5,6 +5,7 @@ import type { SamvaClient } from "samva";
 import { verifyRequest } from "samva/webhooks";
 
 type InboundReply = {
+  readonly channel: "email";
   readonly messageId: string;
   readonly conversationId: string;
   readonly from: string;
@@ -16,6 +17,7 @@ const isInboundReply = (value: unknown): value is InboundReply => {
   if (typeof value !== "object" || value === null) return false;
   const data = value as Record<string, unknown>;
   return (
+    data.channel === "email" &&
     ["messageId", "conversationId", "from"].every((field) => typeof data[field] === "string") &&
     (data.subject === undefined || typeof data.subject === "string") &&
     (data.isAutoReply === undefined || typeof data.isAutoReply === "boolean")
@@ -53,8 +55,8 @@ export async function configureInboundEmail(
           channels: ["email"],
           status: "active",
         }),
-        // A signing secret is shown only when the endpoint is created. If a
-        // previous setup run lost it, rotate it with `webhooks.regenerateSecret`.
+        // Keep secret retrieval separate from setup: `webhooks.getSecret({ id })`
+        // reads it again when the caller needs it, without rotating it.
         secret: null,
       }
     : await samva.webhooks.create({

@@ -13,7 +13,7 @@ The payload is the same. This cookbook covers the Effect runtime.
 ## Setup
 
 ```sh
-bun add samva@^0.21.0 effect@4.0.0
+bun add samva@^0.22.0 effect@4.0.0
 ```
 
 Keep `SAMVA_API_KEY` on the server.

@@ -1,3 +1,5 @@
+import { createServer } from "node:http";
+
 import type { BetterAuthOptions } from "better-auth";
 import type {
   EmailOTPOptions,
@@ -75,6 +77,61 @@ function fakeClient() {
 }
 
 describe("@samva/better-auth", () => {
+  it("sends through the published SDK over HTTP", async () => {
+    const requests: Array<{
+      method: string | undefined;
+      path: string | undefined;
+      key: string | string[] | undefined;
+      body: string;
+    }> = [];
+    const server = createServer(async (request, response) => {
+      let body = "";
+      for await (const chunk of request) body += chunk;
+      requests.push({
+        method: request.method,
+        path: request.url,
+        key: request.headers["x-api-key"],
+        body,
+      });
+      response.writeHead(201, { "content-type": "application/json" });
+      response.end(
+        JSON.stringify({
+          id: "msg_http",
+          status: "queued",
+          waitReason: null,
+          reviewExpectedAt: null,
+          skippedRecipients: [],
+          createdAt: date.toISOString(),
+        }),
+      );
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const address = server.address();
+      if (address === null || typeof address === "string") throw new Error("Expected HTTP port");
+      await renderAndSend(
+        "verification",
+        { user, url: "https://app.example.com/verify", token: "abc" },
+        { apiKey: "samva_sk_test_adapter", baseUrl: `http://127.0.0.1:${address.port}` },
+      );
+      expect(requests).toHaveLength(1);
+      expect(requests[0]).toMatchObject({
+        method: "POST",
+        path: "/v1/messages",
+        key: "samva_sk_test_adapter",
+      });
+      expect(JSON.parse(requests[0]!.body)).toMatchObject({
+        to: [{ email: user.email }],
+        channel: "email",
+        email: { subject: "Verify your email" },
+      });
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  });
+
   it("renders default templates and sends through the Samva messages API", async () => {
     const { client, calls } = fakeClient();
 

@@ -38,9 +38,10 @@ await samva.email.enableReceiving({
 });
 ```
 
-A signing secret is returned only when the endpoint is created. Store it and read
-it back from your secret manager on later runs. If a previous setup run lost it,
-rotate it with `samva.webhooks.regenerateSecret`.
+Store the signing secret securely when the endpoint is created. Read the current secret again
+with `samva.webhooks.getSecret({ id: endpoint.endpoint.id })`; the response includes `secret`,
+`createdAt`, and `previousExpiresAt`. Reading it requires webhook update permission, the same
+permission as rotating it. Use `samva.webhooks.regenerateSecret` when you intend to rotate the secret.
 
 Setup should converge. List existing endpoints first, following `nextCursor`
 until the page that holds the one named `Inbound replies`, reuse it, and reconcile its URL, event types, channels, and status with
@@ -74,6 +75,7 @@ first; each body is at `samva.messages.getContent`), then send with `conversatio
 
 ```ts
 const reply = verified.event.data as {
+  channel: "email" | "sms" | "whatsapp";
   messageId: string;
   conversationId: string;
   from: string;
@@ -81,7 +83,7 @@ const reply = verified.event.data as {
   isAutoReply?: boolean;
 };
 
-if (reply.isAutoReply) {
+if (reply.channel !== "email" || reply.isAutoReply) {
   return new Response(null, { status: 204 });
 }
 
@@ -105,7 +107,7 @@ const sent = await samva.email.send(
 Ignore automatic responses such as out-of-office replies. Replying to one starts
 a loop.
 
-The event `data` is `unknown`. Validate the fields you rely on before use. The
+Validate the fields you rely on before use, including `channel: "email"` before composing an email reply. The
 example uses a small type guard for exactly this reason.
 
 ## Idempotency and retries

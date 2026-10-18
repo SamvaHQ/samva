@@ -83,7 +83,7 @@ Resolution order is deterministic:
 | Message inspection       | `samva messages` with `list`, `get`, `events`, or `wait`                                                                                                                                                                        |
 | Scheduled email          | `samva scheduled-messages` with `create`, `list`, `get`, `cancel`, or `resume`                                                                                                                                                  |
 | Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, and the `runs` group                                                                                                                                       |
-| Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, and remote lifecycle commands                                                                                                          |
+| Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, `from-website`, and remote lifecycle commands                                                                                          |
 | Mailboxes                | `samva mailboxes` with `list`, `create`, `get`, `update`, `pause`, `resume`, `remove`, `threads`, `read`, `send`, `reply`, `events`, `actions list\|get\|cancel\|retry\|approve\|deny`, and `quarantine list\|release\|discard` |
 | Mailbox extensions       | `samva extensions` with `init`, `build`, `dev`, `publish`, `list`, `versions`, `version`, `install`, `installations`, `installation`, `upgrade`, `enable`, `disable`, `uninstall`, `runs`, `run`                                |
 | Customer webhooks        | `samva webhooks` with `list`, `get`, `secret`, `test`, `logs`, `stats`, `retry`, `rotate-secret`, `create`, `update`, or `remove`                                                                                               |
@@ -161,6 +161,18 @@ samva templates types --out src/samva-templates.ts
 location it names and run it again. `snapshot` writes desktop and mobile PNGs in light and dark to
 `.samva/snapshots`. `publish` needs a clean, pushed commit. See
 [template authoring](template-authoring.md) for the language.
+
+## Create and share remote templates
+
+`samva templates from-website example.com --idempotency-key example-welcome --json` creates a
+project and returns its website, assistant `ask`, and editor link. It writes immediately and has
+no dry-run flag. The brand proposal takes effect only when approved in the editor.
+
+Use `samva templates create --shared --data '<template-json>'` to share a new organization-level
+project with every namespace. It cannot also have a namespace. `samva templates list --shared true`
+filters shared projects; `samva templates update <id> --shared false --data '{}'` stops sharing
+all entries in that project. Namespace-scoped keys can read and send shared templates but cannot
+change them. Inspect `--help` and use `--dry-run` on create or update before an unfamiliar write.
 
 ## Manage API keys
 
