@@ -35,11 +35,9 @@ Webhook signing secrets can be retrieved again with `webhooks_get_secret`,
 secret requires `webhooks:update` permission. Treat the result as a credential:
 keep it out of prompts, logs, and evidence files.
 
-With `@samva/cli@0.18.0`, webhook create and rotate results no longer include
-`displayOnce`; `webhooks secret --json` returns the fields inside `data`.
-API-key secrets remain shown once on create or rotation; API-key reads do not
-retrieve them. See the [SDK release](https://github.com/AryaLabsHQ/samva/releases/tag/v0.21.0),
-[CLI release](https://github.com/AryaLabsHQ/samva/releases/tag/cli%400.18.0), and
+`samva webhooks secret --json` returns those fields inside `data`. API-key
+secrets are shown once, on create or rotation; reading an API key does not
+return its secret. See the
 [webhook signing guide](https://samva.dev/docs/platform/webhooks).
 
 Use synthetic recipient addresses, content, domains, templates, and webhook
