@@ -222,11 +222,11 @@
       "name": "tsx-template-samva",
       "version": "0.0.0",
       "dependencies": {
-        "@samva/markup": "^0.14.0",
+        "@samva/markup": "^0.15.0",
       },
       "devDependencies": {
         "@samva/cli": "^0.19.0",
-        "@samva/vite": "^0.14.0",
+        "@samva/vite": "^0.15.0",
         "@types/node": "^22.0.0",
         "typescript": "^7.0.2",
         "vite": "^8.2.2",
@@ -829,9 +829,9 @@
 
     "@samva/mailbox": ["@samva/mailbox@0.5.2", "", { "dependencies": { "@samva/webhooks": "0.22.0" } }, "sha512-WcW9RCVX0QIyVnt374wF7475bdd6gnNOJjZK6YcheUaEtmmS+Cy49V1JZFWPdXrLPdFwQqtPXgCmZqwsnSlP4A=="],
 
-    "@samva/markup": ["@samva/markup@0.14.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-gNJlaeL8bvffLzg6NVZed7/c5ZoPz2tjM8AlTIfMq/9XtWu7PJnQB5iXrp2ORhffnl+WMHwEWXvfHJeMvCNTpw=="],
+    "@samva/markup": ["@samva/markup@0.15.0", "", { "dependencies": { "@babel/parser": "^8.0.4", "@cfworker/json-schema": "4.1.1", "@standard-schema/spec": "1.1.0", "better-result": "3.0.1", "caniemail": "2.0.2", "css-tree": "3.2.1", "tailwindcss": "^4.3.3" } }, "sha512-U3n0Ilm9IxkYAMNYR5ZSPxEhwO/0Hvxe3Oc4zC6LIutiO0bieHi9bz86qXvG38xh0BOU7aAnlBm0qcLhyCNhaA=="],
 
-    "@samva/vite": ["@samva/vite@0.14.0", "", { "dependencies": { "@samva/markup": "^0.14.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-H0KRM3YWbJhOCIn1THtMZ+k/0PSui29Hp5cpcuVeu+b55kx6Xt3P8f/zy+vGPlYuQtKERXnmokLOgEx1EauVzQ=="],
+    "@samva/vite": ["@samva/vite@0.15.0", "", { "dependencies": { "@samva/markup": "^0.15.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-IPfVmfniM5KU35Rc2eeLaY+TCbKM6vmRrJn5lfvMbSmXH6R07nhJ+mfPq7GQHi5cfbwBgIBHkeByoGgkjDNYHA=="],
 
     "@samva/webhooks": ["@samva/webhooks@0.22.0", "", { "peerDependencies": { "effect": "4.0.0" }, "optionalPeers": ["effect"] }, "sha512-mkjrAegKeUOIpTYk5k1g40/M94kipx4RtmBYv9klzfDUNu9EazMm5G+mfJhZaA1AzXlqNFao9Tnj0FsQOuVCYA=="],
 

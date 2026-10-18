@@ -55,8 +55,8 @@ export async function configureInboundEmail(
           channels: ["email"],
           status: "active",
         }),
-        // A signing secret is shown only when the endpoint is created. If a
-        // previous setup run lost it, rotate it with `webhooks.regenerateSecret`.
+        // Keep secret retrieval separate from setup: `webhooks.getSecret({ id })`
+        // reads it again when the caller needs it, without rotating it.
         secret: null,
       }
     : await samva.webhooks.create({

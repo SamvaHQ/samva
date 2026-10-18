@@ -38,9 +38,10 @@ await samva.email.enableReceiving({
 });
 ```
 
-A signing secret is returned only when the endpoint is created. Store it and read
-it back from your secret manager on later runs. If a previous setup run lost it,
-rotate it with `samva.webhooks.regenerateSecret`.
+Store the signing secret securely when the endpoint is created. Read the current secret again
+with `samva.webhooks.getSecret({ id: endpoint.endpoint.id })`; the response includes `secret`,
+`createdAt`, and `previousExpiresAt`. Reading it requires webhook update permission, the same
+permission as rotating it. Use `samva.webhooks.regenerateSecret` when you intend to rotate the secret.
 
 Setup should converge. List existing endpoints first, following `nextCursor`
 until the page that holds the one named `Inbound replies`, reuse it, and reconcile its URL, event types, channels, and status with
