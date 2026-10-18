@@ -74,6 +74,7 @@ first; each body is at `samva.messages.getContent`), then send with `conversatio
 
 ```ts
 const reply = verified.event.data as {
+  channel: "email" | "sms" | "whatsapp";
   messageId: string;
   conversationId: string;
   from: string;
@@ -81,7 +82,7 @@ const reply = verified.event.data as {
   isAutoReply?: boolean;
 };
 
-if (reply.isAutoReply) {
+if (reply.channel !== "email" || reply.isAutoReply) {
   return new Response(null, { status: 204 });
 }
 
@@ -105,7 +106,7 @@ const sent = await samva.email.send(
 Ignore automatic responses such as out-of-office replies. Replying to one starts
 a loop.
 
-The event `data` is `unknown`. Validate the fields you rely on before use. The
+Validate the fields you rely on before use, including `channel: "email"` before composing an email reply. The
 example uses a small type guard for exactly this reason.
 
 ## Idempotency and retries

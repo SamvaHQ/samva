@@ -2,7 +2,7 @@
 
 Author Samva emails as an ordinary TSX project: two `defineTemplate` entries, a project theme, and
 the Samva CLI loop for checking, rendering, previewing, and publishing them. The project pins
-`@samva/markup@^0.14.0`, `@samva/vite@^0.14.0`, and `@samva/cli@^0.18.0`, the toolchain a customer
+`@samva/markup@^0.14.0`, `@samva/vite@^0.14.0`, and `@samva/cli@^0.19.0`, the toolchain a customer
 installs.
 
 ```sh

@@ -328,3 +328,17 @@ test("treats a redelivery after a successful send as a duplicate", async () => {
   assert.equal(requests.length, requestsAfterFirst);
   assert.equal(processedWebhookIds.size, 1);
 });
+
+test.each(["sms", "whatsapp"])(
+  "ignores a signed %s event without reading or sending email",
+  async (channel) => {
+    const { samva, requests } = createHarness();
+    const secret = generateWebhookSecret();
+    const result = await handleInboundReply(
+      await signedRequest(secret, replyData({ channel, from: "+14155550123" })),
+      { samva, webhookSecret: secret, processedWebhookIds: new Set() },
+    );
+    assert.deepEqual(result, { accepted: false, reason: "ignored" });
+    assert.equal(requests.length, 0);
+  },
+);

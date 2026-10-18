@@ -263,6 +263,15 @@ With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that f
 `uninstall`, `listRuns`, `getRun`) complete the surface. Extension authoring lives in
 [mailbox-extensions](mailbox-extensions.md).
 
+## Create a template project from a website
+
+`samva.templates.createFromWebsite({ url, idempotencyKey, name?, namespaceId? })` creates a
+project from a public website and returns `template`, `website`, and `ask`. Pass the returned
+`ask` to the dashboard editor assistant; the brand proposal takes effect only when approved in
+the editor. An unusable website returns a `422` error without creating a project. Reuse the
+idempotency key when retrying the same request. The Effect equivalent is
+`Templates.createFromWebsite` from `samva/effect/templates`.
+
 ## Other services
 
 The client's namespaces are `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
