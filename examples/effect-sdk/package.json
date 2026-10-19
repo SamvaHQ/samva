@@ -12,8 +12,8 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "effect": "4.0.0",
-    "samva": "^0.22.0"
+    "effect": "4.0.4",
+    "samva": "^0.22.1"
   },
   "devDependencies": {
     "@types/bun": "^1.4.0"

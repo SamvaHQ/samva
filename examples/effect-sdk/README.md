@@ -6,15 +6,16 @@ Send email with the `samva/effect` SDK entrypoint.
 
 ```sh
 bun install
-cp examples/effect-sdk/.env.example examples/effect-sdk/.env
+cd examples/effect-sdk
+cp .env.example .env
 ```
 
 Set `SAMVA_API_KEY` in `.env`. The key must belong to a Samva account with a
 verified sender. The `from` field is optional; when omitted, Samva sends from
 the verified sender.
 
-This example pins `effect@4.0.0`, matching the current `samva/effect`
-peer dependency. `Client.layerFetch` uses the platform fetch client.
+This example pins `effect@4.0.4` to match the `samva/effect` peer
+dependency exactly. `Client.layerFetch` uses the platform fetch client.
 
 ## Send from a script
 
