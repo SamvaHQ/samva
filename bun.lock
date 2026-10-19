@@ -74,7 +74,7 @@
       "name": "effect-sdk-example",
       "version": "0.0.0",
       "dependencies": {
-        "effect": "4.0.0",
+        "effect": "4.0.4",
         "samva": "^0.22.0",
       },
       "devDependencies": {
@@ -234,7 +234,7 @@
     },
     "packages/better-auth": {
       "name": "@samva/better-auth",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "devDependencies": {
         "@react-email/render": "^2.0.0",
         "better-auth": "^1.7.2",
@@ -251,7 +251,7 @@
     },
     "packages/email-sdk": {
       "name": "@samva/email-sdk",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "devDependencies": {
         "@opencoredev/email-sdk": "^1.1.0",
         "samva": "0.22.0",
@@ -1277,7 +1277,7 @@
 
     "dts-resolver": ["dts-resolver@3.0.0", "", { "peerDependencies": { "oxc-resolver": ">=11.0.0" }, "optionalPeers": ["oxc-resolver"] }, "sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q=="],
 
-    "effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
+    "effect": ["effect@4.0.4", "", {}, "sha512-Sr50OeVSC3M5UkoUYUhFf3EULryhGaZZUf6OzDHTvaznOw7HRlxOKdF3/4nvQXHL22StOyMG3Cvo8Bt7xUp+Ng=="],
 
     "effect-sdk-example": ["effect-sdk-example@workspace:examples/effect-sdk"],
 
