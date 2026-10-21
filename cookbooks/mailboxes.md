@@ -22,7 +22,7 @@ bun add samva
 bun add @samva/mailbox # only to author extensions
 ```
 
-These examples use `samva@^0.22.0` and `@samva/mailbox@^0.5.2`.
+These examples use `samva@^0.23.0` and `@samva/mailbox@^0.5.2`.
 
 ## Create a mailbox and a scoped key
 
