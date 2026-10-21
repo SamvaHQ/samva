@@ -92,7 +92,7 @@ export async function sendContactEmail(
     return { status: "error", message: "Failed to send message. Please try again." };
   }
 
-  return { status: "success", message: "Message sent." };
+  return { status: "success", message: "Message accepted by Samva." };
 }
 ```
 
