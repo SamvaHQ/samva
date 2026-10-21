@@ -2,7 +2,7 @@
 
 A template is one TSX file in a static profile: ordinary JSX, HTML, and Tailwind that Samva reads
 without running. It default-exports `defineTemplate` from `@samva/markup`. Compiling it produces a
-JSON IR that the editor, agents, previews, and every send render, so nothing executes at send time.
+JSON compiled template that the editor, agents, previews, and every send render, so nothing executes at send time.
 A body that would compute over its input is a diagnostic: compute the value in the caller and send
 it in the payload.
 
@@ -125,7 +125,7 @@ call `templates_move_entry` so the template keeps its id and publications.
 
 Send a template by `templateSlug` or `templateId` with `templateData`. Add `locale` (BCP 47, for
 example `de-DE`) and `timeZone` (IANA, for example `Europe/Berlin`) to format dates and money for
-the recipient; they default to the template's locale and UTC. A publication pins the IR and the
+the recipient; they default to the template's locale and UTC. A publication pins the compiled template and the
 brand version it was built with, so republish to pick up a brand edit. `samva templates types`
 generates the input type for your application.
 

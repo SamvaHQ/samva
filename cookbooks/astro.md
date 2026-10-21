@@ -130,7 +130,7 @@ const result = Astro.getActionResult(actions.send);
   <button type="submit">Send</button>
 </form>
 
-{result?.data?.ok && <p>Email sent.</p>}
+{result?.data?.ok && <p>Message accepted by Samva.</p>}
 {result?.error && <p>{result.error.message}</p>}
 ```
 

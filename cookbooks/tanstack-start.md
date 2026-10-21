@@ -113,7 +113,7 @@ import { sendEmail } from "~/functions/send-email";
 
 export function ContactForm() {
   const send = useServerFn(sendEmail);
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "accepted">("idle");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -134,7 +134,7 @@ export function ContactForm() {
               message: String(form.get("message") ?? ""),
             },
           });
-          setStatus("sent");
+          setStatus("accepted");
           formElement.reset();
         } catch (err) {
           setStatus("idle");
@@ -149,7 +149,7 @@ export function ContactForm() {
         {status === "sending" ? "Sending..." : "Send"}
       </button>
       {error ? <p role="alert">{error}</p> : null}
-      {status === "sent" ? <p>Email sent.</p> : null}
+      {status === "accepted" ? <p>Message accepted by Samva.</p> : null}
     </form>
   );
 }

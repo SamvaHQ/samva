@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const send = useServerFn(sendEmail);
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "accepted">("idle");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -42,7 +42,7 @@ function Home() {
                 message: String(form.get("message") ?? ""),
               },
             });
-            setStatus("sent");
+            setStatus("accepted");
             formElement.reset();
           } catch (err) {
             setStatus("idle");
@@ -79,7 +79,9 @@ function Home() {
             {error}
           </p>
         ) : null}
-        {status === "sent" ? <p className="form-message success">Email sent.</p> : null}
+        {status === "accepted" ? (
+          <p className="form-message success">Message accepted by Samva.</p>
+        ) : null}
       </form>
     </main>
   );
