@@ -18,7 +18,8 @@ The validator proves that:
 - both manifests and the Cursor marketplace resolve existing in-package paths
 - both MCP configs define exactly one credential-free HTTP server at
   `https://mcp.samva.dev`
-- `SKILL.md` resolves all six canonical references
+- `SKILL.md` links every canonical reference named in the validator's
+  `expectedReferences`, each file exists, and no other reference ships
 - manifest and skill versions agree with provenance
 - the local skill bundle digest matches
 - distributable JSON and Markdown contain no embedded credentials or

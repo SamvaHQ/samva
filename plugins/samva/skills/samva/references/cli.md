@@ -154,7 +154,8 @@ samva templates check --json
 samva templates render order-shipped --fixture no-tracking --locale de-DE --time-zone Europe/Berlin
 samva templates snapshot order-shipped --fixture no-tracking
 samva templates publish --commit HEAD
-samva templates types --out src/samva-templates.ts
+samva templates types --out src/samva-templates.ts   # { templateId, publicationId }
+samva templates types --by slug --out src/samva-templates.ts   # { templateSlug, templateData }
 ```
 
 `check` prints every finding as `file:line:column` with a diagnostic code and a fix; repair the
