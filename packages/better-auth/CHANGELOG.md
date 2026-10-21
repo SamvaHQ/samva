@@ -1,3 +1,10 @@
+## @samva/better-auth@0.8.0
+
+### Require Samva 0.23
+
+The adapters now require `samva@^0.23.0`, with development and tests pinned to `0.23.0`.
+Only the current SDK minor is supported while Samva is 0.x; update Samva alongside the adapter.
+
 ## @samva/better-auth@0.7.0
 
 ### Require Samva 0.22
