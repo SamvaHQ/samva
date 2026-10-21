@@ -1,55 +1,55 @@
 core:changelogs:
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva 0.22\n\nThe adapters now require `samva@^0.22.0`, with development and tests pinned to `0.22.0`.\nOnly the current SDK minor is supported while Samva is 0.x; update Samva alongside the adapter.\n"
-    filename: 2026-10-18-require-samva-0-22.md
+  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva 0.23\n\nThe adapters now require `samva@^0.23.0`, with development and tests pinned to `0.23.0`.\nOnly the current SDK minor is supported while Samva is 0.x; update Samva alongside the adapter.\n"
+    filename: 2026-10-21-require-samva-0-23.md
     v: 0.0.0
 core:packages:
   - changelogIds:
-      - 2026-10-18-require-samva-0-22.md
-    id: npm:@samva/email-sdk
-    updated: true
-  - changelogIds:
-      - 2026-10-18-require-samva-0-22.md
+      - 2026-10-21-require-samva-0-23.md
     id: npm:@samva/better-auth
     updated: true
-  - id: npm:tanstack-start-transactional-samva
+  - changelogIds:
+      - 2026-10-21-require-samva-0-23.md
+    id: npm:@samva/email-sdk
+    updated: true
+  - id: npm:better-auth-nextjs-samva
     updated: false
   - id: npm:nextjs-transactional-samva
     updated: false
-  - id: npm:sveltekit-transactional-samva
-    updated: false
-  - id: npm:astro-email-samva
-    updated: false
-  - id: npm:react-email-samva
+  - id: npm:hono-cloudflare-workers-samva
     updated: false
   - id: npm:mailbox-agent-samva
     updated: false
-  - id: npm:tsx-template-samva
+  - id: npm:tanstack-start-transactional-samva
     updated: false
-  - id: npm:better-auth-nextjs-samva
+  - id: npm:tsx-template-samva
     updated: false
   - id: npm:supabase-auth-hook-samva
     updated: false
   - id: npm:effect-sdk-example
     updated: false
-  - id: npm:inbound-email-replies-samva
-    updated: false
-  - id: npm:hono-cloudflare-workers-samva
+  - id: npm:sveltekit-transactional-samva
     updated: false
   - id: npm:clerk-webhook-samva
+    updated: false
+  - id: npm:react-email-samva
+    updated: false
+  - id: npm:inbound-email-replies-samva
+    updated: false
+  - id: npm:astro-email-samva
     updated: false
 npm:packages:
-  - id: npm:@samva/email-sdk
   - id: npm:@samva/better-auth
-  - id: npm:tanstack-start-transactional-samva
-  - id: npm:nextjs-transactional-samva
-  - id: npm:sveltekit-transactional-samva
-  - id: npm:astro-email-samva
-  - id: npm:react-email-samva
-  - id: npm:mailbox-agent-samva
-  - id: npm:tsx-template-samva
+  - id: npm:@samva/email-sdk
   - id: npm:better-auth-nextjs-samva
+  - id: npm:nextjs-transactional-samva
+  - id: npm:hono-cloudflare-workers-samva
+  - id: npm:mailbox-agent-samva
+  - id: npm:tanstack-start-transactional-samva
+  - id: npm:tsx-template-samva
   - id: npm:supabase-auth-hook-samva
   - id: npm:effect-sdk-example
-  - id: npm:inbound-email-replies-samva
-  - id: npm:hono-cloudflare-workers-samva
+  - id: npm:sveltekit-transactional-samva
   - id: npm:clerk-webhook-samva
+  - id: npm:react-email-samva
+  - id: npm:inbound-email-replies-samva
+  - id: npm:astro-email-samva
