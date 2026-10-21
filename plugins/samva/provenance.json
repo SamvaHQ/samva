@@ -1,7 +1,7 @@
 {
   "source": {
     "repository": "https://github.com/AryaLabsHQ/samva",
-    "commit": "5bc96bbf7f4b0303820caf0701f7cfdef9ce206c",
+    "commit": "673156d18e550c8dbcdee622f7847c2c2a5b97e9",
     "path": "apps/web/content/agent-skills/samva"
   },
   "skill": {
