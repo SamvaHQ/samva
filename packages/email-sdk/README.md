@@ -2,7 +2,7 @@
 
 Provider-owned Samva community adapter for
 [Email SDK](https://email-sdk.dev). It targets `@opencoredev/email-sdk@^1.1.0`
-and `samva@^0.23.0`.
+and `samva@^0.25.0`.
 
 This adapter is maintained by Samva as a community integration; it is not an
 official built-in Email SDK adapter.
@@ -83,6 +83,10 @@ adapter intentionally has no native `sendPersonalized` method.
 Successful sends return `{ adapter: "samva", id, raw }`. `raw` is the Samva
 `MessageReceipt`, including its wait reason and skipped recipients. A queued
 receipt is not a final delivery claim.
+
+`FromAddressRequiredError` is reported as `delivery: "not_sent"` and is not
+retryable. Configure a default sender or pass an explicit `from`; fallback can
+then follow Email SDK's policy for a known rejection.
 
 Unsupported or lossy input throws `EmailValidationError` without calling
 Samva. API and transport failures become a redacted `EmailAdapterError` with

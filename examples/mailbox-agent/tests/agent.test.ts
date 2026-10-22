@@ -196,3 +196,19 @@ test("replays a lost reply response with the same key and body", async () => {
   assert.equal(calls.length, 2);
   assert.deepEqual(calls[0], calls[1]);
 });
+
+test.each(["mailbox.message.delivered", "mailbox.message.read", "mailbox.message.failed"] as const)(
+  "advances the cursor for %s without replying",
+  async (type) => {
+    const event: MailboxEvent = { ...received("evt_delivery"), type };
+    const { client, replies } = createHarness([of(event)]);
+    const { store, saved } = memoryStore();
+    const lines: string[] = [];
+
+    await runMailboxAgent(client, { mailboxId: "mbx_01", store, log: (line) => lines.push(line) });
+
+    assert.deepEqual(replies, []);
+    assert.deepEqual(saved, ["cursor-evt_delivery"]);
+    assert.deepEqual(lines, []);
+  },
+);

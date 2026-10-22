@@ -8,6 +8,7 @@ const knownNotSentTags = new Set([
   "EmailChannelError",
   "FlagDisabledError",
   "ForbiddenError",
+  "FromAddressRequiredError",
   "OnboardingReviewRequiredError",
   "PaymentRequiredError",
   "RateLimitedError",
