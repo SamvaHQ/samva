@@ -462,6 +462,39 @@ describe("samva", () => {
     expect(String(error)).not.toContain("provider body");
   });
 
+  it("classifies a decoded missing-from refusal as not sent without retaining domain details", async () => {
+    const fetcher = vi.fn(async () =>
+      Response.json(
+        {
+          _tag: "FromAddressRequiredError",
+          message: "Choose a sender on private.example.",
+          verifiedDomains: ["private.example"],
+        },
+        { status: 422, headers: { "x-request-id": "request_from" } },
+      ),
+    );
+    const adapter = samva({
+      apiKey: "samva_sk_test_example",
+      baseUrl: "https://samva.test",
+      fetch: fetcher as unknown as typeof fetch,
+    });
+
+    const error = await Promise.resolve(adapter.send(message, context)).catch(
+      (caught: unknown) => caught,
+    );
+    expect(error).toBeInstanceOf(EmailAdapterError);
+    expect(error).toMatchObject({
+      status: 422,
+      requestId: "request_from",
+      retryable: false,
+      delivery: "not_sent",
+    });
+    expect((error as Error).cause).toBeUndefined();
+    expect(JSON.stringify(error)).not.toContain("private.example");
+    expect(String(error)).not.toContain("private.example");
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
   it("falls back after the real Samva client decodes a sender-readiness HTTP refusal", async () => {
     const fetcher = vi.fn(
       async () =>
@@ -512,6 +545,7 @@ describe("samva", () => {
   });
 
   it.each([
+    { tag: "FromAddressRequiredError", status: 422, retryable: false, delivery: "not_sent" },
     { tag: "SenderNotReadyError", status: 503, retryable: true, delivery: "not_sent" },
     { tag: "RateLimitedError", status: 429, retryable: true, delivery: "not_sent" },
     { tag: "OnboardingReviewRequiredError", status: 403, retryable: false, delivery: "not_sent" },

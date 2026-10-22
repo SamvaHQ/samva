@@ -13,7 +13,7 @@ The payload is the same. This cookbook covers the Effect runtime.
 ## Setup
 
 ```sh
-bun add samva@^0.23.0 effect@4.0.4
+bun add samva@^0.25.0 effect@4.0.4
 ```
 
 Keep `SAMVA_API_KEY` on the server.
@@ -39,8 +39,9 @@ const message = await Effect.runPromise(program);
 console.log(message.id, message.status);
 ```
 
-The `from` field is optional; omit it and Samva sends from the verified sender
-on your account.
+The `from` field is optional when a default sender applies. Otherwise the send
+fails with `FromAddressRequiredError`; pass an address on one of its
+`verifiedDomains`, or configure a default sender.
 
 ## Layer-provided client
 
@@ -86,6 +87,10 @@ const handled = sendWelcome("ada@example.com").pipe(
       Effect.succeed({
         retryAfterSeconds: error.retryAfterSeconds,
       }),
+    FromAddressRequiredError: (error) =>
+      Effect.succeed({
+        verifiedDomains: error.verifiedDomains,
+      }),
     ValidationError: (error) =>
       Effect.succeed({
         validationFields: error.fields ?? {},
@@ -100,6 +105,7 @@ const handled = sendWelcome("ada@example.com").pipe(
 
 `retryAfterSeconds` is always a finite number.
 `ValidationError.fields` is a `Record<string, string[]>` keyed by field name.
+`FromAddressRequiredError.verifiedDomains` lists domains available for `from`.
 
 You can also handle a whole category at once.
 The SDK exports `catchAuthError`, `catchValidationError`, `catchNotFoundError`,
@@ -108,6 +114,7 @@ The SDK exports `catchAuthError`, `catchValidationError`, `catchNotFoundError`,
 It also exports matching `isAuthError`, `isRetryable`, and `isTransient`
 predicates.
 `catchAuthError` covers both `UnauthorizedError` and `ForbiddenError`.
+`catchValidationError` covers `ValidationError` and `FromAddressRequiredError`.
 
 ```ts
 import { Effect } from "effect";
@@ -238,8 +245,9 @@ The [`examples/effect-sdk`](../examples/effect-sdk) app includes:
 
 ## FAQ
 
-**Why is there no `from`?** The `from` field is optional. Omit it and Samva
-sends from the verified sender on your account. Configure senders at
+**Why is there no `from`?** The `from` field is optional when a default sender
+applies. Otherwise the send fails with `FromAddressRequiredError`; pass an address
+on one of its `verifiedDomains`, or configure a default sender at
 [samva.dev](https://samva.dev).
 
 **Where should the API key live?** Only on the server or in an edge environment

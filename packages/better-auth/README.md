@@ -3,7 +3,7 @@
 `@samva/better-auth` wires Better Auth email callbacks to the Samva SDK. It
 covers email verification, password reset, change-email confirmation,
 delete-account confirmation, email OTP, two-factor OTP, magic links, and
-organization invitations. Requires `samva@^0.23.0`. Only the current SDK minor is
+organization invitations. Requires `samva@^0.25.0`. Only the current SDK minor is
 supported while Samva is 0.x.
 
 ```ts
@@ -26,8 +26,9 @@ export const auth = betterAuth(
 );
 ```
 
-Samva sends from the verified sender configured on your account, so there is no
-`from` option in this package.
+Configure a default sender for auth callbacks; this package has no `from`
+option. If no default applies, the SDK throws `FromAddressRequiredError` with
+`verifiedDomains`, and the adapter propagates it to the callback caller.
 
 ## Callback Fragments
 
