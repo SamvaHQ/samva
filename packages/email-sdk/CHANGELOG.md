@@ -1,3 +1,16 @@
+## @samva/email-sdk@0.10.0
+
+### Require Samva SDK 0.25
+
+Upgrade `samva` to `^0.25.0` alongside either adapter. Only the current 0.x SDK
+minor is supported; adapter development and tests use `0.25.0`.
+
+### Treat a missing sender as a known rejection
+
+`FromAddressRequiredError` now reports `delivery: "not_sent"` and
+`retryable: false`, so Email SDK can apply its configured fallback policy.
+The adapter keeps the request ID without retaining verified domain details.
+
 ## @samva/email-sdk@0.9.0
 
 ### Require Samva 0.23
