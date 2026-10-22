@@ -2,7 +2,7 @@
   "files": [
     {
       "path": "CONTRIBUTING.md",
-      "description": "Repository conventions: Bun >= 1.4.0 and Node >= 24.10.0, published @samva/* packages, runnable examples, documentation-first cookbooks, loud rejection, and webhook verification.",
+      "description": "Repository conventions: Bun >= 1.4.4 and Node >= 24.10.0, published @samva/* packages, runnable examples, documentation-first cookbooks, loud rejection, and webhook verification.",
       "scope": ["**/*"]
     },
     {

@@ -5,7 +5,7 @@
   "statusCheck": true,
   "disabledLabels": ["no-greptile"],
   "ignorePatterns": "**/node_modules/**\n**/.turbo/**\n**/dist/**\n**/build/**\n**/coverage/**\n**/.scratchpad/**\n**/*.tsbuildinfo\n**/bun.lock\n**/.wrangler/**\n**/.svelte-kit/**\n**/.claude/workflows/**\n**/pkg.tgz",
-  "instructions": "SamvaHQ/samva publishes integration packages, runnable examples, documentation-first cookbooks, and the Samva agent plugin. CONTRIBUTING.md owns repository conventions; each package AGENTS.md owns that package; code wins over prose. The workspace requires Bun >= 1.4.0 and Node >= 24.10.0. Review credential boundaries, lossy adapter behavior, and whether a change still belongs in a package, example, or cookbook. Skip style and anything oxlint, oxfmt, or the typechecker already enforce.",
+  "instructions": "SamvaHQ/samva publishes integration packages, runnable examples, documentation-first cookbooks, and the Samva agent plugin. CONTRIBUTING.md owns repository conventions; each package AGENTS.md owns that package; code wins over prose. The workspace requires Bun >= 1.4.4 and Node >= 24.10.0. Review credential boundaries, lossy adapter behavior, and whether a change still belongs in a package, example, or cookbook. Skip style and anything oxlint, oxfmt, or the typechecker already enforce.",
   "rules": [
     {
       "id": "integrations-server-side-keys",
@@ -39,7 +39,7 @@
     },
     {
       "id": "integrations-workspace-runtime",
-      "rule": "The workspace floor is Bun >= 1.4.0 and Node >= 24.10.0, as declared in the root package.json engines and CONTRIBUTING.md. Flag a change that lowers that floor.",
+      "rule": "The workspace floor is Bun >= 1.4.4 and Node >= 24.10.0, as declared in the root package.json engines and CONTRIBUTING.md. Flag a change that lowers that floor.",
       "scope": ["package.json", ".github/workflows/**", "CONTRIBUTING.md"],
       "severity": "medium"
     }

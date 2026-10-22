@@ -6,7 +6,7 @@ ones.
 
 ## Prerequisites
 
-- [Bun](https://bun.com) `>= 1.4.0` (the repo's package manager)
+- [Bun](https://bun.com) `>= 1.4.4` (the repo's package manager)
 - Node.js `>= 24.10.0`
 
 ## Local setup
