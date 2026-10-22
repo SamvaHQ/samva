@@ -245,8 +245,9 @@ The [`examples/effect-sdk`](../examples/effect-sdk) app includes:
 
 ## FAQ
 
-**Why is there no `from`?** The `from` field is optional. Omit it and Samva
-sends from the verified sender on your account. Configure senders at
+**Why is there no `from`?** The `from` field is optional when a default sender
+applies. Otherwise the send fails with `FromAddressRequiredError`; pass an address
+on one of its `verifiedDomains`, or configure a default sender at
 [samva.dev](https://samva.dev).
 
 **Where should the API key live?** Only on the server or in an edge environment
