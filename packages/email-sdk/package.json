@@ -46,7 +46,7 @@
     "test": "vitest run --config vitest.config.ts"
   },
   "devDependencies": {
-    "@opencoredev/email-sdk": "^1.1.0",
+    "@opencoredev/email-sdk": "^1.2.0",
     "samva": "0.27.0"
   },
   "peerDependencies": {
