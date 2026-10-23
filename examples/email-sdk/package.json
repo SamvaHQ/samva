@@ -10,7 +10,7 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "@opencoredev/email-sdk": "^1.2.0",
+    "@opencoredev/email-sdk": "^3.0.1",
     "@samva/email-sdk": "workspace:*",
     "samva": "^0.26.0"
   },
