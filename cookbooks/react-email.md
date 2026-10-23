@@ -29,6 +29,7 @@ The code below is identical. It is only sourced from those two packages.
 ```tsx
 import { render } from "react-email";
 import { createClient } from "samva";
+
 import VerifyEmail from "./emails/verify-email";
 
 const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });

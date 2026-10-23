@@ -66,9 +66,9 @@ Actions are the best default for contact forms and app forms.
 Astro owns validation, progressive enhancement, and the post-submit result.
 
 ```ts
+import { z } from "astro/zod";
 // src/actions/index.ts
 import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro/zod";
 
 import { samva } from "../lib/samva";
 
@@ -246,6 +246,7 @@ Samva.
 
 ```tsx
 import { render } from "@react-email/render";
+
 import WelcomeEmail from "../emails/welcome";
 
 const html = await render(<WelcomeEmail name="Ada" />);

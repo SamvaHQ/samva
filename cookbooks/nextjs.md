@@ -18,7 +18,6 @@ Component.
 ```ts
 // lib/samva.ts
 import "server-only";
-
 import { createClient } from "samva";
 
 const apiKey = process.env.SAMVA_API_KEY;
@@ -57,8 +56,8 @@ The browser can submit a `<form>` directly to server code.
 // app/contact/actions.ts
 "use server";
 
-import { samva } from "../../lib/samva";
 import { escapeHtml } from "../../lib/email-html";
+import { samva } from "../../lib/samva";
 
 export interface ContactFormState {
   status: "idle" | "success" | "error";
@@ -135,9 +134,9 @@ Use a Route Handler when another service or client needs a JSON endpoint.
 The Promise client returns the decoded message and throws on failure.
 
 ```ts
+import { escapeHtml } from "../../../lib/email-html";
 // app/api/send/route.ts
 import { samva } from "../../../lib/samva";
-import { escapeHtml } from "../../../lib/email-html";
 
 export const runtime = "edge";
 
@@ -187,8 +186,9 @@ The deep templating workflow lives in the [React Email cookbook](./react-email.m
 
 ```tsx
 import { render, toPlainText } from "react-email";
-import { samva } from "./lib/samva";
+
 import WelcomeEmail from "./emails/welcome";
+import { samva } from "./lib/samva";
 
 const html = await render(<WelcomeEmail name="Ada" />);
 const text = toPlainText(html);
