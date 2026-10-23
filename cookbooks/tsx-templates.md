@@ -98,8 +98,8 @@ imported. Compute the value in the caller and send it in the input. Read an opti
 inside a guard. Locale and time zone are send options, not schema fields.
 
 Style with Tailwind classes. `theme.css` holds the project tokens and layers by `@import`; an
-organization brand arrives with `@import "samva:brand";`. CLI 0.19 uses authoring 0.15:
-use `bg-primary`, `text-primary-foreground`, `bg-card`, `text-muted-foreground`, and `font-sans`.
+organization brand arrives with `@import "samva:brand";`. Use `bg-primary`,
+`text-primary-foreground`, `bg-card`, `text-muted-foreground`, and `font-sans`.
 Set button rounding with `--radius`. Dark mode overrides the same tokens, so templates use
 `bg-primary` once rather than a separate `dark:bg-brand-dark` utility:
 
