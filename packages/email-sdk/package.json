@@ -39,9 +39,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown src/index.ts --format esm --dts --external samva --external @opencoredev/email-sdk",
+    "build": "tsdown src/index.ts --format esm --dts --deps.never-bundle samva --deps.never-bundle @opencoredev/email-sdk",
     "prepack": "bun run build",
-    "dev": "tsdown src/index.ts --format esm --dts --watch --external samva --external @opencoredev/email-sdk",
+    "dev": "tsdown src/index.ts --format esm --dts --watch --deps.never-bundle samva --deps.never-bundle @opencoredev/email-sdk",
     "typecheck": "tsgo --noEmit",
     "test": "vitest run --config vitest.config.ts"
   },
