@@ -3,7 +3,7 @@
 `@samva/better-auth` wires Better Auth email callbacks to the Samva SDK. It
 covers email verification, password reset, change-email confirmation,
 delete-account confirmation, email OTP, two-factor OTP, magic links, and
-organization invitations. Requires `samva@^0.25.0`. Only the current SDK minor is
+organization invitations. Requires `samva@^0.26.0`. Only the current SDK minor is
 supported while Samva is 0.x.
 
 ```ts
