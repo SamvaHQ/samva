@@ -1,17 +1,8 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import type { PageProps } from "./$types";
 
-  type ContactForm = {
-    success?: boolean;
-    error?: string;
-    values?: {
-      name: string;
-      email: string;
-      message: string;
-    };
-  };
-
-  let { form } = $props<{ form?: ContactForm }>();
+  let { form }: PageProps = $props();
   let pending = $state(false);
 </script>
 
