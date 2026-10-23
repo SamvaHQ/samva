@@ -25,10 +25,33 @@ SAMVA_SEND_TOKEN=replace-with-a-random-route-token
 ```
 
 Create a Samva client helper in `src/lib/server`.
-SvelteKit 3 resolves that directory through the package `imports` field
-(`#lib/*` → `./src/lib/*`). Modules under `src/lib/server` and
-`$app/env/private` are server-only by construction. Importing either from
-client code is a build error.
+SvelteKit 3 no longer provides `$lib`. Map `#lib` in `package.json` and again
+in `tsconfig.json`. Kit does not copy that import into the generated
+TypeScript config, so a project that only sets one of them fails typecheck
+or the dev server. Modules under `src/lib/server` and `$app/env/private` are
+server-only by construction. Importing either from client code is a build
+error.
+
+```json
+// package.json
+{
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  }
+}
+```
+
+```json
+// tsconfig.json
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "#lib/*": ["./src/lib/*"]
+    }
+  }
+}
+```
 
 Declare the secrets in `src/env.ts`. A schema that returns `undefined` keeps
 the variables optional so a clone can typecheck and build before `.env` exists:
