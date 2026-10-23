@@ -7,8 +7,8 @@ organization invitations. Requires `samva@^0.27.0`. Only the current SDK minor i
 supported while Samva is 0.x.
 
 ```ts
-import { betterAuth } from "better-auth";
 import { withSamva } from "@samva/better-auth";
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth(
   withSamva(
@@ -35,8 +35,8 @@ option. If no default applies, the SDK throws `FromAddressRequiredError` with
 Use `samvaEmail()` when you want to wire Better Auth yourself:
 
 ```ts
-import { emailOTP, magicLink } from "better-auth/plugins";
 import { samvaEmail } from "@samva/better-auth";
+import { emailOTP, magicLink } from "better-auth/plugins";
 
 const samva = samvaEmail({ apiKey: process.env.SAMVA_API_KEY! });
 

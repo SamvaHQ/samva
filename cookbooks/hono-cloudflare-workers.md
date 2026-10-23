@@ -205,6 +205,7 @@ bun add @react-email/render react react-dom
 import { render, toPlainText } from "@react-email/render";
 import { Hono } from "hono";
 import { createClient, SamvaApiError, SamvaTransportError } from "samva";
+
 import WelcomeEmail from "./emails/welcome-email";
 
 type Bindings = {

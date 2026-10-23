@@ -40,7 +40,6 @@ Create a server-only Samva client:
 ```ts
 // lib/samva.ts
 import "server-only";
-
 import { createClient } from "samva";
 
 const apiKey = process.env.SAMVA_API_KEY;
