@@ -125,6 +125,7 @@ The same shape works in an HTTP endpoint or webhook receiver.
 
 ```ts
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 import { samva } from "@/lib/samva";
 
@@ -167,8 +168,9 @@ Pass both strings to Samva.
 
 ```tsx
 import { render, toPlainText } from "react-email";
-import { samva } from "@/lib/samva";
+
 import OrderConfirmation from "@/emails/order-confirmation";
+import { samva } from "@/lib/samva";
 
 const html = await render(<OrderConfirmation order={order} />);
 const text = toPlainText(html);
@@ -196,6 +198,7 @@ use a Prisma Client Extension query component.
 ```ts
 // lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
+
 import { samva } from "./samva";
 
 const base = new PrismaClient();
@@ -263,8 +266,9 @@ Prisma version split:
 Example shape:
 
 ```ts
-import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+
 import { PrismaClient } from "@/app/generated/prisma/client";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });

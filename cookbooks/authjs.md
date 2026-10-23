@@ -177,8 +177,8 @@ If your app already uses the Auth.js Nodemailer provider, you can override its
 `sendVerificationRequest` with the same Samva send.
 
 ```ts
-import { createClient } from "samva";
 import Nodemailer from "next-auth/providers/nodemailer";
+import { createClient } from "samva";
 
 const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
