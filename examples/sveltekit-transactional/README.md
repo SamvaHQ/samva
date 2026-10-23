@@ -16,7 +16,7 @@ cp examples/sveltekit-transactional/.env.example examples/sveltekit-transactiona
 ```
 
 Add a real `SAMVA_API_KEY` and a random `SAMVA_SEND_TOKEN` in `.env`. Both are
-read only from server code via `$env/dynamic/private`.
+declared in `src/env.ts` and read only from server code via `$app/env/private`.
 
 Your Samva account must have a verified sender or domain before production sends
 will deliver. This example omits the optional `from` field; Samva uses the verified
@@ -56,12 +56,15 @@ bun run --filter sveltekit-transactional-samva build
 ```
 
 The default adapter is `@sveltejs/adapter-node` so the example is buildable and
-runnable from a local clone. To deploy to Cloudflare Workers, switch
-`svelte.config.js` to `@sveltejs/adapter-cloudflare`; the Samva send calls do not
+runnable from a local clone. Kit 3 reads that adapter from `sveltekit()` in
+`vite.config.ts`. To deploy to Cloudflare Workers, pass
+`@sveltejs/adapter-cloudflare` there instead; the Samva send calls do not
 change.
 
 ## Files
 
+- `src/env.ts` declares the server-only Samva secrets.
+- `vite.config.ts` passes the Node adapter and preprocessor to `sveltekit()`.
 - `src/lib/server/samva.ts` creates the server-only Samva client at request time.
 - `src/lib/contact-email.ts` builds escaped HTML and text email content.
 - `src/routes/contact/+page.server.ts` defines the form action send flow.
