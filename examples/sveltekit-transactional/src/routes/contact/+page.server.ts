@@ -1,6 +1,7 @@
-import { buildContactEmail } from "$lib/contact-email";
-import { getSamva } from "$lib/server/samva";
 import { fail } from "@sveltejs/kit";
+
+import { buildContactEmail } from "#lib/contact-email";
+import { getSamva } from "#lib/server/samva";
 
 import type { Actions } from "./$types";
 
