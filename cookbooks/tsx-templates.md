@@ -8,8 +8,8 @@ runnable version of this page.
 ## Install the authoring toolchain
 
 ```sh
-bun add @samva/markup@^0.15.0
-bun add --dev @samva/cli@^0.19.0 @samva/vite@^0.15.0 vite typescript
+bun add @samva/markup@^0.18.0
+bun add --dev @samva/cli@^0.25.0 @samva/vite@^0.18.0 vite typescript
 ```
 
 The `samva` executable comes from `@samva/cli`; run it through your package runner so the local
