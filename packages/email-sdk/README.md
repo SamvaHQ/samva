@@ -1,7 +1,7 @@
 # `@samva/email-sdk`
 
 Provider-owned Samva community adapter for
-[Email SDK](https://email-sdk.dev). It targets `@opencoredev/email-sdk@^1.1.0`
+[Email SDK](https://email-sdk.dev). It targets `@opencoredev/email-sdk@^3.0.1`
 and `samva@^0.26.0`.
 
 This adapter is maintained by Samva as a community integration; it is not an

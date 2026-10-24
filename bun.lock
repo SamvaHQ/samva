@@ -85,7 +85,7 @@
       "name": "@samva-examples/email-sdk",
       "version": "0.0.0",
       "dependencies": {
-        "@opencoredev/email-sdk": "^1.2.0",
+        "@opencoredev/email-sdk": "^3.0.1",
         "@samva/email-sdk": "workspace:*",
         "samva": "^0.26.0",
       },
@@ -253,11 +253,11 @@
       "name": "@samva/email-sdk",
       "version": "0.10.0",
       "devDependencies": {
-        "@opencoredev/email-sdk": "^1.2.0",
+        "@opencoredev/email-sdk": "^3.0.1",
         "samva": "0.26.0",
       },
       "peerDependencies": {
-        "@opencoredev/email-sdk": "^1.1.0",
+        "@opencoredev/email-sdk": "^3.0.1",
         "samva": "^0.26.0",
       },
     },
@@ -583,7 +583,7 @@
 
     "@oozcitak/util": ["@oozcitak/util@10.0.0", "", {}, "sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA=="],
 
-    "@opencoredev/email-sdk": ["@opencoredev/email-sdk@1.2.0", "", { "peerDependencies": { "@react-email/render": "^2.1.0", "ai": "^6.0.182 || ^7.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@react-email/render", "ai", "react", "react-dom"], "bin": { "email-sdk": "dist/cli.js" } }, "sha512-Wad4Ugxiwy5NkgWhuFxGwQpciNnG3PEH6pirhKg1Wf+bvJG1n30QwjzJhCDb9uG76KH6NrA7q9LlR7SjzqyHcQ=="],
+    "@opencoredev/email-sdk": ["@opencoredev/email-sdk@3.0.1", "", { "dependencies": { "nodemailer": "^10.0.13" }, "peerDependencies": { "@react-email/render": "^2.1.0", "ai": "^6.0.182 || ^7.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@react-email/render", "ai", "react", "react-dom"], "bin": { "email-sdk": "dist/cli.js" } }, "sha512-GkMqq0QX3qhyPE1Mqgw3VxBMXJAte8qtXhkVhoNuBB/CfhwsKR9nRZ5TMfWdeXjtP3w3KURWd5G9q9fI0QM3Hw=="],
 
     "@oslojs/encoding": ["@oslojs/encoding@1.1.0", "", {}, "sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ=="],
 
@@ -1540,6 +1540,8 @@
     "node-mock-http": ["node-mock-http@1.0.5", "", {}, "sha512-KQyt/wLjG3TAc7DOUhpqWzgd4ERxR80JOlTK5VE5R1S12IaPVN5qkj4klBce9HPG1Njuup4Sb5bljaT34lIyjw=="],
 
     "node-releases": ["node-releases@2.0.53", "", {}, "sha512-D9UOmYG3UH1V+ENW56t5QXBwJw1YEY18ruVeus89Rw+SyIgjPkCO84bRzO3uNIYosJbNwiabWVn48o3uJLjxFQ=="],
+
+    "nodemailer": ["nodemailer@10.2.1", "", {}, "sha512-ZrDNsPFoDMwefNs7sJwrYiEJ/CG4ClJWDZv05iNJsEBWa8GRDry1QJHTJxsuTAY9eDDKjX4k+q3SxslXJOao7w=="],
 
     "normalize-path": ["normalize-path@3.0.0", "", {}, "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="],
 
