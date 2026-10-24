@@ -1,7 +1,8 @@
-import { env } from "$env/dynamic/private";
-import { buildContactEmail } from "$lib/contact-email";
-import { getSamva } from "$lib/server/samva";
+import { SAMVA_SEND_TOKEN } from "$app/env/private";
 import { error, json } from "@sveltejs/kit";
+
+import { buildContactEmail } from "#lib/contact-email";
+import { getSamva } from "#lib/server/samva";
 
 import type { RequestHandler } from "./$types";
 
@@ -20,7 +21,7 @@ const readString = (value: unknown): string => (typeof value === "string" ? valu
 const isEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export const POST: RequestHandler = async ({ request }) => {
-  const sendToken = env.SAMVA_SEND_TOKEN;
+  const sendToken = SAMVA_SEND_TOKEN;
   if (!sendToken) {
     error(500, "SAMVA_SEND_TOKEN is not configured.");
   }
