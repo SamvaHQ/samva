@@ -32,15 +32,14 @@
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.10",
-    "@types/bun": "^1.4.0",
+    "@types/bun": "^1.4.4",
     "@typescript/native-preview": "^7.0.0-dev.20260624.1",
     "oxfmt": "^0.65.0",
-    "oxlint": "^1.80.0",
-    "samva": "^0.26.0",
-    "tegami": "^1.4.0",
+    "oxlint": "^1.89.0",
+    "tegami": "^1.5.0",
     "tsdown": "^0.22.13",
-    "turbo": "^2.10.12",
-    "vitest": "^4.1.11"
+    "turbo": "^2.11.10",
+    "vitest": "^4.1.12"
   },
   "engines": {
     "bun": ">=1.4.4",
