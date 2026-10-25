@@ -274,7 +274,7 @@ idempotency key when retrying the same request. The Effect equivalent is
 
 ## Other services
 
-The client's namespaces are `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
+The client's namespaces are `agents`, `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
 `contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
 facade plus domains, senders, tracking, review, and blocks), `events`,
 `extensionInstallations`, `extensions`, `feedback`, `journeys`, `mailboxes`, `media`,
@@ -285,6 +285,10 @@ it calls, so `samva.contacts.bulkImport` is documented at
 flat parameters, return decoded success values, and throw typed errors. The
 Effect module for a namespace is its kebab-cased path, such as
 `samva/effect/unsubscribe-groups`.
+
+The `agents` namespace exposes the hosted Agents API: **Preview · Available to selected
+organizations.** Use `samva.agents` with the Promise client or
+`import * as Agents from "samva/effect/agents"` with Effect.
 
 ## REST equivalent
 
@@ -318,6 +322,7 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
+| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 

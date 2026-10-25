@@ -142,6 +142,10 @@ render-email | samva email send \
   --html -
 ```
 
+`--from` (with optional `--from-name`) on `email send` and `scheduled-messages create` names a
+verified sender or any address on a verified domain. Omitted, the send uses the default sender, else
+the only verified sender; with neither it fails with `FromAddressRequiredError`.
+
 ## Author templates locally
 
 A template is a TSX file in the static profile, so the CLI reads and renders it without running it.
@@ -395,6 +399,7 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
+| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
