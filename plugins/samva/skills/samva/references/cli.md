@@ -82,7 +82,7 @@ Resolution order is deterministic:
 | Email send and readiness | `samva email send`, `email doctor`, `email domains`, `email senders` (both have `set-default`), `email receiving`, `email review`, and `email tracking`                                                                         |
 | Message inspection       | `samva messages` with `list`, `get`, `events`, or `wait`                                                                                                                                                                        |
 | Scheduled email          | `samva scheduled-messages` with `create`, `list`, `get`, `cancel`, or `resume`                                                                                                                                                  |
-| Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, and the `runs` group                                                                                                                                       |
+| Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, `report <campaignId> <runId>` (email only; directional opens/clicks), and the `runs` group                                                                 |
 | Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, `from-website`, and remote lifecycle commands                                                                                          |
 | Mailboxes                | `samva mailboxes` with `list`, `create`, `get`, `update`, `pause`, `resume`, `remove`, `threads`, `read`, `send`, `reply`, `events`, `actions list\|get\|cancel\|retry\|approve\|deny`, and `quarantine list\|release\|discard` |
 | Mailbox extensions       | `samva extensions` with `init`, `build`, `dev`, `publish`, `list`, `versions`, `version`, `install`, `installations`, `installation`, `upgrade`, `enable`, `disable`, `uninstall`, `runs`, `run`                                |
@@ -404,8 +404,8 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.
-Each entry names the address and suppression reason; `group-unsubscribe` also names its
-`unsubscribeGroupId`. An accepted send can wait: `waitReason: "content-review"` means the
+Each entry names the address and suppression reason; `topic-unsubscribe` also names its
+`topicId`. An accepted send can wait: `waitReason: "content-review"` means the
 content needs review, and `reviewExpectedAt` gives the expected decision time.
 `waitReason: "screening-unavailable"` means Samva's content check is temporarily unavailable;
 it is retried automatically when the service recovers, and `reviewExpectedAt` is absent or null.
