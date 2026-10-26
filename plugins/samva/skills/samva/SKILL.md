@@ -112,8 +112,8 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.
-Each entry names the address and suppression reason; `group-unsubscribe` also names its
-`unsubscribeGroupId`. An accepted send can wait: `waitReason: "content-review"` means the
+Each entry names the address and suppression reason; `topic-unsubscribe` also names its
+`topicId`. An accepted send can wait: `waitReason: "content-review"` means the
 content needs review, and `reviewExpectedAt` gives the expected decision time.
 `waitReason: "screening-unavailable"` means Samva's content check is temporarily unavailable;
 it is retried automatically when the service recovers, and `reviewExpectedAt` is absent or null.

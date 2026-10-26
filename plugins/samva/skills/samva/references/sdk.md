@@ -279,12 +279,12 @@ The client's namespaces are `agents`, `analytics`, `apiKeys`, `attachments`, `br
 facade plus domains, senders, tracking, review, and blocks), `events`,
 `extensionInstallations`, `extensions`, `feedback`, `journeys`, `mailboxes`, `media`,
 `messages`, `namespaces`, `operations`, `organizations`, `scheduledMessages`,
-`subscriptions`, `templates`, `unsubscribeGroups`, `webhooks`, and `whoami`. Each method is named for the API operation
-it calls, so `samva.contacts.bulkImport` is documented at
-`https://samva.dev/docs/api-reference/contacts/bulkImport`. All methods take
+`subscriptions`, `templates`, `topics`, `webhooks`, and `whoami`. Each method is named for the API operation
+it calls, so `samva.contacts.find` is documented at
+`https://samva.dev/docs/api-reference/contacts/find`. All methods take
 flat parameters, return decoded success values, and throw typed errors. The
 Effect module for a namespace is its kebab-cased path, such as
-`samva/effect/unsubscribe-groups`.
+`samva/effect/topics`.
 
 The `agents` namespace exposes the hosted Agents API: **Preview · Available to selected
 organizations.** Use `samva.agents` with the Promise client or
@@ -327,8 +327,8 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.
-Each entry names the address and suppression reason; `group-unsubscribe` also names its
-`unsubscribeGroupId`. An accepted send can wait: `waitReason: "content-review"` means the
+Each entry names the address and suppression reason; `topic-unsubscribe` also names its
+`topicId`. An accepted send can wait: `waitReason: "content-review"` means the
 content needs review, and `reviewExpectedAt` gives the expected decision time.
 `waitReason: "screening-unavailable"` means Samva's content check is temporarily unavailable;
 it is retried automatically when the service recovers, and `reviewExpectedAt` is absent or null.
