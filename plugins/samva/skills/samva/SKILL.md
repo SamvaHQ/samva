@@ -107,6 +107,7 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
+| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
