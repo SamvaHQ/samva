@@ -1,6 +1,7 @@
 # Email SDK example
 
 Send one server-side email through Email SDK with `@samva/email-sdk`.
+This adapter requires `@opencoredev/email-sdk@^3.0.1`; upgrade consumers on 1.x or 2.x.
 
 The example uses published dependency ranges for Email SDK and Samva, plus the
 workspace adapter while developing this repository. Build and typecheck never
