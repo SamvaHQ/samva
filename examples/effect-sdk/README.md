@@ -14,7 +14,7 @@ Set `SAMVA_API_KEY` in `.env`. The key must belong to a Samva account with a
 verified sender. The `from` field is optional; when omitted, Samva sends from
 the verified sender.
 
-This example pins `effect@4.0.4` to match the `samva/effect` peer
+This example pins `effect@4.0.5` to match the `samva/effect` peer
 dependency exactly. `Client.layerFetch` uses the platform fetch client.
 
 ## Send from a script

@@ -20,7 +20,7 @@ npm install samva
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect@4.0.4
+bun add samva effect@4.0.6
 ```
 
 ## Promise client
@@ -324,6 +324,7 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
 | `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
+| `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.

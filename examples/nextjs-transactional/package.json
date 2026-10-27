@@ -13,7 +13,7 @@
     "next": "^16.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "samva": "^0.27.0",
+    "samva": "^0.29.1",
     "server-only": "^0.0.1"
   },
   "devDependencies": {

@@ -41,8 +41,8 @@ bun run typecheck
 bun run test
 ```
 
-The tests use a fake event stream, a fake client, and `@samva/mailbox/test`. They never contact
-Samva.
+The tests use a fake event stream, the Samva client with a mocked HTTP transport, and
+`@samva/mailbox/test`. They never contact Samva.
 
 ## Run the event-stream agent
 

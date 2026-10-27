@@ -12,7 +12,7 @@
   "dependencies": {
     "@opencoredev/email-sdk": "^3.0.1",
     "@samva/email-sdk": "workspace:*",
-    "samva": "^0.27.0"
+    "samva": "^0.29.1"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4"
