@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 
-import { createClient } from "samva";
+import { createClient, InternalError } from "samva";
 import { generateWebhookSecret, signWebhook } from "samva/webhooks";
 import { test } from "vitest";
 
@@ -24,6 +24,11 @@ const createHarness = (
     // Serve existing endpoints one per page to exercise cursor paging.
     readonly pageSize?: number;
     readonly failingSends?: number;
+    // Both conversation reads return this response instead of a conversation.
+    readonly conversationRead?: {
+      readonly status: number;
+      readonly body: unknown;
+    };
   } = {},
 ) => {
   const requests: Array<{
@@ -75,6 +80,13 @@ const createHarness = (
           success: true,
           recipients: ["support@example.com"],
         });
+      }
+      if (
+        options.conversationRead &&
+        request.method === "GET" &&
+        url.pathname.startsWith("/v1/conversations/")
+      ) {
+        return json(options.conversationRead.body, options.conversationRead.status);
       }
       if (request.method === "POST" && url.pathname === "/v1/messages") {
         if (remainingSendFailures > 0) {
@@ -327,6 +339,80 @@ test("treats a redelivery after a successful send as a duplicate", async () => {
   assert.deepEqual(redelivery, { accepted: false, reason: "duplicate" });
   assert.equal(requests.length, requestsAfterFirst);
   assert.equal(processedWebhookIds.size, 1);
+});
+
+test.each([
+  {
+    reason: "not-found",
+    status: 404,
+    body: {
+      _tag: "ResourceNotFoundError",
+      resource: "conversation",
+      id: "conv_01",
+      message: "Conversation not found.",
+    },
+  },
+  {
+    reason: "forbidden",
+    status: 403,
+    body: {
+      _tag: "ForbiddenError",
+      message: "Missing permission to read this conversation.",
+    },
+  },
+  {
+    reason: "unauthorized",
+    status: 401,
+    body: {
+      _tag: "UnauthorizedError",
+      message: "Invalid API key.",
+    },
+  },
+] as const)(
+  "acknowledges a $body._tag from the conversation read without sending a reply",
+  async ({ reason, status, body }) => {
+    const { samva, requests } = createHarness({ conversationRead: { status, body } });
+    const secret = generateWebhookSecret();
+    const processedWebhookIds = new Set<string>();
+
+    const result = await handleInboundReply(await signedRequest(secret, replyData()), {
+      samva,
+      webhookSecret: secret,
+      processedWebhookIds,
+    });
+
+    assert.deepEqual(result, { accepted: false, reason });
+    assert.equal(processedWebhookIds.size, 0);
+    assert.deepEqual(
+      requests.map(({ method, path }) => `${method} ${path}`),
+      ["GET /v1/conversations/conv_01", "GET /v1/conversations/conv_01/messages"],
+    );
+  },
+);
+
+test("rethrows a transient conversation read so the webhook can be retried", async () => {
+  const { samva, requests } = createHarness({
+    conversationRead: {
+      status: 500,
+      body: { _tag: "InternalError", message: "Temporary failure." },
+    },
+  });
+  const secret = generateWebhookSecret();
+  const processedWebhookIds = new Set<string>();
+
+  await assert.rejects(
+    handleInboundReply(await signedRequest(secret, replyData()), {
+      samva,
+      webhookSecret: secret,
+      processedWebhookIds,
+    }),
+    (error: unknown) => error instanceof InternalError,
+  );
+  assert.equal(processedWebhookIds.size, 0);
+  assert.equal(
+    requests.some((request) => request.method === "POST" && request.path === "/v1/messages"),
+    false,
+  );
 });
 
 test.each(["sms", "whatsapp"])(

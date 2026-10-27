@@ -1,7 +1,7 @@
 // This consumer example validates the SDK's `data: unknown` webhook payload
 // without pulling Effect Schema into a sample that installs only `samva`; the
 // SDK's portable verifier uses the same closed-boundary rationale.
-import type { SamvaClient } from "samva";
+import { ForbiddenError, ResourceNotFoundError, UnauthorizedError, type SamvaClient } from "samva";
 import { verifyRequest } from "samva/webhooks";
 
 type InboundReply = {
@@ -11,6 +11,29 @@ type InboundReply = {
   readonly from: string;
   readonly subject?: string;
   readonly isAutoReply?: boolean;
+};
+
+const unreadableConversation = (error: unknown) => {
+  if (error instanceof ResourceNotFoundError) return "not-found" as const;
+  if (error instanceof ForbiddenError) return "forbidden" as const;
+  if (error instanceof UnauthorizedError) return "unauthorized" as const;
+  return undefined;
+};
+
+// These reads cannot succeed on another delivery of the same event. Acknowledge
+// them instead of throwing, which the HTTP handler would turn into a retry.
+const readConversation = async (samva: SamvaClient, conversationId: string) => {
+  try {
+    const [conversation, messages] = await Promise.all([
+      samva.conversations.getById({ id: conversationId }),
+      samva.conversations.listMessages({ id: conversationId }),
+    ]);
+    return { ok: true as const, conversation, messages };
+  } catch (error) {
+    const reason = unreadableConversation(error);
+    if (reason === undefined) throw error;
+    return { ok: false as const, reason };
+  }
 };
 
 const isInboundReply = (value: unknown): value is InboundReply => {
@@ -103,10 +126,9 @@ export async function handleInboundReply(
   }
 
   const reply = verified.event.data;
-  const [conversation, messages] = await Promise.all([
-    input.samva.conversations.getById({ id: reply.conversationId }),
-    input.samva.conversations.listMessages({ id: reply.conversationId }),
-  ]);
+  const loaded = await readConversation(input.samva, reply.conversationId);
+  if (!loaded.ok) return { accepted: false, reason: loaded.reason } as const;
+  const { conversation, messages } = loaded;
 
   const sent = await input.samva.email.send(
     {

@@ -104,6 +104,12 @@ const sent = await samva.email.send(
 );
 ```
 
+If either read throws `ResourceNotFoundError`, `ForbiddenError`, or
+`UnauthorizedError`, do not send. The example returns `{ accepted: false, reason }`
+with `"not-found"`, `"forbidden"`, or `"unauthorized"`, and the HTTP handler
+responds `200`. Another delivery of this event cannot make the read succeed. Any
+other failure still throws, so a transient error can be retried.
+
 Ignore automatic responses such as out-of-office replies. Replying to one starts
 a loop.
 
@@ -140,8 +146,8 @@ bun --cwd examples/inbound-email-replies run test
 ```
 
 The suite covers setup convergence, a verified receive-and-reply, auto-reply
-skipping, a subjectless fallback, retry after a failed send, and rejection of a
-bad signature.
+skipping, a subjectless fallback, retry after a failed send, rejection of a
+bad signature, and a missing or unauthorized conversation.
 
 ## Example
 
