@@ -1,5 +1,5 @@
 import { MailboxEventStreamError } from "samva";
-import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
+import type { MailboxEvent, SamvaClient } from "samva";
 
 import { composeReply, parseReceivedMessage } from "./reply";
 
@@ -8,24 +8,6 @@ export interface CursorStore {
   load(): Promise<string | undefined>;
   save(cursor: string): Promise<void>;
   clear(): Promise<void>;
-}
-
-/** The slice of `createClient(...)` the agent uses, so tests can supply a fake. */
-export interface MailboxAgentClient {
-  readonly mailboxes: {
-    events(options?: MailboxEventStreamOptions): AsyncIterable<MailboxEvent>;
-    reply(params: {
-      id: string;
-      messageId: string;
-      text: string;
-      "idempotency-key": string;
-    }): Promise<MailboxSendReceipt>;
-    listThreads(params: {
-      id: string;
-      unread: "true";
-      limit: string;
-    }): Promise<{ items: ReadonlyArray<{ id: string }> }>;
-  };
 }
 
 export interface MailboxAgentOptions {
@@ -37,7 +19,7 @@ export interface MailboxAgentOptions {
 
 /** Handle one event. Returns after the reply request settles; throws if it fails. */
 export const handleEvent = async (
-  client: MailboxAgentClient,
+  client: SamvaClient,
   event: MailboxEvent,
   log: (line: string) => void,
 ): Promise<void> => {
@@ -71,7 +53,7 @@ export const handleEvent = async (
  * idempotency key on the reply makes that replay safe.
  */
 export const runMailboxAgent = async (
-  client: MailboxAgentClient,
+  client: SamvaClient,
   options: MailboxAgentOptions,
 ): Promise<void> => {
   const log = options.log ?? console.log;
@@ -96,8 +78,8 @@ export const runMailboxAgent = async (
       // The retained window passed. Read current state, then start without a cursor.
       const unread = await client.mailboxes.listThreads({
         id: options.mailboxId,
-        unread: "true",
-        limit: "20",
+        unread: true,
+        limit: 20,
       });
       log(`cursor expired: ${unread.items.length} unread threads need review; restarting`);
       await options.store.clear();

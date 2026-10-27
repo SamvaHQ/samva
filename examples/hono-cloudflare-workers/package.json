@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "hono": "^4.13.13",
-    "samva": "^0.27.0"
+    "samva": "^0.29.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261023.1",

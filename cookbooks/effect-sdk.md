@@ -13,11 +13,11 @@ The payload is the same. This cookbook covers the Effect runtime.
 ## Setup
 
 ```sh
-bun add samva@^0.27.0 effect@4.0.4
+bun add samva@^0.29.1 effect@4.0.5
 ```
 
 Keep `SAMVA_API_KEY` on the server.
-Pin Effect 4 to `4.0.4` to match the SDK peer dependency exactly.
+Pin Effect 4 to `4.0.5` to match the SDK peer dependency exactly.
 `Client.layerFetch` already provides the fetch layer.
 
 ## First send

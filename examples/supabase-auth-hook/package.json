@@ -14,7 +14,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-email": "^6.11.3",
-    "samva": "^0.27.0",
+    "samva": "^0.29.1",
     "standardwebhooks": "^1.1.1"
   },
   "devDependencies": {

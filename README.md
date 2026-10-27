@@ -14,9 +14,9 @@ about the code on [DeepWiki](https://deepwiki.com/SamvaHQ/samva).
 - `cookbooks/*.md` — documentation-first, copy-pasteable recipes.
 - `plugins/*` — coding-agent plugins and public documentation.
 
-While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.27. Workspace
-packages require `samva@^0.27.0` as a peer and test against `0.27.0`. Examples use
-`samva@^0.27.0`; copyable external import maps pin `samva@0.27.0`.
+While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.29. Workspace
+packages require `samva@^0.29.1` as a peer and test against `0.29.1`. Examples use
+`samva@^0.29.1`; copyable external import maps pin `samva@0.29.1`.
 
 ## Package integrations
 

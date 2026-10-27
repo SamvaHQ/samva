@@ -14,7 +14,7 @@
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "samva": "^0.27.0"
+    "samva": "^0.29.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^6.0.0",
