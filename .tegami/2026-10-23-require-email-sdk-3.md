@@ -1,6 +1,6 @@
 ---
 packages:
-  "@samva/email-sdk": major
+  "@samva/email-sdk": minor
 ---
 
 ## Require Email SDK 3
