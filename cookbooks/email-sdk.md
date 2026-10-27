@@ -11,7 +11,7 @@ consumers; a live Samva account send has not yet been recorded for this release.
 ## Install
 
 ```sh
-bun add @samva/email-sdk @opencoredev/email-sdk samva
+bun add @samva/email-sdk @opencoredev/email-sdk@^3.0.1 samva
 ```
 
 ## Send with the direct adapter

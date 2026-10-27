@@ -10,7 +10,7 @@ official built-in Email SDK adapter.
 ## Install
 
 ```sh
-bun add @samva/email-sdk @opencoredev/email-sdk samva
+bun add @samva/email-sdk @opencoredev/email-sdk@^3.0.1 samva
 ```
 
 ## Register the adapter
