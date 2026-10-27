@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 
-import { createClient } from "samva";
+import { createClient, InternalError } from "samva";
 import { generateWebhookSecret, signWebhook } from "samva/webhooks";
 import { test } from "vitest";
 
@@ -24,6 +24,11 @@ const createHarness = (
     // Serve existing endpoints one per page to exercise cursor paging.
     readonly pageSize?: number;
     readonly failingSends?: number;
+    // Fail one conversation read. The other returns a conversation or an empty page.
+    readonly conversationReads?: {
+      readonly get?: { readonly status: number; readonly body: unknown };
+      readonly messages?: { readonly status: number; readonly body: unknown };
+    };
   } = {},
 ) => {
   const requests: Array<{
@@ -75,6 +80,14 @@ const createHarness = (
           success: true,
           recipients: ["support@example.com"],
         });
+      }
+      if (request.method === "GET" && url.pathname === "/v1/conversations/conv_01/messages") {
+        const failure = options.conversationReads?.messages;
+        if (failure) return json(failure.body, failure.status);
+      }
+      if (request.method === "GET" && url.pathname === "/v1/conversations/conv_01") {
+        const failure = options.conversationReads?.get;
+        if (failure) return json(failure.body, failure.status);
       }
       if (request.method === "POST" && url.pathname === "/v1/messages") {
         if (remainingSendFailures > 0) {
@@ -328,6 +341,93 @@ test("treats a redelivery after a successful send as a duplicate", async () => {
   assert.equal(requests.length, requestsAfterFirst);
   assert.equal(processedWebhookIds.size, 1);
 });
+
+const unreadableConversationReads = (
+  [
+    {
+      reason: "not-found",
+      status: 404,
+      body: {
+        _tag: "ResourceNotFoundError",
+        resource: "conversation",
+        id: "conv_01",
+        message: "Conversation not found.",
+      },
+    },
+    {
+      reason: "forbidden",
+      status: 403,
+      body: {
+        _tag: "ForbiddenError",
+        message: "Missing permission to read this conversation.",
+      },
+    },
+    {
+      reason: "unauthorized",
+      status: 401,
+      body: {
+        _tag: "UnauthorizedError",
+        message: "Invalid API key.",
+      },
+    },
+  ] as const
+).flatMap((failure) =>
+  (["get", "messages"] as const).map((endpoint) => ({ endpoint, ...failure })),
+);
+
+test.each(unreadableConversationReads)(
+  "acknowledges a $body._tag from the $endpoint read without sending a reply",
+  async ({ endpoint, reason, status, body }) => {
+    const { samva, requests } = createHarness({
+      conversationReads: { [endpoint]: { status, body } },
+    });
+    const secret = generateWebhookSecret();
+    const processedWebhookIds = new Set<string>();
+
+    const result = await handleInboundReply(await signedRequest(secret, replyData()), {
+      samva,
+      webhookSecret: secret,
+      processedWebhookIds,
+    });
+
+    assert.deepEqual(result, { accepted: false, reason });
+    assert.equal(processedWebhookIds.size, 0);
+    assert.deepEqual(
+      requests.map(({ method, path }) => `${method} ${path}`),
+      ["GET /v1/conversations/conv_01", "GET /v1/conversations/conv_01/messages"],
+    );
+  },
+);
+
+test.each(["get", "messages"] as const)(
+  "rethrows a transient %s read so the webhook can be retried",
+  async (endpoint) => {
+    const { samva, requests } = createHarness({
+      conversationReads: {
+        [endpoint]: {
+          status: 500,
+          body: { _tag: "InternalError", message: "Temporary failure." },
+        },
+      },
+    });
+    const secret = generateWebhookSecret();
+    const processedWebhookIds = new Set<string>();
+
+    await assert.rejects(
+      handleInboundReply(await signedRequest(secret, replyData()), {
+        samva,
+        webhookSecret: secret,
+        processedWebhookIds,
+      }),
+      (error: unknown) => error instanceof InternalError,
+    );
+    assert.equal(processedWebhookIds.size, 0);
+    assert.deepEqual(
+      requests.map(({ method, path }) => `${method} ${path}`),
+      ["GET /v1/conversations/conv_01", "GET /v1/conversations/conv_01/messages"],
+    );
+  },
+);
 
 test.each(["sms", "whatsapp"])(
   "ignores a signed %s event without reading or sending email",

@@ -44,6 +44,20 @@ export async function POST(request: Request) {
 }
 ```
 
+A conversation the handler cannot read sends no reply. When `conversations.getById`
+or `conversations.listMessages` throws, `handleInboundReply` returns
+`{ accepted: false, reason }` and sends nothing:
+
+- `ResourceNotFoundError` → `"not-found"`
+- `ForbiddenError` → `"forbidden"`
+- `UnauthorizedError` → `"unauthorized"`
+
+The handler above answers `200`, so Samva does not deliver the same event again.
+Retrying cannot make that read succeed. The webhook id stays out of
+`processedWebhookIds` because no reply was sent. Any other read or send failure
+still throws, so a transient error can be retried, and an invalid signature still
+fails the request.
+
 `configureInboundEmail` creates the endpoint on the first run and reconciles and
 reuses it on later runs, so a partial setup converges. A signing secret is shown
 only when the endpoint is created; if a previous run lost it, rotate it with
