@@ -25,24 +25,64 @@ SAMVA_SEND_TOKEN=replace-with-a-random-route-token
 ```
 
 Create a Samva client helper in `src/lib/server`.
-Modules under `src/lib/server` and `$env/*/private` are server-only by
-construction. Importing either from client code is a build error.
+SvelteKit 3 no longer provides `$lib`. Map `#lib` in `package.json` and again
+in `tsconfig.json`. Kit does not copy that import into the generated
+TypeScript config, so a project that only sets one of them fails typecheck
+or the dev server. Modules under `src/lib/server` and `$app/env/private` are
+server-only by construction. Importing either from client code is a build
+error.
+
+```json
+// package.json
+{
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  }
+}
+```
+
+```json
+// tsconfig.json
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "#lib/*": ["./src/lib/*"]
+    }
+  }
+}
+```
+
+Declare the secrets in `src/env.ts`. A schema that returns `undefined` keeps
+the variables optional so a clone can typecheck and build before `.env` exists:
+
+```ts
+// src/env.ts
+import { defineEnvVars } from "@sveltejs/kit/env";
+
+const optionalSecret = (value: string | undefined): string | undefined =>
+  value ? value : undefined;
+
+export const variables = defineEnvVars({
+  SAMVA_API_KEY: { schema: optionalSecret },
+  SAMVA_SEND_TOKEN: { schema: optionalSecret },
+});
+```
 
 ```ts
 // src/lib/server/samva.ts
-import { env } from "$env/dynamic/private";
+import { SAMVA_API_KEY } from "$app/env/private";
 import { createClient } from "samva";
 import type { SamvaClient } from "samva";
 
 let samva: SamvaClient | undefined;
 
 export function getSamva(): SamvaClient {
-  const apiKey = env.SAMVA_API_KEY;
-  if (!apiKey) {
+  if (!SAMVA_API_KEY) {
     throw new Error("SAMVA_API_KEY is not set.");
   }
 
-  return (samva ??= createClient({ apiKey }));
+  return (samva ??= createClient({ apiKey: SAMVA_API_KEY }));
 }
 ```
 
@@ -67,9 +107,10 @@ You can progressively enhance it with `use:enhance`.
 ```ts
 // src/routes/contact/+page.server.ts
 import { fail } from "@sveltejs/kit";
-import type { Actions } from "./$types";
 
-import { getSamva } from "$lib/server/samva";
+import { getSamva } from "#lib/server/samva";
+
+import type { Actions } from "./$types";
 
 const escapeHtml = (value: string): string =>
   value
@@ -113,7 +154,7 @@ Render the action result from the page `form` prop:
 <script lang="ts">
   import { enhance } from "$app/forms";
 
-  let { form } = $props<{ form?: { success?: boolean; error?: string } }>();
+  let { form }: { form?: { success?: boolean; error?: string } } = $props();
   let pending = $state(false);
 </script>
 
@@ -143,11 +184,12 @@ app. Keep auth and rate limits in the endpoint or surrounding hooks.
 
 ```ts
 // src/routes/api/send/+server.ts
-import { env } from "$env/dynamic/private";
+import { SAMVA_SEND_TOKEN } from "$app/env/private";
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
 
-import { getSamva } from "$lib/server/samva";
+import { getSamva } from "#lib/server/samva";
+
+import type { RequestHandler } from "./$types";
 
 const escapeHtml = (value: string): string =>
   value
@@ -163,7 +205,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const readString = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 
 export const POST: RequestHandler = async ({ request }) => {
-  const sendToken = env.SAMVA_SEND_TOKEN;
+  const sendToken = SAMVA_SEND_TOKEN;
   if (!sendToken) {
     error(500, "SAMVA_SEND_TOKEN is not configured.");
   }
@@ -212,18 +254,18 @@ The code around the send decides compatibility.
 Avoid Node-only database drivers, filesystem access, SMTP-over-TCP, and
 `node:crypto` in Workers handlers.
 
-Prefer `$env/dynamic/private` for runtime secrets.
-Use `$env/static/private` only when the key is present during build and
-typecheck.
-The SvelteKit Cloudflare adapter recommends `$env` modules for environment
+Prefer `$app/env/private` with `static: false` (the default) for runtime secrets.
+Set `static: true` only when the key is present during build and typecheck.
+The SvelteKit Cloudflare adapter reads the same module for environment
 variables.
 If your key is available only as a Worker binding, construct the client per
 request from `platform.env` instead of importing the module-scope client.
 
 ```ts
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
 import { createClient } from "samva";
+
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ platform }) => {
   const apiKey = platform?.env.SAMVA_API_KEY;
@@ -259,8 +301,9 @@ The SvelteKit seam is render, derive text, then send.
 
 ```tsx
 import { render, toPlainText } from "react-email";
-import WelcomeEmail from "$lib/emails/welcome";
-import { getSamva } from "$lib/server/samva";
+
+import WelcomeEmail from "#lib/emails/welcome";
+import { getSamva } from "#lib/server/samva";
 
 const html = await render(<WelcomeEmail name="Ada" />);
 const text = toPlainText(html);
@@ -281,7 +324,7 @@ Auth.js owns the verification token and magic-link URL. Samva owns delivery.
 // src/auth.ts
 import { SvelteKitAuth } from "@auth/sveltekit";
 
-import { getSamva } from "$lib/server/samva";
+import { getSamva } from "#lib/server/samva";
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
   // adapter: <your database adapter>,
@@ -323,11 +366,11 @@ Use `+server.ts` for JSON clients, external services, and webhook endpoints.
 **Where is `from`?** `from` is optional. Omit it and Samva sends from the verified sender on your account at
 [samva.dev](https://samva.dev).
 
-**`$env/static/private` or `$env/dynamic/private`?** Use dynamic for cloneable
-examples and hosts that inject secrets at runtime.
-Use static when the value is available to SvelteKit during build and typecheck
-and you want compile-time replacement.
-Both are server-only.
+**Static or runtime secrets?** Declare both in `src/env.ts` and import them
+from `$app/env/private`. Leave `static` unset for cloneable examples and hosts
+that inject secrets at runtime. Set `static: true` when the value is available
+during build and typecheck and you want compile-time replacement. The module
+is server-only.
 
 **Can I fire-and-forget?** Usually no.
 Await transactional sends so the UI or API caller knows whether Samva accepted

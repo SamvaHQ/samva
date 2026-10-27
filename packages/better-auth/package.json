@@ -47,8 +47,8 @@
     "test": "vitest run --config vitest.config.ts"
   },
   "devDependencies": {
-    "@react-email/render": "^2.0.0",
-    "better-auth": "^1.7.2",
+    "@react-email/render": "^2.1.1",
+    "better-auth": "^1.7.12",
     "samva": "0.27.0"
   },
   "peerDependencies": {

@@ -19,8 +19,8 @@ bun add @react-email/render react react-dom
 ## Use the transformer
 
 ```ts
-import { betterAuth } from "better-auth";
 import { withSamva } from "@samva/better-auth";
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth(
   withSamva(
@@ -50,9 +50,9 @@ Existing callbacks are preserved.
 ## Use callback fragments
 
 ```ts
+import { samvaEmail } from "@samva/better-auth";
 import { betterAuth } from "better-auth";
 import { emailOTP, magicLink } from "better-auth/plugins";
-import { samvaEmail } from "@samva/better-auth";
 
 const samva = samvaEmail({ apiKey: process.env.SAMVA_API_KEY! });
 
