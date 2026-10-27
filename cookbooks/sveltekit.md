@@ -107,9 +107,10 @@ You can progressively enhance it with `use:enhance`.
 ```ts
 // src/routes/contact/+page.server.ts
 import { fail } from "@sveltejs/kit";
-import type { Actions } from "./$types";
 
 import { getSamva } from "#lib/server/samva";
+
+import type { Actions } from "./$types";
 
 const escapeHtml = (value: string): string =>
   value
@@ -185,9 +186,10 @@ app. Keep auth and rate limits in the endpoint or surrounding hooks.
 // src/routes/api/send/+server.ts
 import { SAMVA_SEND_TOKEN } from "$app/env/private";
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
 
 import { getSamva } from "#lib/server/samva";
+
+import type { RequestHandler } from "./$types";
 
 const escapeHtml = (value: string): string =>
   value
@@ -261,8 +263,9 @@ request from `platform.env` instead of importing the module-scope client.
 
 ```ts
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
 import { createClient } from "samva";
+
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ platform }) => {
   const apiKey = platform?.env.SAMVA_API_KEY;
@@ -298,6 +301,7 @@ The SvelteKit seam is render, derive text, then send.
 
 ```tsx
 import { render, toPlainText } from "react-email";
+
 import WelcomeEmail from "#lib/emails/welcome";
 import { getSamva } from "#lib/server/samva";
 
