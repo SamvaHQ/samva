@@ -56,7 +56,7 @@ Profile: `profile_get`.
 | Templates       | `templates_create`, `templates_create_from_website`, `templates_list`, `templates_add_entry`, `templates_move_entry`, `templates_update`, `templates_get`, `templates_open_workspace`, `templates_diff_workspace`, `templates_patch_workspace`, `templates_resolve_workspace_conflict`, `templates_check_workspace`, `templates_render_fixture`, `templates_snapshot_fixture`, `templates_save_workspace`, `templates_workspace_history`, `templates_restore_workspace`, `templates_publish`, `templates_get_publication` |
 | Brands          | `brands_list`, `brands_get`, `brands_update`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Scheduled email | `scheduled_messages_schedule_email`, `scheduled_messages_list`, `scheduled_messages_get`, `scheduled_messages_cancel`, `scheduled_messages_resume`                                                                                                                                                                                                                                                                                                                                                                        |
-| Campaigns       | `campaigns_create`, `campaigns_update`, `campaigns_list`, `campaigns_get`, `campaigns_archive`, `campaigns_schedule_run`, `campaigns_list_runs`, `campaigns_get_run`, `campaigns_get_run_report` (email only; directional opens/clicks), `campaigns_control_run`, `campaigns_list_recipients`                                                                                                                                                                                                                             |
+| Campaigns       | `campaigns_preview` (render unsaved content as a selected contact; no run or message), `campaigns_send_test` (send to your authenticated email address; normal send policies and billing apply), `campaigns_create`, `campaigns_update`, `campaigns_list`, `campaigns_get`, `campaigns_archive`, `campaigns_schedule_run`, `campaigns_list_runs`, `campaigns_get_run`, `campaigns_get_run_report` (email only; directional opens/clicks), `campaigns_control_run`, `campaigns_list_recipients`                            |
 | Feedback        | `feedback_send`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 <!-- email-launch-mcp-tools:end -->
@@ -129,7 +129,8 @@ Template authoring is project-based. Start with `templates_list`, `templates_get
 `templates_create`, then call `templates_open_workspace`. Follow the revision-safe sequence in
 [template authoring](template-authoring.md): diff, patch complete TSX files, reopen to pull a moving
 branch head, resolve explicit conflicts, and preview the workspace. Explicit Save creates a
-normal Git commit. History and restore use reachable commits, while Publish pins an exact project,
+normal Git commit; a source that cannot build fails save, open, publish, or restore with `TemplateSourceError`
+and its `diagnostics`, so fix the source and retry. History and restore use reachable commits, while Publish pins an exact project,
 commit, and entry path as the immutable delivery source.
 
 ## Recover from errors
@@ -149,6 +150,7 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
 | `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
+| `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.
