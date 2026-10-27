@@ -1,3 +1,14 @@
+## @samva/email-sdk@0.11.0
+
+### Require Samva SDK 0.27
+
+Upgrade `samva` to `^0.27.0` alongside either adapter. Only the current 0.x SDK
+minor is supported; adapter development and tests use `0.27.0`.
+
+### Require Email SDK 3
+
+`@samva/email-sdk` now peers `@opencoredev/email-sdk@^3.0.1`. Email SDK 2 and 3 are breaking upgrades for consumers still on 1.x.
+
 ## @samva/email-sdk@0.10.0
 
 ### Require Samva SDK 0.25
