@@ -1,4 +1,4 @@
-import { createWebhookHandler } from "@samva/mailbox/webhook";
+import { createWebhookHandler } from "samva/mailbox/webhook";
 
 import { requireEnv } from "./env";
 import extension from "./extension";

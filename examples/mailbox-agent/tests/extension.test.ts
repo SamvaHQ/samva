@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 
-import { createTestClient, mailboxEvent, runExtension } from "@samva/mailbox/test";
+import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 import { test } from "vitest";
 
 import extension from "../src/extension";
