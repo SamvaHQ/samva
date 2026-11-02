@@ -108,6 +108,9 @@ const createHarness = (
     apiKey: "samva_sk_test_example",
     baseUrl: "https://api.example.test",
     fetch: fetchMock,
+    // The SDK retries reads by default. These tests assert the example's own
+    // handling of a single attempt, so the transport must not retry itself.
+    maxRetries: 0,
   });
 
   return { samva, requests };

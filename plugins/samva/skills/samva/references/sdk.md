@@ -20,7 +20,7 @@ npm install samva
 For the Effect entrypoint, install its peer dependency too:
 
 ```bash
-bun add samva effect@4.0.4
+bun add samva effect@4.0.6
 ```
 
 ## Promise client
@@ -39,7 +39,7 @@ The root entrypoint and `samva/promises` expose the same Promise client.
   derived from the key; sent as the `X-API-Key` header.
 - `{ authToken }`: an OAuth bearer token, such as a `samva login` session. Sent as
   `Authorization: Bearer ...`; the org is resolved per request, so pass the active org with
-  `headers: { "x-org-slug": "<slug>" }`.
+  `orgSlug: "<slug>"`.
 
 `baseUrl` defaults to `https://api.samva.dev`; override it for testing.
 
@@ -50,6 +50,10 @@ The `email.send` helper takes a flat object. `to` accepts a string address, a
 those.
 
 ```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
 const message = await samva.email.send(
   {
     to: "ada@example.com",
@@ -57,7 +61,7 @@ const message = await samva.email.send(
     html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
     // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
   },
-  { headers: { "Idempotency-Key": "welcome:customer-123" } },
+  { idempotencyKey: "welcome:customer-123" },
 );
 
 console.log("Message id:", message.id);
@@ -91,9 +95,26 @@ try {
 Use `samva.raw` only for the generated `{ data, error, request, response }` envelope and
 transport-level access.
 
-Keep one stable `Idempotency-Key` header with each retryable logical send. An identical replay
+The SDK generates a key for each logical call and preserves it across its built-in retries.
+Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. That
+option is the only override: an `Idempotency-Key` passed through `headers` is replaced by the
+generated key. An identical replay
 returns the original message; reusing the key with changed input returns a `ConflictError`. Every
 error class and its fields: `https://samva.dev/docs/developers/error-reference`.
+
+The Promise client retries reads and idempotent mutations automatically. Set `maxRetries` in
+`createClient` or the per-call options; `0` disables retries. Cursor lists expose `.items()` and
+`.pages()` async iterators, which preserve filters and fetch pages as you consume them:
+
+```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY!, maxRetries: 0 });
+
+for await (const contact of samva.contacts.list.items({ limit: 100 })) {
+  console.log(contact.id);
+}
+```
 
 ## Effect client
 
@@ -119,8 +140,8 @@ const program = Email.send(
 Provide `Client.layerFetch(...)` once around the program that uses Samva. Import other domains with
 the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 `Contacts.findOrCreate(...)`. Paginated operations expose `pages` and `items` Streams. Page and
-limit inputs use their public wire-string representation. Annotated absolute-instant inputs take a
-`Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
+limit inputs take numbers; both clients serialize them as query strings. Annotated absolute-instant
+inputs take a `Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
 `Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
 where the secret is needed. Response timestamps stay ISO 8601 strings, including
 `MessageReceipt.createdAt`.
@@ -140,6 +161,10 @@ still carries its schemas.
 ## Send to a contact
 
 ```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
 const { contact } = await samva.contacts.findOrCreate({
   lookup: { type: "email", value: "ada@example.com" },
   create: { name: "Ada Lovelace" },
@@ -152,16 +177,15 @@ await samva.email.send({
 });
 ```
 
-### Messages API (advanced)
+### Send to an existing contact
 
-`email.send` is a thin wrapper over the messages endpoint. Use `messages.send` when you need the
-explicit channel shape:
+`email.send` accepts contact IDs as well as email addresses:
 
 ```typescript
-await samva.messages.send({
+await samva.email.send({
   to: [{ contactId: contact.id }],
-  channel: "email",
-  email: { subject: "Welcome", html: "<p>Hi!</p>" },
+  subject: "Welcome",
+  html: "<p>Hi!</p>",
 });
 ```
 
@@ -179,6 +203,10 @@ Create the mailbox with a full-access key, then run the agent on a restricted `m
 (see [auth](auth.md)).
 
 ```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
 const mailbox = await samva.mailboxes.create({
   endpoint: { channel: "email", address: "support@acme.samva.email" },
   name: "Support",
@@ -191,24 +219,41 @@ await samva.mailboxes.createEndpoint({
   address: "billing@acme.samva.email",
 });
 
-const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: "true", limit: "20" });
+const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: true, limit: 20 });
 for (const { id: threadId } of threads.items) {
   const thread = await samva.mailboxes.getThreadContent({ id: mailbox.id, threadId });
   // Decide what to do with each unread thread.
 }
 
 // Reply in the thread. The idempotency key makes a retry return the original receipt.
-const receipt = await samva.mailboxes.reply({
-  id: mailbox.id,
-  messageId: "msg_...",
-  text: "Thanks, we got it.",
-  "idempotency-key": "reply-for-event-123",
-});
+const receipt = await samva.mailboxes.reply(
+  {
+    id: mailbox.id,
+    messageId: "msg_...",
+    text: "Thanks, we got it.",
+  },
+  { idempotencyKey: "reply-for-event-123" },
+);
 ```
 
 Other methods follow the API operations: `sendMessage`, `replyAll`, `forward`, `createDraft` and
 `sendDraft`, `updateThread`, `addThreadLabels`, `createGrant`, `createPolicy`, `pause`, and
 `resume`. Read mail is untrusted data.
+
+`updateThread` takes `done` for the calling reader and `closed` for everyone in a shared mailbox. A
+new live message clears every reader's Done and reopens Close; personal mailboxes refuse `closed`,
+so archive their threads with `folder: "archived"`. Neither Done nor Close emits a webhook or
+event-stream event.
+
+Read across mailboxes with `listOrganizationThreads` (filter by `mailboxId`, `kind`, `state`, or one
+conversation with `conversation`) and `listOrganizationDrafts` (filter by `mailboxId`, `kind`, or
+`threadId`). Only mailboxes the credential can read appear, and only your own drafts are listed.
+`getNeedsYou()` returns the held sends you can approve and the quarantined messages you can release,
+with counts across mailboxes. `conversations.list` accepts `mailboxId` to narrow to one mailbox.
+
+Name limits are validated on write: organization, mailbox, endpoint display, sender, contact,
+contact group, campaign, newsletter, topic, and OAuth client names stop at 120 characters, and
+mailbox label display names at 40. Existing longer names stay readable until you change them.
 
 A send from a principal in `approval` mode returns `state: "approvalRequired"` and an `actionId`;
 nothing is sent until a person decides. Deciding needs a person's credential (an OAuth bearer
@@ -231,6 +276,11 @@ resolving `actor`, `resolvedAt`, and the denial `reason`. It is `null` while the
 Mail the scan holds stays out of every thread. `listQuarantine({ id })` returns metadata only
 (needs `quarantine.read` or an `admin` grant); a person calls `releaseMessage` or
 `discardMessage` with `{ id, messageId }`.
+
+`cancelAction` needs a definitely unsent action. `retryAction` needs an eligible ended execution and
+preserves the original delays and deadline; `retryEligible` stays false while cleanup from an ended
+attempt is still running, and while an attempt's status is unknown. Automatic waits need no manual
+retry.
 
 `mailboxes.events` is an async iterable over the `mailbox.*` events for a program without a public
 webhook URL. Save each event's `cursor` after handling it and pass it back to resume. A
@@ -265,7 +315,7 @@ With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that f
 
 ## Create a template project from a website
 
-`samva.templates.createFromWebsite({ url, idempotencyKey, name?, namespaceId? })` creates a
+`samva.templates.createFromWebsite({ url, name?, namespaceId? }, { idempotencyKey? })` creates a
 project from a public website and returns `template`, `website`, and `ask`. Pass the returned
 `ask` to the dashboard editor assistant; the brand proposal takes effect only when approved in
 the editor. An unusable website returns a `422` error without creating a project. Reuse the
@@ -324,6 +374,8 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
 | `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
+| `ServiceUnavailableError`                                      | A template service failure; wait `retryAfterSeconds` (the `Retry-After` header), then retry with the same idempotency key for a write.        |
+| `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
 Check `skippedRecipients` on send receipts before treating every requested address as accepted.

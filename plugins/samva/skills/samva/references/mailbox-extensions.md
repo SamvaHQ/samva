@@ -1,13 +1,13 @@
 # Mailbox extensions
 
 An extension is code published once and installed into an organization. It receives mailbox events
-and acts through the mailbox API. Author it with `@samva/mailbox`; docs:
+and acts through the mailbox API. Author it with `samva/mailbox`; docs:
 <https://samva.dev/docs/mailboxes/extensions>.
 
 ## Define
 
 ```typescript
-import { defineExtension } from "@samva/mailbox";
+import { defineExtension } from "samva/mailbox";
 
 export default defineExtension({
   manifest: {
@@ -20,7 +20,9 @@ export default defineExtension({
   },
   on: {
     "mailbox.message.received": async (event, { samva, log }) => {
-      const reply = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
+      const reply = await samva.mailboxes.reply({
+        id: event.data.mailboxId,
+        messageId: event.data.message.id,
         text: "Thanks, we got it.",
       });
       // "approvalRequired" waits for a person; "queued" retries until its `executeUntil` deadline.
@@ -35,25 +37,25 @@ export default defineExtension({
 - Event types: `mailbox.message.received`, `mailbox.message.sent`,
   `mailbox.action.pending_approval`, `mailbox.action.resolved`, `mailbox.message.quarantined`,
   `mailbox.message.released`, `mailbox.message.discarded`.
-- The context has `samva`, `log(...)`, `event`, and `attempt`. The `samva` client exposes
-  `messages.get|reply|replyAll|forward|send`, `actions.get|cancel|retry`, and
-  `threads.get|list|messages|content|update`.
+- The context has `samva`, `log(...)`, `event`, and `attempt`. The `samva` client is the normal SDK client;
+  use `samva.mailboxes.reply({ id, messageId, text })`, `getAction`, `listThreads`, and the other
+  mailbox operations with flat parameter objects.
 - Sends carry an `Idempotency-Key` of `<event id>:<method>:<n>`, so a rerun that makes the same
   calls in the same order does not send twice. Keep send order and inputs stable across retries, or
-  pass your own `idempotencyKey`. Other side effects need their own deduplication. Throwing fails the event and Samva retries.
+  pass `{ idempotencyKey }` in the call's second argument. Other side effects need their own deduplication. Throwing fails the event and Samva retries.
 
 ## Run
 
 - `hosted`: Samva runs one self-contained ES module from `samva extensions build`. It has no
   network access except `samva`.
 - `webhook`: your server runs `createWebhookHandler(extension, { apiKey, webhookSecret })` from
-  `@samva/mailbox/webhook`, which verifies the signature and answers `200` or `500` (retry). The
+  `samva/mailbox/webhook`, which verifies the signature and answers `200` or `500` (retry). The
   install returns the key and secret once.
 
 ## Test
 
 ```typescript
-import { createTestClient, mailboxEvent, runExtension } from "@samva/mailbox/test";
+import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 
 const result = await runExtension(extension, mailboxEvent("mailbox.message.received"), {
   client: createTestClient(),

@@ -6,7 +6,7 @@ two ways:
 - `src/agent.ts` follows `samva.mailboxes.events` for one mailbox, saves the stream cursor after
   each handled event, and drafts a reply to every `mailbox.message.received`. It restarts without a
   cursor when the retained window has passed (`CursorExpiredError`).
-- `src/extension.ts` is the same behavior as an `@samva/mailbox` extension with
+- `src/extension.ts` is the same behavior as a `samva/mailbox` extension with
   `runtime: "webhook"`, served by `src/server.ts` through `createWebhookHandler`.
 
 The "agent" decision (`composeReply` in `src/reply.ts`) is a deterministic function so the example
@@ -27,11 +27,15 @@ stays about mailbox mechanics. Replace it with your own logic.
   `Idempotency-Key` from the event id. Redelivery cannot send twice.
 
 Replies return send receipts, and the example logs each receipt's `state`. Follow the action
-with `mailboxes.getAction` (or `samva.actions.get` in an extension) to see it progress.
+with `mailboxes.getAction` — a `samva/mailbox` handler receives the normal client, so it calls the
+same method — to see it progress.
 `queued` is waiting for acceptance; `accepted` and `completed` do not mean recipient
 delivery. `messageId` and `acceptedAt` remain null until acceptance. Follow the
 action rather than submitting another reply. A lost response is recovered with
-the same idempotency key and body.
+the same idempotency key and body. `retryAction` is only for an action whose
+`retryEligible` is true: it preserves the original delays and deadline, and it
+stays false while cleanup from an ended attempt is pending or the attempt's
+status is unknown.
 
 ## Run the proof
 
@@ -41,8 +45,8 @@ bun run typecheck
 bun run test
 ```
 
-The tests use a fake event stream, a fake client, and `@samva/mailbox/test`. They never contact
-Samva.
+The tests use a fake event stream, the Samva client with a mocked HTTP transport, and
+`samva/mailbox/test`. They never contact Samva.
 
 ## Run the event-stream agent
 
@@ -63,8 +67,9 @@ SAMVA_API_KEY=samva_sk_test_... SAMVA_WEBHOOK_SECRET=whsec_... bun run serve
 ```
 
 Publish and install the extension with the Samva CLI (`samva extensions`), installing with
-`--send-mode approval`. The install returns the key and signing secret once. Point the installation
-at the public URL of this server.
+`--send-mode approval`. Extension helpers ship in the `samva` package at `samva/mailbox`,
+`samva/mailbox/test`, and `samva/mailbox/webhook`; `@samva/mailbox` is deprecated. The install
+returns the key and signing secret once. Point the installation at the public URL of this server.
 
 | Variable               | Used by       | Meaning                                       |
 | ---------------------- | ------------- | --------------------------------------------- |

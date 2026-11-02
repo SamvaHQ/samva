@@ -1,4 +1,4 @@
-import { defineExtension } from "@samva/mailbox";
+import { defineExtension } from "samva/mailbox";
 
 import { composeReply, parseReceivedMessage } from "./reply";
 
@@ -27,7 +27,11 @@ export default defineExtension({
       }
 
       // The client derives the Idempotency-Key from the event id, so a retry cannot double-send.
-      const receipt = await samva.messages.reply(received.mailboxId, received.messageId, { text });
+      const receipt = await samva.mailboxes.reply({
+        id: received.mailboxId,
+        messageId: received.messageId,
+        text,
+      });
       log(receipt.state, receipt.actionId);
     },
   },

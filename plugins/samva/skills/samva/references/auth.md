@@ -18,7 +18,7 @@ and hosted MCP setup. The full reference is
 Production keys start with `samva_sk_live_`; keys minted outside production start with
 `samva_sk_test_`.
 
-Create one in the Samva dashboard under **Developers → API Keys**. The full value is shown once at
+Create one in the Samva dashboard under **Developers → API keys**. The full value is shown once at
 creation. Store it in an environment variable, never in source. Send it as the `X-API-Key` header;
 the SDK and CLI do this for you when you set `SAMVA_API_KEY`. Hosted MCP also accepts it as
 `Authorization: Bearer samva_sk_live_...`.

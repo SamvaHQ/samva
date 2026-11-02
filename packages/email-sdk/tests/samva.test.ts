@@ -14,6 +14,7 @@ import {
   ValidationError,
 } from "samva";
 import type { MessageReceipt, SamvaClient } from "samva";
+import { createClient } from "samva";
 import { describe, expect, it, vi } from "vitest";
 
 import { samva, samvaPlugin } from "../src";
@@ -519,6 +520,13 @@ describe("samva", () => {
       apiKey: "samva_sk_test_example",
       baseUrl: "https://samva.test",
       fetch: fetcher as unknown as typeof fetch,
+      // The SDK retries transient failures by default; assert one adapter attempt here.
+      client: createClient({
+        apiKey: "samva_sk_test_example",
+        baseUrl: "https://samva.test",
+        fetch: fetcher as unknown as typeof fetch,
+        maxRetries: 0,
+      }),
     });
     await expect(adapter.send(message, context)).rejects.toMatchObject({
       status: 503,

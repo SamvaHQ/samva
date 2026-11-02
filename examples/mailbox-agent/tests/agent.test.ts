@@ -1,11 +1,11 @@
 import { strict as assert } from "node:assert";
 
-import { MailboxEventStreamError } from "samva";
+import { createClient, MailboxEventStreamError } from "samva";
 import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
-import { test } from "vitest";
+import { test, vi } from "vitest";
 
 import { handleEvent, runMailboxAgent } from "../src/agent";
-import type { CursorStore, MailboxAgentClient } from "../src/agent";
+import type { CursorStore } from "../src/agent";
 
 const received = (id: string, overrides: Record<string, unknown> = {}): MailboxEvent => ({
   cursor: `cursor-${id}`,
@@ -74,26 +74,80 @@ const sendReceipt = (
   updatedAt: "2026-10-13T12:00:00.000Z",
 });
 
+const threadPage = {
+  items: [
+    {
+      id: "thr_01",
+      channel: "email",
+      endpointId: null,
+      subject: "Invoice question",
+      preview: "Where is my invoice?",
+      from: null,
+      messageCount: 1,
+      hasAttachments: false,
+      hasDraft: false,
+      folder: "inbox",
+      priority: "normal",
+      labels: [],
+      read: false,
+      starred: false,
+      snoozedUntil: null,
+      doneAt: null,
+      closedAt: null,
+      closedBy: null,
+      lastActivityAt: "2026-10-10T12:00:00.000Z",
+    },
+  ],
+  nextCursor: null,
+};
+
+/**
+ * The agent talks to the real client, so the test asserts the HTTP requests it builds.
+ * Only the event stream is replaced: it opens a WebSocket the test cannot serve.
+ */
 const createHarness = (streams: ReadonlyArray<Stream>) => {
-  const replies: Array<Record<string, unknown>> = [];
+  const replies: Request[] = [];
+  const threadQueries: URLSearchParams[] = [];
   const connects: MailboxEventStreamOptions[] = [];
   let next = 0;
-  const client: MailboxAgentClient = {
-    mailboxes: {
-      events: (options = {}) => {
-        connects.push(options);
-        const stream = streams[next++];
-        assert.ok(stream, "unexpected extra connection");
-        return stream(options);
+
+  const client = createClient({
+    apiKey: "samva_sk_test_mailbox_agent",
+    baseUrl: "https://api.samva.test",
+    fetch: Object.assign(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const request = new Request(input, init);
+        const url = new URL(request.url);
+        if (
+          request.method === "POST" &&
+          /^\/v1\/mailboxes\/mbx_01\/messages\/[^/]+\/reply$/.test(url.pathname)
+        ) {
+          replies.push(request);
+          return Response.json(sendReceipt(), { status: 200 });
+        }
+        if (request.method === "GET" && url.pathname === "/v1/mailboxes/mbx_01/threads") {
+          threadQueries.push(url.searchParams);
+          return Response.json(threadPage);
+        }
+        throw new Error(`Unexpected request: ${request.method} ${url}`);
       },
-      reply: async (params) => {
-        replies.push(params);
-        return sendReceipt();
-      },
-      listThreads: async () => ({ items: [{ id: "thr_01" }] }),
-    },
-  };
-  return { client, replies, connects };
+      { preconnect: () => {} },
+    ),
+  });
+
+  const events = client.mailboxes.events;
+  vi.spyOn(client.mailboxes, "events").mockImplementation((options = {}) => {
+    connects.push(options);
+    const stream = streams[next++];
+    assert.ok(stream, "unexpected extra connection");
+    const connection = events(options);
+    vi.spyOn(connection, Symbol.asyncIterator).mockImplementation(() =>
+      stream(options)[Symbol.asyncIterator](),
+    );
+    return connection;
+  });
+
+  return { client, replies, connects, threadQueries };
 };
 
 test("replies in approval mode and saves the cursor after handling", async () => {
@@ -104,8 +158,13 @@ test("replies in approval mode and saves the cursor after handling", async () =>
   await runMailboxAgent(client, { mailboxId: "mbx_01", store, log: (line) => lines.push(line) });
 
   assert.equal(replies.length, 1);
-  assert.equal(replies[0]?.["idempotency-key"], "reply:evt_1");
-  assert.equal(replies[0]?.messageId, "msg_evt_1");
+  const reply = replies[0];
+  assert.ok(reply);
+  assert.equal(reply.headers.get("idempotency-key"), "reply:evt_1");
+  assert.equal(new URL(reply.url).pathname, "/v1/mailboxes/mbx_01/messages/msg_evt_1/reply");
+  assert.deepEqual(await reply.json(), {
+    text: 'Thanks for writing about "Invoice question". A person will follow up shortly.',
+  });
   assert.deepEqual(saved, ["cursor-evt_1"]);
   assert.match(lines[0] ?? "", /approvalRequired, action mbxact_01/);
 });
@@ -122,9 +181,7 @@ test("resumes from the stored cursor and scopes the stream to one mailbox", asyn
 
 test("does not save the cursor when the reply fails", async () => {
   const { client } = createHarness([of(received("evt_1"))]);
-  client.mailboxes.reply = async () => {
-    throw new Error("boom");
-  };
+  vi.spyOn(client.mailboxes, "reply").mockRejectedValue(new Error("boom"));
   const { store, saved } = memoryStore();
 
   await assert.rejects(runMailboxAgent(client, { mailboxId: "mbx_01", store, log: () => {} }));
@@ -144,7 +201,7 @@ test("skips automated senders but still advances the cursor", async () => {
 });
 
 test("restarts without a cursor after CursorExpiredError", async () => {
-  const { client, connects, replies } = createHarness([
+  const { client, connects, replies, threadQueries } = createHarness([
     failing("CursorExpiredError"),
     of(received("evt_9")),
   ]);
@@ -156,6 +213,8 @@ test("restarts without a cursor after CursorExpiredError", async () => {
   assert.equal(connects[0]?.cursor, "cursor-stale");
   assert.equal(connects[1]?.cursor, undefined);
   assert.equal(replies.length, 1);
+  assert.equal(threadQueries.length, 1);
+  assert.deepEqual(Object.fromEntries(threadQueries[0] ?? []), { unread: "true", limit: "20" });
   assert.equal(current(), "cursor-evt_9");
   assert.ok(lines.some((line) => line.startsWith("cursor expired: 1 unread")));
 });
@@ -171,7 +230,7 @@ test.each(["queued", "accepted", "completed", "notSent", "uncertain"] as const)(
   "logs a %s receipt without claiming recipient delivery",
   async (state) => {
     const { client } = createHarness([]);
-    client.mailboxes.reply = async () => sendReceipt(state);
+    vi.spyOn(client.mailboxes, "reply").mockResolvedValue(sendReceipt(state));
     const lines: string[] = [];
 
     await handleEvent(client, received("evt_1"), (line) => lines.push(line));
@@ -181,20 +240,34 @@ test.each(["queued", "accepted", "completed", "notSent", "uncertain"] as const)(
 );
 
 test("replays a lost reply response with the same key and body", async () => {
-  const { client } = createHarness([]);
-  const calls: unknown[] = [];
-  client.mailboxes.reply = async (params) => {
-    calls.push(params);
-    if (calls.length === 1) throw new Error("response lost");
-    return sendReceipt();
-  };
+  const replies: Request[] = [];
+  let attempt = 0;
+  const client = createClient({
+    apiKey: "samva_sk_test_mailbox_agent",
+    baseUrl: "https://api.samva.test",
+    maxRetries: 0,
+    fetch: Object.assign(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const request = new Request(input, init);
+        attempt += 1;
+        replies.push(request);
+        if (attempt === 1) throw new TypeError("response lost");
+        return Response.json(sendReceipt());
+      },
+      { preconnect: () => {} },
+    ),
+  });
   const event = received("evt_1");
 
   await assert.rejects(handleEvent(client, event, () => {}));
   await handleEvent(client, event, () => {});
 
-  assert.equal(calls.length, 2);
-  assert.deepEqual(calls[0], calls[1]);
+  assert.equal(replies.length, 2);
+  const [first, second] = replies;
+  assert.ok(first && second);
+  assert.equal(first.headers.get("idempotency-key"), second.headers.get("idempotency-key"));
+  assert.equal(first.headers.get("idempotency-key"), "reply:evt_1");
+  assert.deepEqual(await first.text(), await second.text());
 });
 
 test.each(["mailbox.message.delivered", "mailbox.message.read", "mailbox.message.failed"] as const)(

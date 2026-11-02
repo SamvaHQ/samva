@@ -100,6 +100,11 @@ save and publish; warnings ride along. Fix the named location and check again. C
 `unknown-field` (a misspelled binding, with the nearest field), `unguarded-optional`,
 `fixture-invalid`, `dynamic-expression`, `dynamic-class`, and `non-project-import`.
 
+A save, open, publish, or restore whose source cannot build fails with `TemplateSourceError` (HTTP
+`422`) and its `diagnostics`; check reports compiler findings in a successful response. Fix the source
+as the diagnostics describe, then retry; a `sml/build-failed` finding has no location. A real conflict,
+such as a moved branch head, is a `ConflictError` (`409`): reopen and resolve it.
+
 ## Revision-safe workspace loop
 
 1. Discover or create the project, then call `templates_open_workspace` and inspect files, base
