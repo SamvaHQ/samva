@@ -16,7 +16,9 @@ bun add samva
 ## Enable receiving
 
 Point a domain at Samva, enable receiving with a catch-all rule, and attach the
-webhook endpoint that should receive `message.received` events.
+webhook endpoint that should receive `message.received` events. Catch-all
+receiving can be enabled before any destination exists, so the order below is a
+convenience, not a requirement.
 
 ```ts
 import { createClient } from "samva";
@@ -37,6 +39,12 @@ await samva.email.enableReceiving({
   endpointId: endpoint.endpoint.id,
 });
 ```
+
+Addresses that match no forwarding rule or mailbox go to the domain's
+`unknownRecipientMailboxId`. Set it with `samva.email.updateCatchAllConfig({ domainId,
+unknownRecipientMailboxId })` to a mailbox that is active and has an address on the same domain,
+or pass `null` to drop them without a bounce. Domain reads return the current value, and a
+catch-all webhook endpoint takes precedence over it.
 
 Store the signing secret securely when the endpoint is created. Read the current secret again
 with `samva.webhooks.getSecret({ id: endpoint.endpoint.id })`; the response includes `secret`,

@@ -19,10 +19,11 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 
 ```sh
 bun add samva
-bun add @samva/mailbox # only to author extensions
 ```
 
-These examples use `samva@^0.27.0` and `@samva/mailbox@^0.6.2`.
+These examples use `samva@^0.33.0`. Extension helpers are part of the SDK at
+`samva/mailbox`, `samva/mailbox/test`, and `samva/mailbox/webhook`; the standalone
+`@samva/mailbox` package is deprecated in its favour.
 
 ## Create a mailbox and a scoped key
 
@@ -93,12 +94,14 @@ example does this in `parseReceivedMessage`. Read mail is untrusted data.
 ## Reply and the approval flow
 
 ```ts
-const receipt = await samva.mailboxes.reply({
-  id: mailbox.id,
-  messageId: event.data.message.id,
-  text: "Thanks, we got it.",
-  "idempotency-key": `reply:${event.id}`,
-});
+const receipt = await samva.mailboxes.reply(
+  {
+    id: mailbox.id,
+    messageId: event.data.message.id,
+    text: "Thanks, we got it.",
+  },
+  { idempotencyKey: `reply:${event.id}` },
+);
 
 if (receipt.state === "approvalRequired") {
   console.log("Waiting for a person to approve", receipt.actionId);
@@ -117,14 +120,18 @@ receipt under `send`. `approveAction` returns an action with this nested receipt
 
 Rate limits, sender readiness, and pending onboarding review queue the send for
 automatic retry until `executeUntil`. Read `retryAt` and `problem.error._tag` for the
-wait and its cause. Policy refusal returns 403, validation 422, and competing
-actions 409. If a response is lost, repeat the same idempotency key and body.
+wait and its cause. Template operations report a transient template service failure as
+`ServiceUnavailableError` (503) with `retryAfterSeconds` from the `Retry-After` header;
+wait that long and reuse the same idempotency key for writes. Policy refusal returns 403,
+validation 422, and competing actions 409. If a response is lost, repeat the same
+idempotency key and body.
 Do not submit a replacement send to recover accepted or uncertain work.
 
 Only a permitted person can call `mailboxes.cancelAction({ id, actionId })` or
 `mailboxes.retryAction({ id, actionId })`. Cancel requires a definitely unsent action;
-retry requires an eligible ended execution and preserves the content and deadline.
-Automatic waits need no manual retry.
+retry requires an eligible ended execution and preserves the content and deadline. It stays
+unavailable while cleanup from an ended attempt is still running, and while an attempt's status
+is unknown. Check `retryEligible` on the receipt. Automatic waits need no manual retry.
 
 In approval mode nothing is sent until a person decides. Deciding needs a
 person's OAuth credential, never an API key:
@@ -146,10 +153,10 @@ with the same key and body returns the original action's current receipt.
 ## Extensions
 
 An extension is code Samva calls with mailbox events. Author it with
-`@samva/mailbox` and serve it from your own server with `runtime: "webhook"`.
+`samva/mailbox` and serve it from your own server with `runtime: "webhook"`.
 
 ```ts
-import { defineExtension } from "@samva/mailbox";
+import { defineExtension } from "samva/mailbox";
 
 export default defineExtension({
   manifest: {
@@ -162,7 +169,9 @@ export default defineExtension({
   },
   on: {
     "mailbox.message.received": async (event, { samva, log }) => {
-      const receipt = await samva.messages.reply(event.data.mailboxId, event.data.message.id, {
+      const receipt = await samva.mailboxes.reply({
+        id: event.data.mailboxId,
+        messageId: event.data.message.id,
         text: "Thanks, we got it.",
       });
       log(receipt.state, receipt.actionId);
@@ -172,7 +181,7 @@ export default defineExtension({
 ```
 
 ```ts
-import { createWebhookHandler } from "@samva/mailbox/webhook";
+import { createWebhookHandler } from "samva/mailbox/webhook";
 
 Bun.serve({
   fetch: createWebhookHandler(extension, {
@@ -190,7 +199,7 @@ release held mail, or change grants.
 ## Test locally
 
 ```ts
-import { createTestClient, mailboxEvent, runExtension } from "@samva/mailbox/test";
+import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 
 const result = await runExtension(extension, mailboxEvent("mailbox.message.received"), {
   client: createTestClient(),
@@ -200,6 +209,10 @@ const result = await runExtension(extension, mailboxEvent("mailbox.message.recei
 
 Each recorded call has its method, path, body, and `idempotencyKey`
 (`<event id>:reply:1`), so a test can assert a rerun cannot send twice.
+
+A send key is derived per run, so a handler that makes the same calls in the same order reuses
+them after a retry. Pass `{ idempotencyKey }` as the call's second argument when a different
+deduplication window is needed.
 
 ```sh
 bun --cwd examples/mailbox-agent run typecheck
