@@ -61,7 +61,7 @@ const message = await samva.email.send(
     html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
     // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
   },
-  { headers: { "Idempotency-Key": "welcome:customer-123" } },
+  { idempotencyKey: "welcome:customer-123" },
 );
 
 console.log("Message id:", message.id);
@@ -96,7 +96,9 @@ Use `samva.raw` only for the generated `{ data, error, request, response }` enve
 transport-level access.
 
 The SDK generates a key for each logical call and preserves it across its built-in retries.
-Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. An identical replay
+Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. That
+option is the only override: an `Idempotency-Key` passed through `headers` is replaced by the
+generated key. An identical replay
 returns the original message; reusing the key with changed input returns a `ConflictError`. Every
 error class and its fields: `https://samva.dev/docs/developers/error-reference`.
 
