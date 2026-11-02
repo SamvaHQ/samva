@@ -7,7 +7,7 @@ description: >-
   webhooks, templates, schedules, campaigns, usage, readiness, authentication,
   mailboxes for agents (threads, replies, approval sends, quarantine, event
   streams, extensions), or choosing the right Samva surface. Triggers on
-  samva, samva.dev, the `samva` package, `@samva/cli`, `@samva/mailbox`,
+  samva, samva.dev, the `samva` package, `@samva/cli`, `samva/mailbox`,
   mcp.samva.dev, SAMVA_API_KEY, agent mailbox, SML, Samva Markup Language, and
   template editor agent.
 metadata:
@@ -31,12 +31,12 @@ What is the intent?
 ├─ Give an AI agent live Samva tools           → hosted MCP (`https://mcp.samva.dev`)
 ├─ Configure or inspect resources visually     → dashboard (`https://samva.dev`)
 ├─ Give an agent its own inbox to read and reply → mailbox (`samva.mailboxes`, `samva mailboxes`)
-├─ React to mailbox events with code Samva runs  → mailbox extension (`@samva/mailbox`)
+├─ React to mailbox events with code Samva runs  → mailbox extension (`samva/mailbox`)
 └─ Author or repair a TSX email template      → template authoring reference
 ```
 
 Pick a mailbox when mail is a conversation: an agent or person reads threads and replies in
-place. Pick a transactional send (`messages.send`) for one-way mail from your application, and
+place. Pick a transactional send (`email.send`) for one-way mail from your application, and
 inbound webhooks when your application only needs to be told that mail arrived on a verified
 domain.
 
@@ -55,7 +55,7 @@ Read only the reference needed for the selected surface:
 - [CLI](references/cli.md): installation, authentication, and shipped command families.
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
 - [Mailboxes](references/mailbox-extensions.md): approval sends, quarantine, the event stream, and
-  authoring extensions with `@samva/mailbox`. The SDK, CLI, and MCP references cover the calls.
+  authoring extensions with `samva/mailbox`. The SDK, CLI, and MCP references cover the calls.
 - [Template authoring](references/template-authoring.md): the static TSX profile, the check-render-look loop, and revision-safe editing.
 - [Authentication](references/auth.md): API keys, OAuth, and organization scoping.
 - [Executor](references/executor.md): add Samva's MCP or REST surface to an Executor workspace.
