@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "effect": "4.0.6",
-    "samva": "^0.33.0"
+    "samva": "^0.34.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4"

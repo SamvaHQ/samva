@@ -196,6 +196,11 @@ const status = await samva.messages.getStatus({ id: message.id });
 console.log(status.status); // pending → processing → sent → delivered
 ```
 
+`webhooks.getLogs` reports each delivery with its nested attempts. A replay of a terminal delivery
+appears as an attempt with `kind: "replay"`, `classification: "skipped"`, and a `queueMessageId`. It
+records processing without another HTTP request and without an automatic attempt increment, so
+filter on `kind` before treating attempts as requests or as retry progress.
+
 ## Mailboxes
 
 `samva.mailboxes` reads and sends as a mailbox. Methods take flat parameters; `id` is the mailbox id.
