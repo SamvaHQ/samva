@@ -11,7 +11,7 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Samva",
-    "shortDescription": "Email infrastructure through Samva MCP",
+    "shortDescription": "Samva's email API through its hosted MCP",
     "longDescription": "Connect Codex to Samva's hosted MCP server for organization-scoped email operations, with the canonical Samva skill for SDK, REST, CLI, MCP, authentication, and template-authoring guidance.",
     "developerName": "Arya Labs, Inc.",
     "category": "Developer Tools",
