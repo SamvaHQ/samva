@@ -3,12 +3,12 @@
 Packages, examples, cookbooks, and agent plugins for building on
 [Samva](https://samva.dev/developers), the email and WhatsApp API.
 
-Samva is where small businesses answer their customers from their own domain,
-with an AI assistant that asks before it sends. Developers and agent builders
-build on the same platform. Use this repository to send transactional email,
-connect auth email flows, work with templates, receive replies and delivery
-events as signed webhooks, and give an agent its own mailbox. Ask questions
-about the code on [DeepWiki](https://deepwiki.com/SamvaHQ/samva).
+Samva takes the routine customer emails off a small business: an AI assistant
+answers them and asks before it sends. Developers and agent builders build on
+the same platform. Use this repository to send transactional email, connect auth
+email flows, work with templates, receive replies and delivery events as signed
+webhooks, and give an agent its own mailbox. Ask questions about the code on
+[DeepWiki](https://deepwiki.com/SamvaHQ/samva).
 
 ## Structure
 
