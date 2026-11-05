@@ -13,11 +13,11 @@
   "dependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-email": "^6.11.3",
+    "react-email": "^6.11.6",
     "samva": "^0.34.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.5",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0"
   }

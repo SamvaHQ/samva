@@ -13,14 +13,14 @@
   "dependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-email": "^6.11.3",
+    "react-email": "^6.11.6",
     "samva": "^0.34.0",
     "standardwebhooks": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   }
 }
