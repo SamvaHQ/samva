@@ -46,8 +46,8 @@ packaging checks.
 
 Use `samva@^0.35.0` and `@samva/cli@^0.30.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
-use email explicitly. Shared template and message reads can also return WhatsApp
-and SMS channels, so inspect the channel before using email content.
+use email explicitly. Shared template and message reads can return channels other
+than email, so inspect the channel before using email content.
 
 Request bodies, including nested objects and CLI JSON input, must contain only
 fields declared by the operation. Build mutation input explicitly rather than
