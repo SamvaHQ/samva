@@ -46,6 +46,19 @@ unknownRecipientMailboxId })` to a mailbox that is active and has an address on 
 or pass `null` to drop them without a bounce. Domain reads return the current value, and a
 catch-all webhook endpoint takes precedence over it.
 
+To remove that webhook without disabling receiving, pass `endpointId: null`:
+
+```ts
+await samva.email.updateCatchAllConfig({
+  domainId: process.env.SAMVA_DOMAIN_ID!,
+  endpointId: null,
+  unknownRecipientMailboxId: process.env.SAMVA_MAILBOX_ID!,
+});
+```
+
+Omitted settings stay unchanged. With no webhook or unknown-recipient mailbox,
+unknown addresses are dropped without a bounce.
+
 Store the signing secret securely when the endpoint is created. Read the current secret again
 with `samva.webhooks.getSecret({ id: endpoint.endpoint.id })`; the response includes `secret`,
 `createdAt`, and `previousExpiresAt`. Reading it requires webhook update permission, the same

@@ -41,3 +41,27 @@ published ChatGPT plugin, direct Claude MCP connection, authentication and
 permission boundaries, and synthetic verification examples. Run
 `bun run validate:agent-plugin` from the repository root for the automated
 packaging checks.
+
+## SDK and CLI compatibility
+
+Use `samva@^0.35.0` and `@samva/cli@^0.30.0` with this repository's guidance.
+Samva is the email and WhatsApp API; the mailbox and transactional examples here
+use email explicitly. Shared template and message reads can also return WhatsApp
+and SMS channels, so inspect the channel before using email content.
+
+Request bodies, including nested objects and CLI JSON input, must contain only
+fields declared by the operation. Build mutation input explicitly rather than
+spreading a read response; webhook updates use `eventTypes`, not `events`.
+Omit absent optional query and header parameters instead of passing `null`.
+Nullable body fields remain valid: `email.updateCatchAllConfig` accepts
+`endpointId: null` to clear the webhook while keeping receiving enabled.
+
+CLI template list/get commands read every channel. Webhook endpoint stats expose
+`latestAttempt` (which can be null). Hosted agent create/replace-draft definitions
+require `reasoning` (`auto` preserves the default); `model` can be an alias or a
+catalog id, and `knowledgeSourceIds` is optional. Agent reads report owner/credit
+pauses and spend-cap state. The mailbox-agent example runs its own event loop;
+it does not create or replace hosted agents.
+
+The bundled skill remains the immutable snapshot identified in `provenance.json`;
+apply the compatibility guidance above when using its SDK and CLI references.
