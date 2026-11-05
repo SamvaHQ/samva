@@ -29,7 +29,7 @@ For a Supabase Edge Function, map those imports in `deno.json`:
   "imports": {
     "react": "npm:react@19.3.1",
     "react/jsx-runtime": "npm:react@19.3.1/jsx-runtime",
-    "react-email": "npm:react-email@6.11.3",
+    "react-email": "npm:react-email@6.11.6",
     "samva": "npm:samva@0.34.0",
     "standardwebhooks": "npm:standardwebhooks@1.1.1"
   }
