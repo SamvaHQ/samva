@@ -35,11 +35,12 @@ keyring, never in a file, and sends it as `Authorization: Bearer ...`.
 
 - The token is **user-scoped**, so the active org travels separately. Set it with
   `samva org use <slug>` (the CLI sends it as `x-org-slug`), or pass
-  `headers: { "x-org-slug": "<slug>" }` to the SDK's `createClient({ authToken })`.
+  `orgSlug: "<slug>"` to the SDK's `createClient({ authToken, orgSlug })`.
 - There is **no refresh token**. Run `samva login` again once the session expires.
 
-Use OAuth for interactive work, especially across multiple organizations. Use an API key for
-anything unattended.
+Use OAuth for interactive work, especially across multiple organizations. Policy writes also
+require a person's OAuth credential; no API key can change policy. Use an API key for unattended
+operations its permissions allow.
 
 ## Errors
 

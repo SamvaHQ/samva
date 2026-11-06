@@ -2,7 +2,7 @@
   "name": "mailbox-agent-samva",
   "version": "0.0.0",
   "private": true,
-  "description": "Runnable example of an agent that follows a Samva mailbox event stream and replies in approval send mode, plus the same behavior as a samva/mailbox webhook extension.",
+  "description": "Runnable example of an agent that follows a Samva mailbox event stream and sends replies held for a person's review, plus the same behavior as a samva/mailbox webhook extension.",
   "type": "module",
   "scripts": {
     "agent": "bun src/agent-main.ts",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "samva": "^0.35.0"
+    "samva": "^0.36.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",

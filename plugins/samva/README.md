@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.35.0` and `@samva/cli@^0.30.0` with this repository's guidance.
+Use `samva@^0.36.0` and `@samva/cli@^0.31.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -63,5 +63,9 @@ catalog id, and `knowledgeSourceIds` is optional. Agent reads report owner/credi
 pauses and spend-cap state. The mailbox-agent example runs its own event loop;
 it does not create or replace hosted agents.
 
-The bundled skill remains the immutable snapshot identified in `provenance.json`;
-apply the compatibility guidance above when using its SDK and CLI references.
+Mailbox sends and replies use scoped decision rules. Set a `write` minimum of `person` for
+reviewed keys or extension installations; `sendMode` and `--send-mode` are not accepted. Policy
+writes and approvals use a person's OAuth session. Approval and denial carry the observed
+`decision.reviewRound`, and CLI decisions require `--review-round`. A stale round returns `409`.
+
+The bundled skill is the immutable snapshot identified in `provenance.json`.

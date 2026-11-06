@@ -54,7 +54,7 @@ export default defineExtension({
 
 ## Test
 
-```typescript
+```typescript sdk-typecheck-skip="Test fragment reuses the extension definition from the preceding example"
 import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 
 const result = await runExtension(extension, mailboxEvent("mailbox.message.received"), {
@@ -66,7 +66,7 @@ const result = await runExtension(extension, mailboxEvent("mailbox.message.recei
 ## Install safely
 
 An installation is its own principal. It acts within the installer's grants, narrowed by
-`--permission` and `--mailbox`, and defaults to least privilege: install with `--send-mode
-approval` so sends wait for a person. An extension can never approve a send, release or discard
+`--permission` and `--mailbox`, with decision rules supplied as `--policy` JSON. To hold actions for a person, use
+`{"presets":[],"rules":[{"match":{},"decide":"person"}]}`. An extension can never approve a send, release or discard
 held mail, or change grants and keys. See [cli](cli.md) for `samva extensions` and
 [sdk](sdk.md) for `samva.extensions` and `samva.extensionInstallations`.

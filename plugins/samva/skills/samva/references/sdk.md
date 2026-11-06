@@ -61,7 +61,7 @@ const message = await samva.email.send(
     html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
     // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
   },
-  { idempotencyKey: "welcome:customer-123" },
+  { headers: { "Idempotency-Key": "welcome:customer-123" } },
 );
 
 console.log("Message id:", message.id);
@@ -74,7 +74,7 @@ message details or delivery status separately when needed.
 Ergonomic calls return decoded success values directly. API failures throw generated plain-JavaScript
 classes:
 
-```typescript
+```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: input"
 import { RateLimitedError, SamvaApiError, SamvaTransportError } from "samva";
 
 try {
@@ -96,9 +96,7 @@ Use `samva.raw` only for the generated `{ data, error, request, response }` enve
 transport-level access.
 
 The SDK generates a key for each logical call and preserves it across its built-in retries.
-Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. That
-option is the only override: an `Idempotency-Key` passed through `headers` is replaced by the
-generated key. An identical replay
+Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. An identical replay
 returns the original message; reusing the key with changed input returns a `ConflictError`. Every
 error class and its fields: `https://samva.dev/docs/developers/error-reference`.
 
@@ -140,8 +138,8 @@ const program = Email.send(
 Provide `Client.layerFetch(...)` once around the program that uses Samva. Import other domains with
 the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 `Contacts.findOrCreate(...)`. Paginated operations expose `pages` and `items` Streams. Page and
-limit inputs take numbers; both clients serialize them as query strings. Annotated absolute-instant
-inputs take a `Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
+limit inputs use their public wire-string representation. Annotated absolute-instant inputs take a
+`Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
 `Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
 where the secret is needed. Response timestamps stay ISO 8601 strings, including
 `MessageReceipt.createdAt`.
@@ -181,7 +179,7 @@ await samva.email.send({
 
 `email.send` accepts contact IDs as well as email addresses:
 
-```typescript
+```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: contact"
 await samva.email.send({
   to: [{ contactId: contact.id }],
   subject: "Welcome",
@@ -191,15 +189,10 @@ await samva.email.send({
 
 ## Check delivery status
 
-```typescript
+```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: message"
 const status = await samva.messages.getStatus({ id: message.id });
 console.log(status.status); // pending → processing → sent → delivered
 ```
-
-`webhooks.getLogs` reports each delivery with its nested attempts. A replay of a terminal delivery
-appears as an attempt with `kind: "replay"`, `classification: "skipped"`, and a `queueMessageId`. It
-records processing without another HTTP request and without an automatic attempt increment, so
-filter on `kind` before treating attempts as requests or as retry progress.
 
 ## Mailboxes
 
@@ -242,34 +235,68 @@ const receipt = await samva.mailboxes.reply(
 ```
 
 Other methods follow the API operations: `sendMessage`, `replyAll`, `forward`, `createDraft` and
-`sendDraft`, `updateThread`, `addThreadLabels`, `createGrant`, `createPolicy`, `pause`, and
+`sendDraft`, `updateThread`, `addThreadLabels`, `createGrant`, `pause`, and
 `resume`. Read mail is untrusted data.
 
-`updateThread` takes `done` for the calling reader and `closed` for everyone in a shared mailbox. A
-new live message clears every reader's Done and reopens Close; personal mailboxes refuse `closed`,
-so archive their threads with `folder: "archived"`. Neither Done nor Close emits a webhook or
-event-stream event.
+Configure decision policies with `samva.policies.getPolicy` and `samva.policies.setPolicy`.
+To change a key's policy, use an organization owner or admin's OAuth token and selected
+organization. No API key, including a full-access one, can change policies. A key's permitted sends run directly unless policy requires
+review. Hold its sends and replies with a `write` rule; `final` alone does not match them:
 
-Read across mailboxes with `listOrganizationThreads` (filter by `mailboxId`, `kind`, `state`, or one
-conversation with `conversation`) and `listOrganizationDrafts` (filter by `mailboxId`, `kind`, or
-`threadId`). Only mailboxes the credential can read appear, and only your own drafts are listed.
-`getNeedsYou()` returns the held sends you can approve and the quarantined messages you can release,
-with counts across mailboxes. `conversations.list` accepts `mailboxId` to narrow to one mailbox.
+```typescript
+import { createClient } from "samva";
 
-Name limits are validated on write: organization, mailbox, endpoint display, sender, contact,
-contact group, campaign, newsletter, topic, and OAuth client names stop at 120 characters, and
-mailbox label display names at 40. Existing longer names stay readable until you change them.
+const person = createClient({
+  authToken: process.env.SAMVA_AUTH_TOKEN!,
+  orgSlug: process.env.SAMVA_ORG_SLUG!,
+});
 
-A send from a principal in `approval` mode returns `state: "approvalRequired"` and an `actionId`;
+const current = await person.policies.getPolicy({ kind: "apiKey", id: "key_..." });
+
+await person.policies.setPolicy({
+  kind: "apiKey",
+  id: "key_...",
+  ifVersion: current.version,
+  presets: [],
+  rules: [{ match: { effect: "write" }, decide: "person" }],
+});
+```
+
+Policy reads return a flat snapshot with `version` (`0` when unset). Replace the complete
+configuration with the observed `ifVersion`; keep any existing rules, presets, and instructions
+you need. Both replacement and `deletePolicy({ kind, id, ifVersion })` return the next snapshot.
+Clearing keeps the version counter. On `ConflictError` (`409`), reload and review the snapshot
+before editing again; never automatically retry a stale full configuration with a newer version.
+Missing or invalid versions return `422`.
+
+A send with a `hold` decision returns `state: "approvalRequired"` and an `actionId`;
 nothing is sent until a person decides. Deciding needs a person's credential (an OAuth bearer
 token), never an API key:
 
-```typescript
-const waiting = await samva.mailboxes.listActions({ id: mailbox.id, state: "approvalRequired" });
-await samva.mailboxes.approveAction({ id: mailbox.id, actionId: waiting.items[0].id });
-await samva.mailboxes.denyAction({
+Read the held action with `getAction`, or read its decision from `getNeedsYou`. Both approval and
+denial require the positive `decision.reviewRound` you observed. A stale round returns `409`:
+refresh the action and review its new decision before deciding again. Never default the round or
+silently replace it with the latest value.
+
+```typescript sdk-typecheck-skip="Fragment uses the person client and mailbox from the preceding examples"
+const action = await person.mailboxes.getAction({ id: mailbox.id, actionId: "mbxact_..." });
+if (action.state !== "approvalRequired" || action.decision === null) {
+  throw new Error("Review a held action before deciding.");
+}
+await person.mailboxes.approveAction({
   id: mailbox.id,
-  actionId: "mbxact_...",
+  actionId: action.id,
+  reviewRound: action.decision.reviewRound,
+});
+```
+
+To deny that observed review instead:
+
+```typescript sdk-typecheck-skip="Fragment uses the person client, mailbox, and reviewed action from the preceding examples"
+await person.mailboxes.denyAction({
+  id: mailbox.id,
+  actionId: action.id,
+  reviewRound: action.decision.reviewRound,
   reason: "Wrong recipient.",
 });
 ```
@@ -282,17 +309,12 @@ Mail the scan holds stays out of every thread. `listQuarantine({ id })` returns 
 (needs `quarantine.read` or an `admin` grant); a person calls `releaseMessage` or
 `discardMessage` with `{ id, messageId }`.
 
-`cancelAction` needs a definitely unsent action. `retryAction` needs an eligible ended execution and
-preserves the original delays and deadline; `retryEligible` stays false while cleanup from an ended
-attempt is still running, and while an attempt's status is unknown. Automatic waits need no manual
-retry.
-
 `mailboxes.events` is an async iterable over the `mailbox.*` events for a program without a public
 webhook URL. Save each event's `cursor` after handling it and pass it back to resume. A
 `MailboxEventStreamError` with `_tag: "CursorExpiredError"` means the retained window passed: read
 current state, then start without a cursor.
 
-```typescript
+```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: handle, loadCursor, saveCursor"
 import { createClient, MailboxEventStreamError } from "samva";
 
 try {
@@ -379,7 +401,6 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
 | `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
-| `ServiceUnavailableError`                                      | A template service failure; wait `retryAfterSeconds` (the `Retry-After` header), then retry with the same idempotency key for a write.        |
 | `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
