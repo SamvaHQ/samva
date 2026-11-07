@@ -61,7 +61,7 @@ const message = await samva.email.send(
     html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
     // text?, attachments?, templateId?, templateData?, inReplyToMessageId?
   },
-  { headers: { "Idempotency-Key": "welcome:customer-123" } },
+  { idempotencyKey: "welcome:customer-123" },
 );
 
 console.log("Message id:", message.id);
@@ -97,7 +97,8 @@ transport-level access.
 
 The SDK generates a key for each logical call and preserves it across its built-in retries.
 Pass `{ idempotencyKey }` as the second argument for deduplication across separate calls. An identical replay
-returns the original message; reusing the key with changed input returns a `ConflictError`. Every
+returns the original message; reusing the key with changed input returns a `ConflictError`. The option is
+the only override: an `Idempotency-Key` passed through `headers` is replaced by the generated key. Every
 error class and its fields: `https://samva.dev/docs/developers/error-reference`.
 
 The Promise client retries reads and idempotent mutations automatically. Set `maxRetries` in
@@ -138,7 +139,7 @@ const program = Email.send(
 Provide `Client.layerFetch(...)` once around the program that uses Samva. Import other domains with
 the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 `Contacts.findOrCreate(...)`. Paginated operations expose `pages` and `items` Streams. Page and
-limit inputs use their public wire-string representation. Annotated absolute-instant inputs take a
+limit inputs take numbers; the client serializes them as query strings. Annotated absolute-instant inputs take a
 `Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
 `Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
 where the secret is needed. Response timestamps stay ISO 8601 strings, including

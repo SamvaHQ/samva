@@ -1,7 +1,7 @@
 {
   "source": {
     "repository": "https://github.com/AryaLabsHQ/samva",
-    "commit": "8617fb3b5fea7860885e4fc2c04c76a8b12a1c4c",
+    "commit": "986215ee32b876c27899e304c04531d474f7408a",
     "path": "apps/web/content/agent-skills/samva"
   },
   "skill": {
@@ -9,11 +9,11 @@
     "version": "0.4.0",
     "archive": {
       "url": "https://samva.dev/.well-known/agent-skills/samva.tar.gz",
-      "digest": "sha256:9160eb184f5d6ebcb43b07439c17eae47e46fabd79878b92dc62ab52cde65a66"
+      "digest": "sha256:5522440259e922f8eef652d21753bfe72fdd6bb5597693571a4bd95a0664f484"
     },
     "bundle": {
       "algorithm": "sha256-file-list-v1",
-      "digest": "sha256:3ce6abe83339f045985c480d240fd224ecf5f727e49b1ed2ca0595e842f92715"
+      "digest": "sha256:e2f432953c5a4bd480876362679348ff8deb83145fd53e22b727843ec1c0364f"
     }
   }
 }
