@@ -21,19 +21,22 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.35.0`. Extension helpers are part of the SDK at
+These examples use `samva@^0.36.0`. Extension helpers are part of the SDK at
 `samva/mailbox`, `samva/mailbox/test`, and `samva/mailbox/webhook`; the standalone
 `@samva/mailbox` package is deprecated in its favour.
 
 ## Create a mailbox and a scoped key
 
-Setup uses a full-access key. The agent never does: a restricted key with
-`mailboxes` access cannot create or configure mailboxes or manage grants.
+Setup uses a person's OAuth session to create the mailbox, issue a restricted key, and set its
+policy. The agent uses that restricted key; it cannot configure policies or approve actions.
 
 ```ts
 import { createClient } from "samva";
 
-const samva = createClient({ apiKey: process.env.SAMVA_ADMIN_API_KEY! });
+const samva = createClient({
+  authToken: process.env.SAMVA_USER_TOKEN!,
+  orgSlug: process.env.SAMVA_ORG_SLUG!,
+});
 
 const mailbox = await samva.mailboxes.create({
   endpoint: { channel: "email", address: "support@acme.samva.email" },
@@ -48,17 +51,28 @@ const key = await samva.apiKeys.create({
     mailboxes: {
       permissions: ["read", "send"],
       mailboxIds: [mailbox.id],
-      sendMode: "approval",
     },
   },
+});
+
+const currentPolicy = await samva.policies.getPolicy({ kind: "apiKey", id: key.apiKey.id });
+await samva.policies.setPolicy({
+  kind: "apiKey",
+  id: key.apiKey.id,
+  ifVersion: currentPolicy.version,
+  presets: [],
+  rules: [{ match: { effect: "write" }, atLeast: "person" }],
 });
 
 // Store this now. Samva does not return it again.
 const agentKey = key.key;
 ```
 
+Policy replacement checks the version read above. A stale write returns `409`; reload and review the
+current rules before replacing them again.
+
 Grant only the permissions the agent uses: `read`, `update`, `send`, and
-`quarantine.read`. Default agents to `sendMode: "approval"`.
+`quarantine.read`. Use a `write` minimum of `person` so sends and replies wait for review.
 
 ## Follow events
 
@@ -133,18 +147,27 @@ retry requires an eligible ended execution and preserves the content and deadlin
 unavailable while cleanup from an ended attempt is still running, and while an attempt's status
 is unknown. Check `retryEligible` on the receipt. Automatic waits need no manual retry.
 
-In approval mode nothing is sent until a person decides. Deciding needs a
+A held send waits until a person decides. Deciding needs a
 person's OAuth credential, never an API key:
 
 ```ts
 const person = createClient({
   authToken: process.env.SAMVA_USER_TOKEN!,
-  headers: { "x-org-slug": "acme" },
+  orgSlug: process.env.SAMVA_ORG_SLUG!,
 });
 
 const waiting = await person.mailboxes.listActions({ id: mailbox.id, state: "approvalRequired" });
-await person.mailboxes.approveAction({ id: mailbox.id, actionId: waiting.items[0].id });
-// or: person.mailboxes.denyAction({ id, actionId, reason: "Wrong recipient." })
+const held = waiting.items[0];
+if (!held?.decision) throw new Error("No held decision to review");
+await person.mailboxes.approveAction({
+  id: mailbox.id,
+  actionId: held.id,
+  reviewRound: held.decision.reviewRound,
+});
+// Denial also requires that observed round:
+// person.mailboxes.denyAction({ id: mailbox.id, actionId: held.id,
+//   reviewRound: held.decision.reviewRound, reason: "Wrong recipient." });
+// A stale round returns 409. Read and review the new hold before deciding again.
 ```
 
 Key the reply by the event id. Events are delivered at least once, and a retry
@@ -192,8 +215,9 @@ Bun.serve({
 ```
 
 `createWebhookHandler` verifies the signature (401 on failure) and answers 500 when
-a handler throws so Samva retries. Install with `--send-mode approval` and the
-fewest permissions the handler needs. An extension can never approve a send,
+a handler throws so Samva retries. Install with
+`--policy '{"presets":[],"rules":[{"match":{"effect":"write"},"atLeast":"person"}]}'`
+and the fewest permissions the handler needs. An extension can never approve a send,
 release held mail, or change grants.
 
 ## Test locally

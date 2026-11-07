@@ -14,10 +14,11 @@ stays about mailbox mechanics. Replace it with your own logic.
 
 ## Safety stance
 
-- **Approval send mode.** Run the agent on a mailbox-scoped key (or install the extension) with
-  `sendMode: "approval"`. A reply returns `state: "approvalRequired"` and an `actionId`; nothing is
+- **Decision rules.** Set a mailbox-scoped key policy, or an extension installation policy, with
+  `{ match: { effect: "write" }, atLeast: "person" }`. Policy reads return `version`; replacements must send that value as `ifVersion`. Reload and review current rules after a `409` conflict. A reply returns `state: "approvalRequired"` and an `actionId`; nothing is
   sent until a person approves it with a person's OAuth credential in the dashboard, the CLI
-  (`samva login`), or `samva.mailboxes.approveAction`. An API key can never approve a send.
+  (`samva login`), or `samva.mailboxes.approveAction`. Approval and denial carry the observed
+  `decision.reviewRound`; CLI commands require `--review-round`. An API key can never approve a send.
 - **Least privilege.** The extension asks for `read` and `send` only, on the one event it handles.
   The key reaches one mailbox.
 - **Fail loudly.** Missing `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, or `SAMVA_WEBHOOK_SECRET` stops the
@@ -50,7 +51,8 @@ The tests use a fake event stream, the Samva client with a mocked HTTP transport
 
 ## Run the event-stream agent
 
-Create the mailbox with a full-access key, then a restricted key in approval mode (see the
+Use a person's OAuth session to create the mailbox and a restricted key with a `write` minimum
+of `person` (see the
 [mailboxes cookbook](../../cookbooks/mailboxes.md)).
 
 ```sh
@@ -67,16 +69,16 @@ SAMVA_API_KEY=samva_sk_test_... SAMVA_WEBHOOK_SECRET=whsec_... bun run serve
 ```
 
 Publish and install the extension with the Samva CLI (`samva extensions`), installing with
-`--send-mode approval`. Extension helpers ship in the `samva` package at `samva/mailbox`,
+`--policy '{"presets":[],"rules":[{"match":{"effect":"write"},"atLeast":"person"}]}'`. Extension helpers ship in the `samva` package at `samva/mailbox`,
 `samva/mailbox/test`, and `samva/mailbox/webhook`; `@samva/mailbox` is deprecated. The install
 returns the key and signing secret once. Point the installation at the public URL of this server.
 
-| Variable               | Used by       | Meaning                                       |
-| ---------------------- | ------------- | --------------------------------------------- |
-| `SAMVA_API_KEY`        | agent, server | Mailbox-scoped key in approval send mode      |
-| `SAMVA_MAILBOX_ID`     | agent         | The mailbox to follow                         |
-| `SAMVA_WEBHOOK_SECRET` | server        | Signing secret for the extension installation |
-| `PORT`                 | server        | Listen port, default `3000`                   |
+| Variable               | Used by       | Meaning                                         |
+| ---------------------- | ------------- | ----------------------------------------------- |
+| `SAMVA_API_KEY`        | agent, server | Mailbox-scoped key whose writes wait for review |
+| `SAMVA_MAILBOX_ID`     | agent         | The mailbox to follow                           |
+| `SAMVA_WEBHOOK_SECRET` | server        | Signing secret for the extension installation   |
+| `PORT`                 | server        | Listen port, default `3000`                     |
 
 See the [mailboxes cookbook](../../cookbooks/mailboxes.md) and
 <https://samva.dev/docs/mailboxes>.

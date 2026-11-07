@@ -45,6 +45,10 @@ endpoints when exploring the integration. Do not inspect or send customer data
 unless the task explicitly requires it and the caller is authorized for that
 organization.
 
+Policy writes require a person's OAuth session and authority over the policy scope. API-key
+credentials cannot write policies or approve/deny actions. Approval and denial also require the
+held action's observed `decision.reviewRound`; a stale round returns `409`.
+
 ## Side-effect boundary
 
 Write tools can persist Samva resources. Some tools also deliver traffic
