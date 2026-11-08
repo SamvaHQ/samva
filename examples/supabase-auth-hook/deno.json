@@ -7,7 +7,7 @@
     "react": "npm:react@19.3.1",
     "react/jsx-runtime": "npm:react@19.3.1/jsx-runtime",
     "react-email": "npm:react-email@6.11.6",
-    "samva": "npm:samva@0.35.0",
+    "samva": "npm:samva@0.37.0",
     "standardwebhooks": "npm:standardwebhooks@1.1.1"
   },
   "tasks": {

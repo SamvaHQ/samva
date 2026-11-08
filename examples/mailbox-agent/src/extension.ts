@@ -4,7 +4,8 @@ import { composeReply, parseReceivedMessage } from "./reply";
 
 /**
  * The agent as a webhook extension. It asks for the least it needs: `read` is required and
- * `send` lets it reply. Install it with `--send-mode approval` so a reply waits for a person.
+ * `send` lets it reply. Install it with a `--policy` whose `write` rules hold for a person, so a
+ * reply waits for review.
  */
 export default defineExtension({
   manifest: {
