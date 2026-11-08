@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.36.0` and `@samva/cli@^0.31.0` with this repository's guidance.
+Use `samva@^0.37.0` and `@samva/cli@^0.31.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -67,5 +67,13 @@ Mailbox sends and replies use scoped decision rules. Set a `write` minimum of `p
 reviewed keys or extension installations; `sendMode` and `--send-mode` are not accepted. Policy
 writes and approvals use a person's OAuth session. Approval and denial carry the observed
 `decision.reviewRound`, and CLI decisions require `--review-round`. A stale round returns `409`.
+
+Verify Samva webhooks with `verify` or `verifyRequest` from `samva/webhooks` and the endpoint
+signing secret. The RSA `v2` helpers left the webhooks package in 0.37; HMAC `v1` signing and
+verification are unchanged. Delete templates and projects with `templates.delete` and
+`templates.deleteProject`, or `samva templates delete` and `samva templates projects delete`:
+removal is permanent, and a referenced template returns `TemplateInUseError` (409). Template
+reads and writes no longer report `isActive`. Scheduled sends, analytics, conversations, and
+knowledge sources take `namespaceId`, or `--namespace` on the CLI.
 
 The bundled skill is the immutable snapshot identified in `provenance.json`.

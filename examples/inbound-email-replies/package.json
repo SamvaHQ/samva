@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "samva": "^0.35.0"
+    "samva": "^0.37.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
