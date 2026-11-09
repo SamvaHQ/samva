@@ -6,7 +6,7 @@
     {
       "name": "samva",
       "source": "plugins/samva",
-      "description": "Operate Samva email through its hosted MCP server and canonical agent skill.",
+      "description": "Operate Samva email and WhatsApp through its hosted MCP server and canonical agent skill.",
       "minClientVersions": { "cursor": "3.13.0" }
     }
   ]

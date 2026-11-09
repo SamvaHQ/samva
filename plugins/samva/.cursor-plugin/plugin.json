@@ -3,15 +3,15 @@
   "displayName": "Samva",
   "version": "0.4.0",
   "minClientVersions": { "cursor": "3.13.0" },
-  "description": "Operate Samva email through its hosted MCP server and canonical agent skill.",
+  "description": "Operate Samva email and WhatsApp through its hosted MCP server and canonical agent skill.",
   "author": { "name": "Arya Labs, Inc." },
   "homepage": "https://samva.dev/docs/developers/mcp",
   "repository": "https://github.com/SamvaHQ/samva",
   "license": "MIT",
   "logo": "./assets/icon.png",
-  "keywords": ["samva", "email", "mcp", "agent-skills", "transactional-email"],
+  "keywords": ["samva", "email", "whatsapp", "mcp", "agent-skills", "transactional-email"],
   "category": "integrations",
-  "tags": ["samva", "email", "mcp", "developer-tools"],
+  "tags": ["samva", "email", "whatsapp", "mcp", "developer-tools"],
   "skills": "./skills/",
   "mcpServers": "./mcp.json"
 }

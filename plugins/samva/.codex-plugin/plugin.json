@@ -1,7 +1,7 @@
 {
   "name": "samva",
   "version": "0.4.0",
-  "description": "Integrate and operate Samva email with the canonical hosted MCP server and Samva agent skill.",
+  "description": "Integrate and operate Samva email and WhatsApp with the canonical hosted MCP server and Samva agent skill.",
   "author": { "name": "Arya Labs, Inc.", "url": "https://samva.dev" },
   "homepage": "https://samva.dev/docs/developers/mcp",
   "repository": "https://github.com/SamvaHQ/samva",
@@ -11,8 +11,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Samva",
-    "shortDescription": "Samva's email API through its hosted MCP",
-    "longDescription": "Connect Codex to Samva's hosted MCP server for organization-scoped email operations, with the canonical Samva skill for SDK, REST, CLI, MCP, authentication, and template-authoring guidance.",
+    "shortDescription": "Samva's email and WhatsApp API through its hosted MCP",
+    "longDescription": "Connect Codex to Samva's hosted MCP server for organization-scoped email and WhatsApp operations, with the canonical Samva skill for SDK, REST, CLI, MCP, authentication, and template-authoring guidance.",
     "developerName": "Arya Labs, Inc.",
     "category": "Developer Tools",
     "capabilities": ["Interactive", "Write"],
