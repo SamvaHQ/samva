@@ -9,9 +9,9 @@
   "repository": "https://github.com/SamvaHQ/samva",
   "license": "MIT",
   "logo": "./assets/icon.png",
-  "keywords": ["samva", "email", "mcp", "agent-skills", "transactional-email"],
+  "keywords": ["samva", "email", "whatsapp", "mcp", "agent-skills", "transactional-email"],
   "category": "integrations",
-  "tags": ["samva", "email", "mcp", "developer-tools"],
+  "tags": ["samva", "email", "whatsapp", "mcp", "developer-tools"],
   "skills": "./skills/",
   "mcpServers": "./mcp.json"
 }
