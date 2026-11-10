@@ -8,7 +8,7 @@ streamable HTTP and authenticate through Samva's protected-resource metadata.
 ## Identity and provenance
 
 - Registry name: `dev.samva/mcp`
-- Server implementation identity: `dev.samva/mcp` at version `1.0.0`
+- Server implementation identity: `dev.samva/mcp` at version `1.1.0`
 - Documentation: <https://samva.dev/docs/developers/mcp>
 - Source repository: <https://github.com/SamvaHQ/samva>
 - GitHub repository ID: `1280248212`
