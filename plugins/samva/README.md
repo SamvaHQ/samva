@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.41.0` and `@samva/cli@^0.35.0` with this repository's guidance.
+Use `samva@^0.42.0` and `@samva/cli@^0.36.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -88,5 +88,10 @@ namespace credential reaches only uploads with recorded namespace ownership, so 
 attachments again with it before sending. Full mailbox draft responses include `revision`.
 WhatsApp sends use `messages.send` with `channel: "whatsapp"`; the bundled skill's `whatsapp.md`
 reference covers the 24-hour service window and templates.
+
+Organization-level email domains accept `shared` (`--shared` on the CLI domain commands), which
+lets namespace credentials read and send from them with their own sending health and
+suppressions. `email.setDefaultSender` takes a request body: `{}` for the sender's own scope or
+`{ namespaceId }` to set a namespace's default, and a raw HTTP call without a body is rejected.
 
 The bundled skill is the immutable snapshot identified in `provenance.json`.
