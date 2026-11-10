@@ -1,55 +1,55 @@
 core:changelogs:
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.42\n\nBoth adapters now require `samva@^0.42.0` and validate against SDK 0.42.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and\n`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.42.\nWhat changed around them:\n\n- Organization-level email domains can be `shared`, so a namespace credential can\n  send from a shared domain's senders.\n- `email.setDefaultSender` takes a request body. Pass `{}` for the sender's own\n  scope or `{ namespaceId }` for a namespace default.\n"
-    filename: 2026-11-10-sdk-042.md
+  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.43\n\nBoth adapters now require `samva@^0.43.0` and validate against SDK 0.43.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and\n`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.43.\nWhat changed around them:\n\n- `organizations.inviteMember` can restrict a teammate to one namespace.\n- `namespaces.createPortalLink`, `listPortalLinks`, and `revokePortalLink` manage\n  hosted customer portal links.\n- Non-send mailbox actions carry `handoff`, with the agent's `reason` on a hand-off.\n- `email.removeDomain` types its `409` conflict and `429` rate-limit errors.\n"
+    filename: 2026-11-11-sdk-043.md
     v: 0.0.0
 core:packages:
   - changelogIds:
-      - 2026-11-10-sdk-042.md
+      - 2026-11-11-sdk-043.md
     id: npm:@samva/email-sdk
     updated: true
   - changelogIds:
-      - 2026-11-10-sdk-042.md
+      - 2026-11-11-sdk-043.md
     id: npm:@samva/better-auth
     updated: true
   - id: npm:hono-cloudflare-workers-samva
     updated: false
-  - id: npm:supabase-auth-hook-samva
-    updated: false
-  - id: npm:inbound-email-replies-samva
-    updated: false
-  - id: npm:nextjs-transactional-samva
+  - id: npm:astro-email-samva
     updated: false
   - id: npm:tanstack-start-transactional-samva
     updated: false
-  - id: npm:astro-email-samva
+  - id: npm:clerk-webhook-samva
+    updated: false
+  - id: npm:supabase-auth-hook-samva
     updated: false
   - id: npm:react-email-samva
     updated: false
-  - id: npm:effect-sdk-example
+  - id: npm:better-auth-nextjs-samva
     updated: false
   - id: npm:sveltekit-transactional-samva
     updated: false
-  - id: npm:tsx-template-samva
-    updated: false
-  - id: npm:better-auth-nextjs-samva
-    updated: false
   - id: npm:mailbox-agent-samva
     updated: false
-  - id: npm:clerk-webhook-samva
+  - id: npm:effect-sdk-example
+    updated: false
+  - id: npm:tsx-template-samva
+    updated: false
+  - id: npm:nextjs-transactional-samva
+    updated: false
+  - id: npm:inbound-email-replies-samva
     updated: false
 npm:packages:
   - id: npm:@samva/email-sdk
   - id: npm:@samva/better-auth
   - id: npm:hono-cloudflare-workers-samva
-  - id: npm:supabase-auth-hook-samva
-  - id: npm:inbound-email-replies-samva
-  - id: npm:nextjs-transactional-samva
-  - id: npm:tanstack-start-transactional-samva
   - id: npm:astro-email-samva
-  - id: npm:react-email-samva
-  - id: npm:effect-sdk-example
-  - id: npm:sveltekit-transactional-samva
-  - id: npm:tsx-template-samva
-  - id: npm:better-auth-nextjs-samva
-  - id: npm:mailbox-agent-samva
+  - id: npm:tanstack-start-transactional-samva
   - id: npm:clerk-webhook-samva
+  - id: npm:supabase-auth-hook-samva
+  - id: npm:react-email-samva
+  - id: npm:better-auth-nextjs-samva
+  - id: npm:sveltekit-transactional-samva
+  - id: npm:mailbox-agent-samva
+  - id: npm:effect-sdk-example
+  - id: npm:tsx-template-samva
+  - id: npm:nextjs-transactional-samva
+  - id: npm:inbound-email-replies-samva
