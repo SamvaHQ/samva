@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.42.0` and `@samva/cli@^0.36.0` with this repository's guidance.
+Use `samva@^0.43.0` and `@samva/cli@^0.37.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -93,5 +93,12 @@ Organization-level email domains accept `shared` (`--shared` on the CLI domain c
 lets namespace credentials read and send from them with their own sending health and
 suppressions. `email.setDefaultSender` takes a request body: `{}` for the sender's own scope or
 `{ namespaceId }` to set a namespace's default, and a raw HTTP call without a body is rejected.
+
+`organizations.inviteMember` (`samva org invite --namespace`) can restrict a teammate to one
+namespace, with `mailboxAddress` naming their personal mailbox. `namespaces.createPortalLink`,
+`listPortalLinks`, and `revokePortalLink` (`samva namespaces portal-links`) manage hosted customer
+portal links; the URL holds a credential and is returned only on create. Non-send mailbox actions
+carry `handoff`, `{ reason }` for a hand-off and `null` otherwise. `email.removeDomain` types its
+`409` and `429` responses.
 
 The bundled skill is the immutable snapshot identified in `provenance.json`.

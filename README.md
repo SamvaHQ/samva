@@ -18,9 +18,9 @@ webhooks, and give an agent its own mailbox. Ask questions about the code on
 - `cookbooks/*.md` — documentation-first, copy-pasteable recipes.
 - `plugins/*` — coding-agent plugins and public documentation.
 
-While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.42. Workspace
-packages require `samva@^0.42.0` as a peer and test against `0.42.0`. Examples use
-`samva@^0.42.0`; copyable external import maps pin `samva@0.42.0`.
+While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.43. Workspace
+packages require `samva@^0.43.0` as a peer and test against `0.43.0`. Examples use
+`samva@^0.43.0`; copyable external import maps pin `samva@0.43.0`.
 
 ## Package integrations
 
