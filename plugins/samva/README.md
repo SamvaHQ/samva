@@ -30,7 +30,7 @@ retryable sends, and follow the revision-safe workflow for template edits.
 | OpenAI Codex | `.codex-plugin/plugin.json`  | `.mcp.json`       |
 | Cursor       | `.cursor-plugin/plugin.json` | `mcp.json`        |
 
-Both manifests load `skills/samva/SKILL.md` and its seven references. See
+Both manifests load `skills/samva/SKILL.md` and its eight references. See
 [`provenance.json`](./provenance.json) for the pinned source commit, public
 skill archive, version, and digests of the skill snapshot in this package.
 
@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.37.0` and `@samva/cli@^0.31.0` with this repository's guidance.
+Use `samva@^0.41.0` and `@samva/cli@^0.35.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -75,5 +75,18 @@ verification are unchanged. Delete templates and projects with `templates.delete
 removal is permanent, and a referenced template returns `TemplateInUseError` (409). Template
 reads and writes no longer report `isActive`. Scheduled sends, analytics, conversations, and
 knowledge sources take `namespaceId`, or `--namespace` on the CLI.
+
+Topic IDs start with `tpc_`; a request that passes an `unsub_` ID is rejected, so replace the
+prefix in stored IDs, newsletter issue front matter, and signup-form subscribe URLs.
+`topics.setSubscriptions` never resubscribes a contact who unsubscribed and reports them as
+`kept`. Agent drafts and creates take `setupJob` (`support`, `store`, or `booking`) instead of
+`preset`, and imports no longer accept `suppressionFree`. Send bare addresses with ASCII dot-atom
+local parts. Suppression entries carry `namespaceId`, which `email.listSuppressions` and
+`email.countSuppressions` accept as a filter; the CLI manages them with `samva suppressions list`
+and `samva suppressions remove`. OAuth and MCP connections can be confined to one namespace. A
+namespace credential reaches only uploads with recorded namespace ownership, so upload staged
+attachments again with it before sending. Full mailbox draft responses include `revision`.
+WhatsApp sends use `messages.send` with `channel: "whatsapp"`; the bundled skill's `whatsapp.md`
+reference covers the 24-hour service window and templates.
 
 The bundled skill is the immutable snapshot identified in `provenance.json`.

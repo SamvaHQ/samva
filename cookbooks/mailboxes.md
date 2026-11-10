@@ -21,7 +21,7 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.37.0`. Extension helpers are part of the SDK at
+These examples use `samva@^0.41.0`. Extension helpers are part of the SDK at
 `samva/mailbox`, `samva/mailbox/test`, and `samva/mailbox/webhook`; the standalone
 `@samva/mailbox` package is deprecated in its favour.
 

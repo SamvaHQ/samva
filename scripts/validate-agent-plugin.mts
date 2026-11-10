@@ -16,6 +16,7 @@ const expectedReferences = [
   "mcp.md",
   "sdk.md",
   "template-authoring.md",
+  "whatsapp.md",
 ] as const;
 
 type JsonObject = Record<string, unknown>;
@@ -287,11 +288,7 @@ export const validateAgentPlugin = async (repositoryRoot: string): Promise<Array
       if (/samva_sk_(?:live|test)_[A-Za-z0-9]{20,}/.test(text)) {
         errors.push(`Embedded Samva API key in ${relative(pluginRoot, path)}`);
       }
-      if (
-        /\b(?:supports?|includes?|provides?)\s+(?:sms|whatsapp|code mode|openapi search)/i.test(
-          text,
-        )
-      ) {
+      if (/\b(?:supports?|includes?|provides?)\s+(?:sms|code mode|openapi search)/i.test(text)) {
         errors.push(`Unsupported product claim in ${relative(pluginRoot, path)}`);
       }
     }),

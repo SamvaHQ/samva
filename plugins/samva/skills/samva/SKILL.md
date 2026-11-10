@@ -1,22 +1,23 @@
 ---
 name: samva
 description: >-
-  Integrate and operate Samva email across the Promise and Effect TypeScript
-  SDKs, REST API, CLI, hosted MCP server, dashboard, and TSX template editor.
-  Use for sending and tracking email, domains and senders, inbound receiving,
-  webhooks, templates, schedules, campaigns, usage, readiness, authentication,
-  mailboxes for agents (threads, replies, approval sends, quarantine, event
-  streams, extensions), or choosing the right Samva surface. Triggers on
-  samva, samva.dev, the `samva` package, `@samva/cli`, `samva/mailbox`,
-  mcp.samva.dev, SAMVA_API_KEY, agent mailbox, SML, Samva Markup Language, and
-  template editor agent.
+  Integrate and operate Samva email and WhatsApp across the Promise and Effect
+  TypeScript SDKs, REST API, CLI, hosted MCP server, dashboard, and TSX
+  template editor. Use for sending and tracking email and WhatsApp messages,
+  domains and senders, inbound receiving, webhooks, templates, WhatsApp's
+  24-hour service window and setup links, schedules, campaigns, usage,
+  readiness, authentication, mailboxes for agents (threads, replies, approval
+  sends, quarantine, event streams, extensions), or choosing the right Samva
+  surface. Triggers on samva, samva.dev, the `samva` package, `@samva/cli`,
+  `samva/mailbox`, mcp.samva.dev, SAMVA_API_KEY, agent mailbox, Samva
+  WhatsApp, SML, Samva Markup Language, and template editor agent.
 metadata:
   version: 0.4.0
 ---
 
 # Samva
 
-Use Samva's organization-scoped email surfaces for transactional sends,
+Use Samva's organization-scoped email and WhatsApp surfaces for transactional sends,
 templates, scheduled email, campaigns, inbound receiving, webhooks, mailboxes for agents, and
 operational checks.
 
@@ -31,6 +32,7 @@ What is the intent?
 ├─ Give an AI agent live Samva tools           → hosted MCP (`https://mcp.samva.dev`)
 ├─ Configure or inspect resources visually     → dashboard (`https://samva.dev`)
 ├─ Give an agent its own inbox to read and reply → mailbox (`samva.mailboxes`, `samva mailboxes`)
+├─ Send or answer on WhatsApp                    → WhatsApp reference (`channel: "whatsapp"`)
 ├─ React to mailbox events with code Samva runs  → mailbox extension (`samva/mailbox`)
 └─ Author or repair a TSX email template      → template authoring reference
 ```
@@ -56,6 +58,8 @@ Read only the reference needed for the selected surface:
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
 - [Mailboxes](references/mailbox-extensions.md): approval sends, quarantine, the event stream, and
   authoring extensions with `samva/mailbox`. The SDK, CLI, and MCP references cover the calls.
+- [WhatsApp](references/whatsapp.md): the 24-hour service window, template and free-form sends,
+  WhatsApp threads in a mailbox, and setup links for customers' numbers.
 - [Template authoring](references/template-authoring.md): the static TSX profile, the check-render-look loop, and revision-safe editing.
 - [Authentication](references/auth.md): API keys, OAuth, and organization scoping.
 - [Executor](references/executor.md): add Samva's MCP or REST surface to an Executor workspace.
