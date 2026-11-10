@@ -3,7 +3,7 @@
   "name": "dev.samva/mcp",
   "title": "Samva MCP",
   "description": "Authenticated Samva email and WhatsApp tools, including public documentation and template discovery.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "websiteUrl": "https://samva.dev/docs/developers/mcp",
   "repository": {
     "url": "https://github.com/SamvaHQ/samva",
