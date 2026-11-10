@@ -1,3 +1,20 @@
+## @samva/better-auth@0.14.0
+
+### Require Samva SDK 0.43
+
+Both adapters now require `samva@^0.43.0` and validate against SDK 0.43.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and
+`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.43.
+What changed around them:
+
+- `organizations.inviteMember` can restrict a teammate to one namespace.
+- `namespaces.createPortalLink`, `listPortalLinks`, and `revokePortalLink` manage
+  hosted customer portal links.
+- Non-send mailbox actions carry `handoff`, with the agent's `reason` on a hand-off.
+- `email.removeDomain` types its `409` conflict and `429` rate-limit errors.
+
 ## @samva/better-auth@0.13.0
 
 ### Require Samva SDK 0.42
