@@ -1,3 +1,50 @@
+## @samva/email-sdk@0.13.0
+
+### Require Samva SDK 0.41
+
+Both adapters now require `samva@^0.41.0` and validate against SDK 0.41.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` with
+a flat email payload and reads `id`; `@samva/better-auth` still calls
+`messages.send` with `{ to, channel: "email", email }`. The email payload and both
+send responses keep the same shape in 0.41. What changed around them:
+
+- Samva refuses quoted and non-ASCII local parts. Send bare addresses with ASCII
+  dot-atom local parts; Unicode domains are converted to punycode.
+- Topic IDs start with `tpc_` instead of `unsub_`, and requests that pass an
+  `unsub_` ID are rejected. Replace the prefix wherever you store a topic ID.
+- Suppression entries carry `namespaceId`. A namespace credential lists, counts,
+  and removes only its own entries.
+
+### Require Samva SDK 0.35
+
+Both adapters now require `samva@^0.35.0` and validate against SDK 0.35.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+### Require Samva SDK 0.37
+
+Both adapters now require `samva@^0.37.0` and validate against SDK 0.37.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` builds a flat email payload,
+calls `email.send`, and reads `id` from the response. `@samva/better-auth` builds
+`{ to, channel: "email", email }`, calls `messages.send`, and ignores the
+response. Both contracts survived 0.36 and 0.37. What changed around them:
+
+- Mailbox keys and extension installations carry decision policies instead of
+  `sendMode`. A held send returns `approvalRequired` with a `decision`; a person
+  approves with that decision's `reviewRound`, and a stale round returns 409.
+  Replacing a policy requires the version you read as `ifVersion`.
+- `samva` 0.37 removes the RSA `v2` helpers from the webhooks package.
+  Verify a delivery with `verify` or `verifyRequest` from `samva/webhooks` and
+  the endpoint signing secret.
+- Template responses and create/update payloads no longer expose `isActive`.
+  `templates.delete` and `templates.deleteProject` delete permanently and refuse
+  a referenced template with `TemplateInUseError` (409).
+- Scheduled sends, analytics, and conversations accept `namespaceId`, and an
+  agent's knowledge sources must belong to its namespace.
+
 ## @samva/email-sdk@0.12.0
 
 ### Require Samva SDK 0.33

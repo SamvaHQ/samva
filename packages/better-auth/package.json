@@ -1,6 +1,6 @@
 {
   "name": "@samva/better-auth",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Better Auth email callbacks powered by Samva.",
   "keywords": [
     "auth",
