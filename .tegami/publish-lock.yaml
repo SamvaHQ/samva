@@ -1,65 +1,55 @@
 core:changelogs:
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.41\n\nBoth adapters now require `samva@^0.41.0` and validate against SDK 0.41.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` with\na flat email payload and reads `id`; `@samva/better-auth` still calls\n`messages.send` with `{ to, channel: \"email\", email }`. The email payload and both\nsend responses keep the same shape in 0.41. What changed around them:\n\n- Samva refuses quoted and non-ASCII local parts. Send bare addresses with ASCII\n  dot-atom local parts; Unicode domains are converted to punycode.\n- Topic IDs start with `tpc_` instead of `unsub_`, and requests that pass an\n  `unsub_` ID are rejected. Replace the prefix wherever you store a topic ID.\n- Suppression entries carry `namespaceId`. A namespace credential lists, counts,\n  and removes only its own entries.\n"
-    filename: 2026-11-10-sdk-041.md
-    v: 0.0.0
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.35\n\nBoth adapters now require `samva@^0.35.0` and validate against SDK 0.35.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n"
-    filename: 2026-11-05-sdk-035.md
-    v: 0.0.0
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.37\n\nBoth adapters now require `samva@^0.37.0` and validate against SDK 0.37.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` builds a flat email payload,\ncalls `email.send`, and reads `id` from the response. `@samva/better-auth` builds\n`{ to, channel: \"email\", email }`, calls `messages.send`, and ignores the\nresponse. Both contracts survived 0.36 and 0.37. What changed around them:\n\n- Mailbox keys and extension installations carry decision policies instead of\n  `sendMode`. A held send returns `approvalRequired` with a `decision`; a person\n  approves with that decision's `reviewRound`, and a stale round returns 409.\n  Replacing a policy requires the version you read as `ifVersion`.\n- `samva` 0.37 removes the RSA `v2` helpers from the webhooks package.\n  Verify a delivery with `verify` or `verifyRequest` from `samva/webhooks` and\n  the endpoint signing secret.\n- Template responses and create/update payloads no longer expose `isActive`.\n  `templates.delete` and `templates.deleteProject` delete permanently and refuse\n  a referenced template with `TemplateInUseError` (409).\n- Scheduled sends, analytics, and conversations accept `namespaceId`, and an\n  agent's knowledge sources must belong to its namespace.\n"
-    filename: 2026-11-08-sdk-037.md
+  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.42\n\nBoth adapters now require `samva@^0.42.0` and validate against SDK 0.42.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and\n`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.42.\nWhat changed around them:\n\n- Organization-level email domains can be `shared`, so a namespace credential can\n  send from a shared domain's senders.\n- `email.setDefaultSender` takes a request body. Pass `{}` for the sender's own\n  scope or `{ namespaceId }` for a namespace default.\n"
+    filename: 2026-11-10-sdk-042.md
     v: 0.0.0
 core:packages:
-  - id: npm:nextjs-transactional-samva
-    updated: false
-  - id: npm:react-email-samva
-    updated: false
-  - id: npm:effect-sdk-example
-    updated: false
-  - id: npm:sveltekit-transactional-samva
-    updated: false
-  - id: npm:tanstack-start-transactional-samva
-    updated: false
-  - id: npm:inbound-email-replies-samva
-    updated: false
-  - id: npm:supabase-auth-hook-samva
-    updated: false
-  - id: npm:better-auth-nextjs-samva
-    updated: false
-  - id: npm:hono-cloudflare-workers-samva
-    updated: false
-  - id: npm:clerk-webhook-samva
-    updated: false
-  - id: npm:astro-email-samva
-    updated: false
-  - id: npm:mailbox-agent-samva
-    updated: false
-  - id: npm:tsx-template-samva
-    updated: false
   - changelogIds:
-      - 2026-11-10-sdk-041.md
-      - 2026-11-05-sdk-035.md
-      - 2026-11-08-sdk-037.md
-    id: npm:@samva/better-auth
-    updated: true
-  - changelogIds:
-      - 2026-11-10-sdk-041.md
-      - 2026-11-05-sdk-035.md
-      - 2026-11-08-sdk-037.md
+      - 2026-11-10-sdk-042.md
     id: npm:@samva/email-sdk
     updated: true
-npm:packages:
+  - changelogIds:
+      - 2026-11-10-sdk-042.md
+    id: npm:@samva/better-auth
+    updated: true
+  - id: npm:hono-cloudflare-workers-samva
+    updated: false
+  - id: npm:supabase-auth-hook-samva
+    updated: false
+  - id: npm:inbound-email-replies-samva
+    updated: false
   - id: npm:nextjs-transactional-samva
+    updated: false
+  - id: npm:tanstack-start-transactional-samva
+    updated: false
+  - id: npm:astro-email-samva
+    updated: false
+  - id: npm:react-email-samva
+    updated: false
+  - id: npm:effect-sdk-example
+    updated: false
+  - id: npm:sveltekit-transactional-samva
+    updated: false
+  - id: npm:tsx-template-samva
+    updated: false
+  - id: npm:better-auth-nextjs-samva
+    updated: false
+  - id: npm:mailbox-agent-samva
+    updated: false
+  - id: npm:clerk-webhook-samva
+    updated: false
+npm:packages:
+  - id: npm:@samva/email-sdk
+  - id: npm:@samva/better-auth
+  - id: npm:hono-cloudflare-workers-samva
+  - id: npm:supabase-auth-hook-samva
+  - id: npm:inbound-email-replies-samva
+  - id: npm:nextjs-transactional-samva
+  - id: npm:tanstack-start-transactional-samva
+  - id: npm:astro-email-samva
   - id: npm:react-email-samva
   - id: npm:effect-sdk-example
   - id: npm:sveltekit-transactional-samva
-  - id: npm:tanstack-start-transactional-samva
-  - id: npm:inbound-email-replies-samva
-  - id: npm:supabase-auth-hook-samva
-  - id: npm:better-auth-nextjs-samva
-  - id: npm:hono-cloudflare-workers-samva
-  - id: npm:clerk-webhook-samva
-  - id: npm:astro-email-samva
-  - id: npm:mailbox-agent-samva
   - id: npm:tsx-template-samva
-  - id: npm:@samva/better-auth
-  - id: npm:@samva/email-sdk
+  - id: npm:better-auth-nextjs-samva
+  - id: npm:mailbox-agent-samva
+  - id: npm:clerk-webhook-samva
