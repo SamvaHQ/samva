@@ -12,7 +12,7 @@ Metadata Document discovery.
 ## Codex
 
 Codex discovers `.codex-plugin/plugin.json` at the package root. Its `skills`
-field loads `skills/samva/SKILL.md` and the six references linked from that
+field loads `skills/samva/SKILL.md` and the eight references linked from that
 skill. Its `mcpServers` field loads `.mcp.json`, which defines one HTTP server
 named `samva`.
 
@@ -23,7 +23,7 @@ named `samva`.
 ```
 
 The Codex manifest declares `Interactive` and `Write` because Samva's hosted
-tool set includes both organization-scoped reads and live email operations.
+tool set includes both organization-scoped reads and live email and WhatsApp operations.
 
 ## Cursor
 

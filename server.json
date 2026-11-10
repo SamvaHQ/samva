@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "dev.samva/mcp",
   "title": "Samva MCP",
-  "description": "Authenticated Samva email tools, including public documentation and template discovery.",
+  "description": "Authenticated Samva email and WhatsApp tools, including public documentation and template discovery.",
   "version": "1.0.0",
   "websiteUrl": "https://samva.dev/docs/developers/mcp",
   "repository": {

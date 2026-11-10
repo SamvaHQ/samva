@@ -364,8 +364,7 @@ flat parameters, return decoded success values, and throw typed errors. The
 Effect module for a namespace is its kebab-cased path, such as
 `samva/effect/topics`.
 
-The `agents` namespace exposes the hosted Agents API: **Preview · Available to selected
-organizations.** Use `samva.agents` with the Promise client or
+The `agents` namespace exposes the hosted Agents API: available to every organization. Use `samva.agents` with the Promise client or
 `import * as Agents from "samva/effect/agents"` with Effect.
 
 ## REST equivalent

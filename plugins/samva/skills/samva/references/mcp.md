@@ -1,6 +1,7 @@
 # Hosted MCP
 
-Use Samva's hosted MCP server when an AI agent needs live, organization-scoped email tools.
+Use Samva's hosted MCP server when an AI agent needs live, organization-scoped email and WhatsApp
+tools.
 
 - Endpoint: `https://mcp.samva.dev`
 - Transport: Streamable HTTP

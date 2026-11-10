@@ -177,6 +177,17 @@ describe("Samva agent plugin contract", () => {
     expect(errors).toContain("Unsupported product claim in docs/unsupported.md");
   });
 
+  it("accepts WhatsApp claims because WhatsApp ships", async () => {
+    const root = await fixture();
+    await writeFile(
+      resolve(root, "plugins/samva/docs/whatsapp.md"),
+      "This plugin supports WhatsApp.\n",
+    );
+    expect(await validateAgentPlugin(root)).not.toContain(
+      "Unsupported product claim in docs/whatsapp.md",
+    );
+  });
+
   describe("published ChatGPT plugin distribution", () => {
     const guidePath = "plugins/samva/docs/chatgpt.md";
     const listingUrl =
