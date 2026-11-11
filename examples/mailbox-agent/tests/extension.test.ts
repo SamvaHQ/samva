@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 
+import { createClient } from "samva";
 import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
 import { test } from "vitest";
 
@@ -86,4 +87,39 @@ test("logs a queued reply without reporting a sent message", async () => {
     [{ method: "POST", path: "/v1/mailboxes/mbx_01/messages/msg_01/reply" }],
   );
   assert.deepEqual(result.logs, ["queued mbxact_01"]);
+});
+
+test("skips a WhatsApp reply when the service window has closed, without failing the delivery", async () => {
+  const event = mailboxEvent("mailbox.message.received", {
+    mailboxId: "mbx_01",
+    message: {
+      ...receivedEvent().data.message,
+      channel: "whatsapp",
+      from: { address: "+16175559876" },
+      subject: null,
+      text: "Has my order shipped?",
+    },
+  });
+  // The API refuses free-form text outside the window with this 422 body.
+  const client = createClient({
+    apiKey: "samva_sk_test_mailbox_agent",
+    baseUrl: "https://api.samva.test",
+    fetch: Object.assign(
+      async () =>
+        Response.json(
+          {
+            _tag: "WhatsAppServiceWindowClosedError",
+            message: "The 24-hour service window closed.",
+            closedAt: "2026-10-16T09:12:00.000Z",
+          },
+          { status: 422 },
+        ),
+      { preconnect: () => {} },
+    ),
+  });
+
+  const result = await runExtension(extension, event, { client });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.logs, ["skipped msg_01 service window closed"]);
 });
