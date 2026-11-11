@@ -2,6 +2,9 @@
 export interface ReceivedMessage {
   readonly mailboxId: string;
   readonly messageId: string;
+  /** `whatsapp` when the message arrived on the mailbox's WhatsApp number. */
+  readonly channel: "email" | "whatsapp";
+  /** The sender's email address, or their number in E.164 form on WhatsApp. */
   readonly fromAddress: string;
   readonly subject: string | null;
   readonly text: string | null;
@@ -23,6 +26,7 @@ export const parseReceivedMessage = (data: unknown): ReceivedMessage | undefined
   return {
     mailboxId: data.mailboxId,
     messageId: message.id,
+    channel: message.channel === "whatsapp" ? "whatsapp" : "email",
     fromAddress: from.address,
     subject: typeof message.subject === "string" ? message.subject : null,
     text: typeof message.text === "string" ? message.text : null,
@@ -39,6 +43,12 @@ export const isAutomatedSender = (address: string): boolean => AUTOMATED_SENDER.
  * Replace it with your own logic; return `undefined` to leave the message alone.
  */
 export const composeReply = (message: ReceivedMessage): string | undefined => {
+  // A WhatsApp message has no subject and no automated senders to loop with.
+  if (message.channel === "whatsapp") {
+    return message.text === null
+      ? undefined
+      : "Thanks for your message. A person will follow up shortly.";
+  }
   if (isAutomatedSender(message.fromAddress)) return undefined;
   const topic = message.subject ?? "your message";
   return `Thanks for writing about "${topic}". A person will follow up shortly.`;

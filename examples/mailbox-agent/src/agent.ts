@@ -1,4 +1,4 @@
-import { MailboxEventStreamError } from "samva";
+import { MailboxEventStreamError, WhatsAppServiceWindowClosedError } from "samva";
 import type { MailboxEvent, SamvaClient } from "samva";
 
 import { composeReply, parseReceivedMessage } from "./reply";
@@ -34,15 +34,33 @@ export const handleEvent = async (
     return;
   }
 
-  // The event id is stable across redelivery, so a retry returns the original receipt.
-  const receipt = await client.mailboxes.reply(
-    {
-      id: received.mailboxId,
-      messageId: received.messageId,
-      text,
-    },
-    { idempotencyKey: `reply:${event.id}` },
-  );
+  // The same call answers both channels: a WhatsApp reply names its channel and leaves from the
+  // number the thread belongs to. The event id is stable across redelivery, so a retry returns
+  // the original receipt.
+  const reply =
+    received.channel === "whatsapp"
+      ? {
+          id: received.mailboxId,
+          messageId: received.messageId,
+          channel: "whatsapp" as const,
+          text,
+        }
+      : { id: received.mailboxId, messageId: received.messageId, text };
+
+  let receipt;
+  try {
+    receipt = await client.mailboxes.reply(reply, { idempotencyKey: `reply:${event.id}` });
+  } catch (error) {
+    // Free-form WhatsApp text needs the 24-hour service window, which a customer's message opens.
+    // A replayed old event can find it closed; only an approved template reaches them then.
+    if (error instanceof WhatsAppServiceWindowClosedError) {
+      log(
+        `skipped ${received.messageId}: service window closed at ${error.closedAt ?? "never opened"}`,
+      );
+      return;
+    }
+    throw error;
+  }
 
   // `queued` is not acceptance, and `accepted` is not recipient delivery; follow the action for both.
   log(`reply to ${received.messageId}: ${receipt.state}, action ${receipt.actionId}`);

@@ -28,11 +28,11 @@ export default defineExtension({
       }
 
       // The client derives the Idempotency-Key from the event id, so a retry cannot double-send.
-      const receipt = await samva.mailboxes.reply({
-        id: received.mailboxId,
-        messageId: received.messageId,
-        text,
-      });
+      const receipt = await samva.mailboxes.reply(
+        received.channel === "whatsapp"
+          ? { id: received.mailboxId, messageId: received.messageId, channel: "whatsapp", text }
+          : { id: received.mailboxId, messageId: received.messageId, text },
+      );
       log(receipt.state, receipt.actionId);
     },
   },
