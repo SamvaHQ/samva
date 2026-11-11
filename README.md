@@ -121,8 +121,8 @@ Integrations land as individual pull requests. See
 Agents and mailboxes:
 
 - [`mailbox-agent`](./examples/mailbox-agent) — an agent that follows a mailbox
-  event stream and replies in approval mode, plus the same behavior as an
-  `@samva/mailbox` webhook extension.
+  event stream and answers email and WhatsApp in approval mode, plus the same
+  behavior as an `@samva/mailbox` webhook extension.
 - [`inbound-email-replies`](./examples/inbound-email-replies) — receives an
   inbound reply, verifies the signed webhook, and answers in-thread.
 

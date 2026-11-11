@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 
-import { createClient, MailboxEventStreamError } from "samva";
+import { createClient, MailboxEventStreamError, WhatsAppServiceWindowClosedError } from "samva";
 import type { MailboxEvent, MailboxEventStreamOptions, MailboxSendReceipt } from "samva";
 import { test, vi } from "vitest";
 
@@ -197,6 +197,45 @@ test("skips automated senders but still advances the cursor", async () => {
   await runMailboxAgent(client, { mailboxId: "mbx_01", store, log: () => {} });
 
   assert.equal(replies.length, 0);
+  assert.deepEqual(saved, ["cursor-evt_1"]);
+});
+
+const whatsapp = (id: string): MailboxEvent =>
+  received(id, {
+    channel: "whatsapp",
+    from: { address: "+16175559876" },
+    subject: null,
+    text: "Has my order shipped?",
+  });
+
+test("answers a WhatsApp message through the same call, naming the channel", async () => {
+  const { client, replies } = createHarness([of(whatsapp("evt_1"))]);
+  const { store, saved } = memoryStore();
+
+  await runMailboxAgent(client, { mailboxId: "mbx_01", store, log: () => {} });
+
+  assert.equal(replies.length, 1);
+  assert.deepEqual(await replies[0]?.json(), {
+    channel: "whatsapp",
+    text: "Thanks for your message. A person will follow up shortly.",
+  });
+  assert.deepEqual(saved, ["cursor-evt_1"]);
+});
+
+test("skips a WhatsApp reply when the service window has closed", async () => {
+  const { client } = createHarness([of(whatsapp("evt_1"))]);
+  vi.spyOn(client.mailboxes, "reply").mockRejectedValue(
+    new WhatsAppServiceWindowClosedError({
+      closedAt: "2026-10-16T09:12:00.000Z",
+      message: "The 24-hour service window closed.",
+    }),
+  );
+  const { store, saved } = memoryStore();
+  const lines: string[] = [];
+
+  await runMailboxAgent(client, { mailboxId: "mbx_01", store, log: (line) => lines.push(line) });
+
+  assert.match(lines[0] ?? "", /service window closed at 2026-10-16T09:12:00.000Z/);
   assert.deepEqual(saved, ["cursor-evt_1"]);
 });
 

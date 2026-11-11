@@ -1,6 +1,7 @@
 # Mailbox agent + Samva
 
-A runnable TypeScript example of an agent that owns a Samva mailbox. It shows the same behavior
+A runnable TypeScript example of an agent that owns a Samva mailbox and answers email and WhatsApp
+from it. It shows the same behavior
 two ways:
 
 - `src/agent.ts` follows `samva.mailboxes.events` for one mailbox, saves the stream cursor after
@@ -61,6 +62,29 @@ SAMVA_API_KEY=samva_sk_test_... SAMVA_MAILBOX_ID=mbx_... bun run agent
 
 The example keeps the cursor in memory, so a restart resumes live. Persist it in a database or file
 in production so a restart replays what it missed.
+
+## Answer WhatsApp from the same mailbox
+
+A mailbox can hold a WhatsApp number next to its email address, and the agent needs no second
+integration: a customer's WhatsApp message arrives as the same `mailbox.message.received` event
+with `message.channel: "whatsapp"`, and `mailboxes.reply` answers it with `channel: "whatsapp"`.
+The same decision rules hold the reply for a person.
+
+Add a number your organization has connected as an endpoint on the mailbox
+([Answer WhatsApp in a mailbox](https://samva.dev/docs/channels/whatsapp/answer-in-a-mailbox)):
+
+```sh
+curl -X POST https://api.samva.dev/v1/mailboxes/mbx_.../endpoints \
+  -H "X-API-Key: $SAMVA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "channel": "whatsapp", "address": "+16175550123" }'
+```
+
+Free-form text needs the 24-hour service window that a customer's message opens. The agent replies
+to a message it has just received, so the window is open; if a replayed event finds it closed, the
+API refuses the text with `WhatsAppServiceWindowClosedError` and the agent logs and skips it.
+Reaching the customer then takes an approved template (`templateId` and `templateData` in place of
+`text`). WhatsApp needs a paid plan.
 
 ## Run the webhook extension
 
