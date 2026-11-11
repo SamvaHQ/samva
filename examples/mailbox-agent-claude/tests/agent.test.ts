@@ -45,7 +45,7 @@ const receipt = {
 };
 
 /** The agent talks to the real Samva client; the test asserts the HTTP requests it builds. */
-const samvaHarness = () => {
+const samvaHarness = (respond: () => Response = () => Response.json(receipt, { status: 200 })) => {
   const replies: Request[] = [];
   const samva = createClient({
     apiKey: "samva_sk_test_mailbox_agent",
@@ -54,7 +54,7 @@ const samvaHarness = () => {
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const request = new Request(input, init);
         replies.push(request);
-        return Response.json(receipt, { status: 200 });
+        return respond();
       },
       { preconnect: () => {} },
     ),
@@ -92,6 +92,30 @@ test("answers a WhatsApp message through the same call, naming the channel", asy
   );
 
   assert.deepEqual(await replies[0]!.json(), { channel: "whatsapp", text: "It ships today." });
+});
+
+test("treats a replayed event whose new draft differs as already answered", async () => {
+  // Samva refuses a different body under an idempotency key it has seen.
+  const { samva } = samvaHarness(() =>
+    Response.json(
+      {
+        _tag: "ConflictError",
+        message: "Idempotency-Key reused with a different request.",
+        resource: "idempotency_key",
+      },
+      { status: 409 },
+    ),
+  );
+  const lines: string[] = [];
+
+  await handleEvent(
+    samva,
+    received(),
+    async () => "A second draft.",
+    (line) => lines.push(line),
+  );
+
+  assert.deepEqual(lines, ["already answered msg_1"]);
 });
 
 test("sends nothing when the drafter leaves the message for a person", async () => {
