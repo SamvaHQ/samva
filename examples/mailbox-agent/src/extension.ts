@@ -1,3 +1,4 @@
+import { WhatsAppServiceWindowClosedError } from "samva";
 import { defineExtension } from "samva/mailbox";
 
 import { composeReply, parseReceivedMessage } from "./reply";
@@ -27,13 +28,19 @@ export default defineExtension({
         return;
       }
 
-      // The client derives the Idempotency-Key from the event id, so a retry cannot double-send.
-      const receipt = await samva.mailboxes.reply({
-        id: received.mailboxId,
-        messageId: received.messageId,
-        text,
-      });
-      log(receipt.state, receipt.actionId);
+      try {
+        // The client derives the Idempotency-Key from the event id, so a retry cannot double-send.
+        const receipt = await samva.mailboxes.reply(
+          received.channel === "whatsapp"
+            ? { id: received.mailboxId, messageId: received.messageId, channel: "whatsapp", text }
+            : { id: received.mailboxId, messageId: received.messageId, text },
+        );
+        log(receipt.state, receipt.actionId);
+      } catch (error) {
+        // Throwing here fails the delivery, and a retry cannot reopen a closed service window.
+        if (!(error instanceof WhatsAppServiceWindowClosedError)) throw error;
+        log("skipped", received.messageId, "service window closed");
+      }
     },
   },
 });
