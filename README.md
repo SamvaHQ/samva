@@ -88,6 +88,13 @@ packages require `samva@^0.43.0` as a peer and test against `0.43.0`. Examples u
 
 ## Cookbooks
 
+Agents and mailboxes:
+
+- [`Mailboxes`](./cookbooks/mailboxes.md)
+- [`Inbound email replies`](./cookbooks/inbound-email.md)
+
+Frameworks and auth:
+
 - [`Astro`](./cookbooks/astro.md)
 - [`Auth.js`](./cookbooks/authjs.md)
 - [`Better Auth`](./cookbooks/better-auth.md)
@@ -95,20 +102,31 @@ packages require `samva@^0.43.0` as a peer and test against `0.43.0`. Examples u
 - [`Effect SDK`](./cookbooks/effect-sdk.md)
 - [`Email SDK`](./cookbooks/email-sdk.md)
 - [`Hono on Cloudflare Workers`](./cookbooks/hono-cloudflare-workers.md)
-- [`Inbound email replies`](./cookbooks/inbound-email.md)
-- [`Mailboxes`](./cookbooks/mailboxes.md)
 - [`Next.js`](./cookbooks/nextjs.md)
 - [`Prisma`](./cookbooks/prisma.md)
-- [`React Email`](./cookbooks/react-email.md)
 - [`Supabase Auth`](./cookbooks/supabase-auth.md)
 - [`SvelteKit`](./cookbooks/sveltekit.md)
 - [`TanStack Start`](./cookbooks/tanstack-start.md)
+
+Templates:
+
+- [`React Email`](./cookbooks/react-email.md)
 - [`TSX templates`](./cookbooks/tsx-templates.md)
 
 Integrations land as individual pull requests. See
 [CONTRIBUTING.md](./CONTRIBUTING.md) to propose or build one.
 
 ## Examples
+
+Agents and mailboxes:
+
+- [`mailbox-agent`](./examples/mailbox-agent) — an agent that follows a mailbox
+  event stream and replies in approval mode, plus the same behavior as an
+  `@samva/mailbox` webhook extension.
+- [`inbound-email-replies`](./examples/inbound-email-replies) — receives an
+  inbound reply, verifies the signed webhook, and answers in-thread.
+
+Frameworks, auth, and templates:
 
 - [`astro-email`](./examples/astro-email) — Astro Action and JSON endpoint on
   Cloudflare Workers.
@@ -122,11 +140,6 @@ Integrations land as individual pull requests. See
   Samva community adapter.
 - [`hono-cloudflare-workers`](./examples/hono-cloudflare-workers) — Hono Worker
   with a JSON email endpoint.
-- [`inbound-email-replies`](./examples/inbound-email-replies) — receives an
-  inbound reply, verifies the signed webhook, and answers in-thread.
-- [`mailbox-agent`](./examples/mailbox-agent) — an agent that follows a mailbox
-  event stream and replies in approval mode, plus the same behavior as an
-  `@samva/mailbox` webhook extension.
 - [`nextjs-transactional`](./examples/nextjs-transactional) — App Router
   contact form plus `/api/send` route handler using the Samva SDK.
 - [`react-email-samva`](./examples/react-email-samva) — React Email rendering
