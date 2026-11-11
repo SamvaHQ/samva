@@ -11,6 +11,55 @@ email flows, work with templates, receive replies and delivery events as signed
 webhooks, and give an agent its own mailbox. Ask questions about the code on
 [DeepWiki](https://deepwiki.com/SamvaHQ/samva).
 
+## Start here
+
+**From an MCP client.** Samva's hosted MCP server is at `https://mcp.samva.dev` and signs in with
+OAuth. In Claude Code:
+
+```sh
+claude mcp add --transport http samva https://mcp.samva.dev
+```
+
+Setup guides: [Claude Code](https://samva.dev/docs/integrations/claude-code),
+[Codex](https://samva.dev/docs/integrations/codex),
+[Cursor](https://samva.dev/docs/integrations/cursor), and
+[opencode](https://samva.dev/docs/integrations/opencode).
+
+**From code.** Create a mailbox on a hosted address, which needs no DNS setup, and send from it:
+
+```ts
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const mailbox = await samva.mailboxes.create({
+  endpoint: { channel: "email", address: "support@acme.samva.email" },
+  name: "Support",
+});
+
+await samva.mailboxes.sendMessage({
+  id: mailbox.id,
+  to: ["customer@example.com"],
+  subject: "Your support request",
+  text: "We are looking into your request.",
+});
+```
+
+**From a terminal.**
+
+```sh
+npm install -g @samva/cli
+samva login
+samva org use <slug>   # `samva org list` shows your organizations
+samva mailboxes create --address support@acme.samva.email --name Support
+samva mailboxes events mbx_...
+```
+
+Replies come back as signed webhooks or over the mailbox event stream. The
+[`mailbox-agent`](./examples/mailbox-agent) example is a complete agent that follows that stream and
+replies in approval mode, and [Give an agent an inbox](https://samva.dev/docs/mailboxes) is the full
+tutorial. The free plan needs no card and includes one mailbox; WhatsApp is on paid plans.
+
 ## Structure
 
 - `packages/*` — package integrations (`@samva/*`).
