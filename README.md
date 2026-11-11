@@ -50,6 +50,7 @@ await samva.mailboxes.sendMessage({
 ```sh
 npm install -g @samva/cli
 samva login
+samva org use <slug>   # `samva org list` shows your organizations
 samva mailboxes create --address support@acme.samva.email --name Support
 samva mailboxes events mbx_...
 ```
