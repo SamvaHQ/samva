@@ -93,6 +93,13 @@ Agents and mailboxes:
 - [`Mailboxes`](./cookbooks/mailboxes.md)
 - [`Inbound email replies`](./cookbooks/inbound-email.md)
 
+Agent frameworks:
+
+- [`Claude Agent SDK`](./cookbooks/claude-agent-sdk.md)
+- [`Vercel AI SDK`](./cookbooks/vercel-ai-sdk.md)
+- [`OpenAI Agents SDK`](./cookbooks/openai-agents-sdk.md)
+- [`LangGraph`](./cookbooks/langgraph.md)
+
 Frameworks and auth:
 
 - [`Astro`](./cookbooks/astro.md)
@@ -126,6 +133,14 @@ Agents and mailboxes:
 - [`mailbox-agent-claude`](./examples/mailbox-agent-claude) — an agent that asks
   Claude to draft each reply to a mailbox's email and WhatsApp messages and sends
   it held for a person's approval.
+- [`mailbox-agent-claude-agent-sdk`](./examples/mailbox-agent-claude-agent-sdk) —
+  the same agent on the Claude Agent SDK, replying through two tools.
+- [`mailbox-agent-ai-sdk`](./examples/mailbox-agent-ai-sdk) — the same agent on
+  the Vercel AI SDK.
+- [`mailbox-agent-openai-agents`](./examples/mailbox-agent-openai-agents) — the
+  same agent on the OpenAI Agents SDK.
+- [`mailbox-agent-langgraph`](./examples/mailbox-agent-langgraph) — the same
+  agent on LangGraph.
 - [`inbound-email-replies`](./examples/inbound-email-replies) — receives an
   inbound reply, verifies the signed webhook, and answers in-thread.
 

@@ -1,4 +1,4 @@
-# Give an OpenAI Agents SDK agent an email inbox
+# Give an OpenAI Agents SDK agent an email inbox with Samva
 
 Give an agent built with the [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) its
 own email address. A Samva mailbox holds the threads, an event stream delivers each new message,
