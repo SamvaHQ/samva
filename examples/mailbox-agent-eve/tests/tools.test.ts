@@ -158,3 +158,23 @@ test("a failed reply releases the claim, so a retry for the same event submits",
   assert.deepEqual(retry, { state: "approvalRequired", actionId: "mbxact_01" });
   assert.equal(requests.length, 2);
 });
+
+test("a reply with an unknown outcome can be retried but not left for a person", async () => {
+  // The SDK retries a lost connection itself, so the connection stays down for the whole call.
+  let down = true;
+  const { requests, fetch } = recordingFetch(() => {
+    if (down) throw new TypeError("connection lost");
+    return Response.json(receipt);
+  });
+  vi.stubGlobal("fetch", fetch);
+  const ctx = ctxFor(emailRef);
+
+  await assert.rejects(runReply("It ships today.", ctx));
+  down = false;
+  const leave = await leaveForPerson.execute({ reason: "Could not reply." }, ctx);
+  const retry = await runReply("It ships today.", ctx);
+
+  assert.deepEqual(leave, { left: false, reason: "This message was already acted on." });
+  assert.deepEqual(retry, { state: "approvalRequired", actionId: "mbxact_01" });
+  assert.ok(requests.length >= 2);
+});

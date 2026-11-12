@@ -10,7 +10,7 @@ export default defineTool({
   endsTurn: true,
   execute({ reason }, ctx) {
     const ref = parseMessageRef(ctx.channel.metadata);
-    if (!claimEvent(ref.eventId))
+    if (!claimEvent(ref.eventId, "leave"))
       return { left: false, reason: "This message was already acted on." };
     return { left: true, messageId: ref.messageId, reason };
   },

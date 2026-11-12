@@ -1,7 +1,8 @@
 import { defineTool } from "eve/tools";
+import { SamvaApiError } from "samva";
 import { z } from "zod";
 
-import { claimEvent, releaseEvent } from "../lib/claim";
+import { claimEvent, holdForReplyRetry, releaseEvent } from "../lib/claim";
 import { parseMessageRef } from "../lib/message";
 import { samvaFromEnv, submitReply } from "../lib/reply";
 
@@ -14,13 +15,20 @@ export default defineTool({
   endsTurn: true,
   async execute({ text }, ctx) {
     const ref = parseMessageRef(ctx.channel.metadata);
-    if (!claimEvent(ref.eventId)) return { state: "alreadyActed" };
+    if (!claimEvent(ref.eventId, "reply")) return { state: "alreadyActed" };
     try {
       return await submitReply(samvaFromEnv(), ref, text);
     } catch (error) {
-      // `submitReply` returns for every outcome that recorded an action. A throw recorded
-      // nothing, so release the claim and let a retry submit instead of reporting `alreadyActed`.
-      releaseEvent(ref.eventId);
+      // A 4xx answer means Samva refused the reply and recorded nothing, so either tool may act
+      // next. Anything else (a lost response, a server error) may have recorded it: keep the
+      // event for a reply retry, which the reply key makes safe.
+      const refused =
+        error instanceof SamvaApiError &&
+        error.status !== undefined &&
+        error.status >= 400 &&
+        error.status < 500;
+      if (refused) releaseEvent(ref.eventId);
+      else holdForReplyRetry(ref.eventId);
       throw error;
     }
   },
