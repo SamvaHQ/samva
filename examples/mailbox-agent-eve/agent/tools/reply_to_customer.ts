@@ -1,7 +1,7 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { claimEvent } from "../lib/claim";
+import { claimEvent, releaseEvent } from "../lib/claim";
 import { parseMessageRef } from "../lib/message";
 import { samvaFromEnv, submitReply } from "../lib/reply";
 
@@ -15,6 +15,13 @@ export default defineTool({
   async execute({ text }, ctx) {
     const ref = parseMessageRef(ctx.channel.metadata);
     if (!claimEvent(ref.eventId)) return { state: "alreadyActed" };
-    return await submitReply(samvaFromEnv(), ref, text);
+    try {
+      return await submitReply(samvaFromEnv(), ref, text);
+    } catch (error) {
+      // `submitReply` returns for every outcome that recorded an action. A throw recorded
+      // nothing, so release the claim and let a retry submit instead of reporting `alreadyActed`.
+      releaseEvent(ref.eventId);
+      throw error;
+    }
   },
 });

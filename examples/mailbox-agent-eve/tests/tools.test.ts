@@ -137,3 +137,24 @@ test("one action per message: a reply and a leave in the same step submit one re
   assert.deepEqual(second, { state: "alreadyActed" });
   assert.equal(requests.length, 1);
 });
+
+test("a failed reply releases the claim, so a retry for the same event submits", async () => {
+  let calls = 0;
+  const { requests, fetch } = recordingFetch(() => {
+    calls += 1;
+    return calls === 1
+      ? Response.json(
+          { _tag: "ConflictError", message: "This mailbox is paused.", resource: "Mailbox" },
+          { status: 409 },
+        )
+      : Response.json(receipt);
+  });
+  vi.stubGlobal("fetch", fetch);
+  const ctx = ctxFor(emailRef);
+
+  await assert.rejects(runReply("It ships today.", ctx), /paused/);
+  const retry = await runReply("It ships today.", ctx);
+
+  assert.deepEqual(retry, { state: "approvalRequired", actionId: "mbxact_01" });
+  assert.equal(requests.length, 2);
+});

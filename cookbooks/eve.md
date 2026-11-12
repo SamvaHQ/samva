@@ -131,7 +131,7 @@ received message and saves the stream cursor only after Eve accepts it:
 
 ```ts
 for await (const event of samva.mailboxes.events({ cursor, mailboxIds: [options.mailboxId] })) {
-  await handleEvent(event, options.forward, log);
+  await handleEvent(event, options.forward, log, options.signal);
   await options.store.save(event.cursor);
   cursor = event.cursor;
 }

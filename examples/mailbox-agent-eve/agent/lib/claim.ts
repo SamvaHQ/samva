@@ -16,3 +16,11 @@ export const claimEvent = (eventId: string): boolean => {
 
 /** Forget every claim. Tests call this between cases. */
 export const forgetClaims = (): void => claimed.clear();
+
+/**
+ * Release a claim whose action recorded nothing, so a retry for the same event can act. Eve hands
+ * a tool's error back to the model, which may call the tool again.
+ */
+export const releaseEvent = (eventId: string): void => {
+  claimed.delete(eventId);
+};

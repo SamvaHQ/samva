@@ -11,8 +11,8 @@ export interface CursorStore {
   clear(): Promise<void>;
 }
 
-/** Hands one message to the Eve agent. Resolves once Eve has accepted it. */
-export type Forward = (body: RelayBody) => Promise<void>;
+/** Hands one message to the Eve agent. Resolves once Eve has accepted it; `signal` cancels it. */
+export type Forward = (body: RelayBody, signal?: AbortSignal) => Promise<void>;
 
 export interface RelayOptions {
   readonly mailboxId: string;
@@ -27,11 +27,12 @@ type FetchLike = (url: URL, init: RequestInit) => Promise<Response>;
 /** Post to the Eve channel route. A non-2xx answer throws, so the event is retried. */
 export const httpForward =
   (baseUrl: string, token: string, fetchImpl: FetchLike = fetch): Forward =>
-  async (body) => {
+  async (body, signal) => {
     const response = await fetchImpl(new URL("/samva/messages", baseUrl), {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
       body: JSON.stringify(body),
+      signal,
     });
     if (!response.ok) {
       throw new Error(`Eve refused event ${body.eventId}: HTTP ${String(response.status)}`);
@@ -43,6 +44,7 @@ export const handleEvent = async (
   event: MailboxEvent,
   forward: Forward,
   log: (line: string) => void,
+  signal?: AbortSignal,
 ): Promise<void> => {
   if (event.type !== "mailbox.message.received") return;
 
@@ -52,7 +54,7 @@ export const handleEvent = async (
     log(`skipped ${message.messageId}: automated sender`);
     return;
   }
-  await forward({ eventId: event.id, message });
+  await forward({ eventId: event.id, message }, signal);
   log(`forwarded ${message.messageId} (event ${event.id})`);
 };
 
@@ -71,7 +73,7 @@ export const runRelay = async (samva: SamvaClient, options: RelayOptions): Promi
         mailboxIds: [options.mailboxId],
         signal: options.signal,
       })) {
-        await handleEvent(event, options.forward, log);
+        await handleEvent(event, options.forward, log, options.signal);
         await options.store.save(event.cursor);
         cursor = event.cursor;
       }
