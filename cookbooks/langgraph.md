@@ -38,10 +38,16 @@ import { z } from "zod";
 
 const reply_to_customer = tool(
   async ({ text }) => {
-    const receipt = await samva.mailboxes.reply(
-      { id: received.mailboxId, messageId: received.messageId, text },
-      { idempotencyKey: `reply:${eventId}` },
-    );
+    const reply =
+      received.channel === "whatsapp"
+        ? {
+            id: received.mailboxId,
+            messageId: received.messageId,
+            channel: "whatsapp" as const,
+            text,
+          }
+        : { id: received.mailboxId, messageId: received.messageId, text };
+    const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${eventId}` });
     return `Submitted. The reply is ${receipt.state}.`;
   },
   {
@@ -49,6 +55,7 @@ const reply_to_customer = tool(
     description:
       "Reply to the customer's message with plain text. The reply is held for a person's approval.",
     schema: z.object({ text: z.string().trim().min(1).describe("The reply text to send.") }),
+    returnDirect: true,
   },
 );
 
@@ -62,12 +69,15 @@ const leave_for_person = tool(
     description:
       "Send nothing and leave the message for a person. Use when the instructions do not cover it.",
     schema: z.object({ reason: z.string().describe("One short sentence on why.") }),
+    returnDirect: true,
   },
 );
 ```
 
-The example builds these inside `messageTools` in `src/tools.ts`, which also stops a second call in
-the same run and handles the errors Samva can return for a replayed event. Keying the reply by
+`returnDirect: true` ends the run after either tool, so the model is not called again. The example
+builds these inside `messageTools` in `src/tools.ts`, which also claims the message before its
+first `await` so a second call in the same run is refused, and handles the errors Samva can return
+for a replayed event. Keying the reply by
 the event id means a replayed event cannot send twice.
 
 ## Run one invocation per message

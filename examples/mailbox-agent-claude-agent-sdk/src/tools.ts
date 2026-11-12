@@ -56,11 +56,12 @@ export const createMailboxTools = (
 ): MailboxTools => {
   let outcome: Outcome | undefined;
   let failure: unknown;
+  // Set before any await: the SDK can run two tool calls at once, and one message gets one action.
+  let claimed = false;
 
   const send = async (replyText: string) => {
-    if (outcome !== undefined || failure !== undefined) {
-      return text("You already acted on this message. Stop.", true);
-    }
+    if (claimed) return text("You already acted on this message. Stop.", true);
+    claimed = true;
     // One call answers both channels. The mailbox's decision rules decide whether the reply waits
     // for a person; this example expects a rule that holds every send (see the README).
     const reply =
@@ -97,9 +98,8 @@ export const createMailboxTools = (
   };
 
   const leave = (reason: string) => {
-    if (outcome !== undefined || failure !== undefined) {
-      return text("You already acted on this message. Stop.", true);
-    }
+    if (claimed) return text("You already acted on this message. Stop.", true);
+    claimed = true;
     outcome = { kind: "left", reason };
     return text("Left for a person. Stop.");
   };

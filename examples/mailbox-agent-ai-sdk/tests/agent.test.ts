@@ -7,6 +7,8 @@ import { test } from "vitest";
 
 import { handleEvent } from "../src/agent";
 import { systemPrompt } from "../src/prompt";
+import { mailboxTools } from "../src/tools";
+import type { TurnOutcome } from "../src/tools";
 
 const received = (overrides: Record<string, unknown> = {}): MailboxEvent => ({
   cursor: "cursor-1",
@@ -45,7 +47,9 @@ const receipt = {
 };
 
 /** The agent talks to the real Samva client; the test asserts the HTTP requests it builds. */
-const samvaHarness = (respond: () => Response = () => Response.json(receipt, { status: 200 })) => {
+const samvaHarness = (
+  respond: () => Response | Promise<Response> = () => Response.json(receipt, { status: 200 }),
+) => {
   const replies: Request[] = [];
   const samva = createClient({
     apiKey: "samva_sk_test_mailbox_agent",
@@ -150,6 +154,41 @@ test("sends nothing when the model finishes without calling a tool", async () =>
 
   assert.equal(replies.length, 0);
   assert.deepEqual(lines, ["left msg_1 for a person: no tool called"]);
+});
+
+test("one action per message when the tool calls overlap", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  const { samva, replies } = samvaHarness(async () => {
+    await gate;
+    return Response.json(receipt, { status: 200 });
+  });
+  const outcome: TurnOutcome = {};
+  const tools = mailboxTools(
+    samva,
+    {
+      mailboxId: "mbx_01",
+      messageId: "msg_1",
+      channel: "email",
+      fromAddress: "ada@example.com",
+      subject: "Where is my order?",
+      text: "Order 1042 has not arrived.",
+    },
+    "evt_1",
+    outcome,
+  );
+  const options = { toolCallId: "call-1", messages: [], context: {} };
+
+  const first = tools.reply_to_customer.execute!({ text: "First." }, options);
+  // The first request is still pending: nothing may start a second action.
+  await tools.reply_to_customer.execute!({ text: "Second." }, options);
+  await tools.leave_for_person.execute!({ reason: "Changed my mind." }, options);
+  assert.equal(outcome.leftForPerson, undefined);
+  release();
+  await first;
+
+  assert.equal(replies.length, 1);
+  assert.equal(outcome.reply?.state, "approvalRequired");
 });
 
 test("treats a replayed event whose new reply differs as already answered", async () => {

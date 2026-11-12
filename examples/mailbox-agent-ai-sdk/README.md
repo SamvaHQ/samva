@@ -35,7 +35,8 @@ Anthropic call instead of a framework loop.
 - **Bounded turns.** A turn stops as soon as the model calls either tool, and after five steps
   at most (`stopWhen` in `src/agent.ts`).
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
-  twice.
+  twice. The tools claim the message before their first `await`, so overlapping calls in one
+  step produce at most one action.
 
 ## Run the proof
 

@@ -34,7 +34,8 @@ of a model.
 - **The agent can decline.** It calls `leave_for_person` when the instructions do not cover the
   question. If a turn ends without calling either tool, the agent sends nothing.
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
-  twice. A second call to the reply tool in the same turn is refused.
+  twice. The tools claim the message before their first `await`, so a second call, even one that
+  overlaps the first, is refused.
 
 ## Run the proof
 

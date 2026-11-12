@@ -32,6 +32,8 @@ hand instead of an agent framework.
   message that talks the model into a bad reply still waits for a person.
 - **The model can decline.** It calls `leave_for_person` when the instructions do not cover the
   question. If it finishes without calling either tool, the agent sends nothing.
+- **One action per message.** The tools claim the message before their first `await`, so two
+  tool calls in one turn produce at most one action.
 - **The tools fix the target.** The model cannot address a different recipient or thread.
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
   twice.

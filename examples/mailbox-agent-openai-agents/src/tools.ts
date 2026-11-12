@@ -15,6 +15,9 @@ export const mailboxTools = (
   eventId: string,
   log: (line: string) => void,
 ) => {
+  // Set before any await: a model can call both tools in one turn, and the calls run together.
+  let claimed = false;
+
   const replyToCustomer = tool({
     name: "reply_to_customer",
     description:
@@ -23,6 +26,8 @@ export const mailboxTools = (
     // A failed request stops the turn instead of going back to the model as text.
     errorFunction: null,
     execute: async ({ text }) => {
+      if (claimed) return "You already finished this message. Do not call again.";
+      claimed = true;
       // One call answers both channels. The mailbox's decision rules decide whether the reply
       // waits for a person; this example expects a rule that holds every send (see the README).
       const reply =
@@ -67,6 +72,8 @@ export const mailboxTools = (
       reason: z.string().min(1).describe("One short sentence for the person."),
     }),
     execute: async ({ reason }) => {
+      if (claimed) return "You already finished this message. Do not call again.";
+      claimed = true;
       log(`left ${received.messageId} for a person: ${reason}`);
       return "Left for a person.";
     },

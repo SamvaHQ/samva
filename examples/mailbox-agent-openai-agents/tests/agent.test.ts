@@ -48,7 +48,9 @@ const receipt = {
 };
 
 /** The agent talks to the real Samva client; the test asserts the HTTP requests it builds. */
-const samvaHarness = (respond: () => Response = () => Response.json(receipt, { status: 200 })) => {
+const samvaHarness = (
+  respond: () => Response | Promise<Response> = () => Response.json(receipt, { status: 200 }),
+) => {
   const replies: Request[] = [];
   const samva = createClient({
     apiKey: "samva_sk_test_mailbox_agent",
@@ -126,6 +128,25 @@ test("treats a replayed event whose new reply differs as already answered", asyn
   await handleEvent(samva, received(), config, (line) => lines.push(line));
 
   assert.deepEqual(lines, ["already answered msg_1"]);
+});
+
+test("one action per message when the model calls both tools in one turn", async () => {
+  // The tools start together; the reply request is still pending while the second tool runs.
+  const { samva, replies } = samvaHarness(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    return Response.json(receipt, { status: 200 });
+  });
+  const { config } = scripted(
+    call("reply_to_customer", { text: "It ships today." }),
+    functionCall("leave_for_person", { reason: "Changed my mind." }, { callId: "call_2" }),
+  );
+  const lines: string[] = [];
+
+  await handleEvent(samva, received(), config, (line) => lines.push(line));
+
+  assert.equal(replies.length, 1);
+  assert.equal(lines.length, 1);
+  assert.match(lines[0] ?? "", /approvalRequired, action mbxact_01/);
 });
 
 test("sends nothing when the agent leaves the message for a person", async () => {

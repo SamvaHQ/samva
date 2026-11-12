@@ -53,7 +53,9 @@ const receipt = {
 };
 
 /** The agent talks to the real Samva client; the test asserts the HTTP requests it builds. */
-const samvaHarness = (respond: () => Response = () => Response.json(receipt, { status: 200 })) => {
+const samvaHarness = (
+  respond: () => Response | Promise<Response> = () => Response.json(receipt, { status: 200 }),
+) => {
   const replies: Request[] = [];
   const samva = createClient({
     apiKey: "samva_sk_test_mailbox_agent",
@@ -146,6 +148,36 @@ test("sends one reply even if the agent calls the tool twice", async () => {
   );
 
   assert.equal(replies.length, 1);
+});
+
+test("one action per message when the tool calls overlap", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  const { samva, replies } = samvaHarness(async () => {
+    await gate;
+    return Response.json(receipt, { status: 200 });
+  });
+  const lines: string[] = [];
+
+  await handleEvent(
+    samva,
+    received(),
+    async (_message, tools) => {
+      const first = tools.replyToMessage.handler({ text: "First." }, {});
+      // The first request is still pending: nothing may start a second action.
+      const second = await tools.replyToMessage.handler({ text: "Second." }, {});
+      const left = await tools.leaveForPerson.handler({ reason: "Changed my mind." }, {});
+      assert.equal(second.isError, true);
+      assert.equal(left.isError, true);
+      release();
+      await first;
+    },
+    (line) => lines.push(line),
+  );
+
+  assert.equal(replies.length, 1);
+  assert.match(lines[0] ?? "", /approvalRequired, action mbxact_01/);
+  assert.equal(lines.length, 1);
 });
 
 test("treats a replayed event whose new reply differs as already answered", async () => {

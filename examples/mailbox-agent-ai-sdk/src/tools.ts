@@ -21,41 +21,52 @@ export const mailboxTools = (
   message: ReceivedMessage,
   eventId: string,
   outcome: TurnOutcome,
-) => ({
-  reply_to_customer: tool({
-    description:
-      "Submit a reply to the customer's message. It is held for a person's approval before it is sent.",
-    inputSchema: z.object({ text: z.string().trim().min(1).describe("The plain-text reply.") }),
-    execute: async ({ text }) => {
-      // One call answers both channels. The mailbox's decision rules decide whether the reply
-      // waits for a person; this example expects a rule that holds every send (see the README).
-      const reply =
-        message.channel === "whatsapp"
-          ? {
-              id: message.mailboxId,
-              messageId: message.messageId,
-              channel: "whatsapp" as const,
-              text,
-            }
-          : { id: message.mailboxId, messageId: message.messageId, text };
-      try {
-        // The event id is stable across redelivery, so a retry returns the original receipt.
-        const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${eventId}` });
-        outcome.reply = { state: receipt.state, actionId: receipt.actionId };
-        return `Reply submitted (${receipt.state}).`;
-      } catch (error) {
-        outcome.error = error;
-        return "The reply could not be submitted. Do not try again.";
-      }
-    },
-  }),
+) => {
+  // Set before any await: a model can call both tools in one step, and the calls run together.
+  let claimed = false;
 
-  leave_for_person: tool({
-    description: "Leave this message for a person to answer. Nothing is sent.",
-    inputSchema: z.object({ reason: z.string().trim().min(1).describe("One short sentence.") }),
-    execute: async ({ reason }) => {
-      outcome.leftForPerson = reason;
-      return "Left for a person.";
-    },
-  }),
-});
+  return {
+    reply_to_customer: tool({
+      description:
+        "Submit a reply to the customer's message. It is held for a person's approval before it is sent.",
+      inputSchema: z.object({ text: z.string().trim().min(1).describe("The plain-text reply.") }),
+      execute: async ({ text }) => {
+        if (claimed) return "You already finished this message. Do not call again.";
+        claimed = true;
+        // One call answers both channels. The mailbox's decision rules decide whether the reply
+        // waits for a person; this example expects a rule that holds every send (see the README).
+        const reply =
+          message.channel === "whatsapp"
+            ? {
+                id: message.mailboxId,
+                messageId: message.messageId,
+                channel: "whatsapp" as const,
+                text,
+              }
+            : { id: message.mailboxId, messageId: message.messageId, text };
+        try {
+          // The event id is stable across redelivery, so a retry returns the original receipt.
+          const receipt = await samva.mailboxes.reply(reply, {
+            idempotencyKey: `reply:${eventId}`,
+          });
+          outcome.reply = { state: receipt.state, actionId: receipt.actionId };
+          return `Reply submitted (${receipt.state}).`;
+        } catch (error) {
+          outcome.error = error;
+          return "The reply could not be submitted. Do not try again.";
+        }
+      },
+    }),
+
+    leave_for_person: tool({
+      description: "Leave this message for a person to answer. Nothing is sent.",
+      inputSchema: z.object({ reason: z.string().trim().min(1).describe("One short sentence.") }),
+      execute: async ({ reason }) => {
+        if (claimed) return "You already finished this message. Do not call again.";
+        claimed = true;
+        outcome.leftForPerson = reason;
+        return "Left for a person.";
+      },
+    }),
+  };
+};

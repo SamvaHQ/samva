@@ -42,10 +42,16 @@ const replyToCustomer = tool({
   // A failed request stops the turn instead of going back to the model as text.
   errorFunction: null,
   execute: async ({ text }) => {
-    const receipt = await samva.mailboxes.reply(
-      { id: received.mailboxId, messageId: received.messageId, text },
-      { idempotencyKey: `reply:${eventId}` },
-    );
+    const reply =
+      received.channel === "whatsapp"
+        ? {
+            id: received.mailboxId,
+            messageId: received.messageId,
+            channel: "whatsapp" as const,
+            text,
+          }
+        : { id: received.mailboxId, messageId: received.messageId, text };
+    const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${eventId}` });
     return `Submitted: ${receipt.state}.`;
   },
 });
@@ -67,7 +73,9 @@ const leaveForPerson = tool({
 `samva`, `received`, `eventId`, and `log` come from the function that builds the tools for each
 message (`mailboxTools` in `src/tools.ts`). The reply is keyed by the event id: events are
 delivered at least once, and a retry with the same key returns the original receipt. The example's
-tool also catches `ConflictError` and `WhatsAppServiceWindowClosedError` for replayed events.
+tool also catches `ConflictError` and `WhatsAppServiceWindowClosedError` for replayed events, and
+both tools claim the message before their first `await`, so two calls in one turn produce one
+action.
 
 ## Run one turn per message
 

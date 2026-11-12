@@ -34,7 +34,9 @@ instead of an agent loop.
   question, and the agent sends nothing. A run that ends without calling either tool is treated
   the same way.
 - **One decision per message.** The agent run has a recursion limit, and a second tool call in
-  the same run is refused, so one event produces at most one reply.
+  the same run is refused before it awaits anything, so one event produces at most one reply.
+  Both tools set `returnDirect: true`, so the run ends after the chosen tool without another
+  model call.
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
   twice.
 

@@ -58,14 +58,21 @@ const leaveTool = (run: (reason: string) => ReturnType<typeof text>) =>
 The reply handler passed to `replyTool` is the one call to Samva:
 
 ```ts
-const receipt = await samva.mailboxes.reply(
-  { id: message.mailboxId, messageId: message.messageId, text: replyText },
-  { idempotencyKey: `reply:${eventId}` },
-);
+const reply =
+  message.channel === "whatsapp"
+    ? {
+        id: message.mailboxId,
+        messageId: message.messageId,
+        channel: "whatsapp" as const,
+        text: replyText,
+      }
+    : { id: message.mailboxId, messageId: message.messageId, text: replyText };
+const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${eventId}` });
 ```
 
-In `src/tools.ts` the handler also refuses a second reply in the same turn and turns a Samva
-conflict into "already answered", so a replayed event ends cleanly.
+In `src/tools.ts` both handlers claim the message before their first `await`, so a second call,
+even an overlapping one, is refused. The reply handler also turns a Samva conflict into "already
+answered", so a replayed event ends cleanly.
 
 ## Run one turn per message
 

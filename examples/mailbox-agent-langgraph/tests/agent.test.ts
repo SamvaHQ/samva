@@ -55,10 +55,21 @@ const strayFetch = vi.fn(async () => {
 
 beforeEach(() => {
   vi.stubGlobal("fetch", strayFetch);
+  // LangChain sends traces to LangSmith when any of these is "true" in the developer's shell. The
+  // package's vitest config sets them too; stubbing here keeps the repository-root run safe.
+  for (const name of [
+    "LANGSMITH_TRACING",
+    "LANGSMITH_TRACING_V2",
+    "LANGCHAIN_TRACING",
+    "LANGCHAIN_TRACING_V2",
+  ]) {
+    vi.stubEnv(name, "false");
+  }
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   strayFetch.mockClear();
 });
 
@@ -80,7 +91,7 @@ const samvaHarness = (respond: () => Response = () => Response.json(receipt, { s
   return { samva, replies };
 };
 
-/** A model that calls one tool, then ends the run with a closing message. */
+/** A model that calls one tool. The closing message is never used: the tool ends the run. */
 const modelCalling = (name: string, args: Record<string, unknown>) =>
   fakeModel().respondWithTools([{ name, args }]).respond(new AIMessage("Done."));
 
@@ -163,6 +174,18 @@ test("sends nothing when the model finishes without calling a tool", async () =>
 
   assert.equal(replies.length, 0);
   assert.deepEqual(lines, ["left msg_1 for a person: no tool called"]);
+});
+
+test("ends the run after the tool: the model is called once", async () => {
+  const { samva } = samvaHarness();
+  const reply = modelCalling("reply_to_customer", { text: "It ships today." });
+  const leave = modelCalling("leave_for_person", { reason: "Asks for a refund." });
+
+  await run(samva, received(), reply);
+  await run(samva, received(), leave);
+
+  assert.equal(reply.callCount, 1);
+  assert.equal(leave.callCount, 1);
 });
 
 test("sends one reply when the model calls the tool twice", async () => {

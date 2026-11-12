@@ -75,6 +75,8 @@ export const messageTools = (
       description:
         "Reply to the customer's message with plain text. The reply is held for a person's approval.",
       schema: z.object({ text: z.string().trim().min(1).describe("The reply text to send.") }),
+      // Both tools finish the message: end the run instead of calling the model again.
+      returnDirect: true,
     },
   );
 
@@ -91,6 +93,7 @@ export const messageTools = (
       description:
         "Send nothing and leave the message for a person. Use when the instructions do not cover it.",
       schema: z.object({ reason: z.string().describe("One short sentence on why.") }),
+      returnDirect: true,
     },
   );
 
