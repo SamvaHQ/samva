@@ -6,7 +6,7 @@ import { afterEach, beforeEach, test, vi } from "vitest";
 import { forgetClaims } from "../agent/lib/claim";
 import leaveForPerson from "../agent/tools/leave_for_person";
 import replyToCustomer from "../agent/tools/reply_to_customer";
-import { recordingFetch } from "./support";
+import { receipt, recordingFetch } from "./support";
 
 /** The tools read only `ctx.channel.metadata`, so the test builds just that. */
 const ctxFor = (metadata: Record<string, unknown>) =>
@@ -68,9 +68,11 @@ test("treats a replayed event whose new reply differs as already answered", asyn
   const { fetch } = recordingFetch(() =>
     Response.json(
       {
-        _tag: "ConflictError",
+        _tag: "MailboxSendConflictError",
         message: "Idempotency-Key reused with a different request.",
-        resource: "idempotency_key",
+        resource: "MailboxAction",
+        id: receipt.actionId,
+        receipt,
       },
       { status: 409 },
     ),
@@ -79,7 +81,24 @@ test("treats a replayed event whose new reply differs as already answered", asyn
 
   const result = await runReply("A second draft.", ctxFor(emailRef));
 
-  assert.deepEqual(result, { state: "alreadyAnswered" });
+  assert.deepEqual(result, { state: "alreadyAnswered", actionId: "mbxact_01" });
+});
+
+test("does not treat a paused mailbox as answered", async () => {
+  // A plain conflict recorded no reply, so the event stays unhandled.
+  const { fetch } = recordingFetch(() =>
+    Response.json(
+      {
+        _tag: "ConflictError",
+        message: "This mailbox is paused. Resume it before submitting a new send.",
+        resource: "Mailbox",
+      },
+      { status: 409 },
+    ),
+  );
+  vi.stubGlobal("fetch", fetch);
+
+  await assert.rejects(runReply("A second draft.", ctxFor(emailRef)), /paused/);
 });
 
 test("fails loudly when the reply request fails for another reason", async () => {

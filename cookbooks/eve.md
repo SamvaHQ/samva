@@ -119,9 +119,10 @@ const reply =
 const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${ref.eventId}` });
 ```
 
-Events are delivered at least once. A replay that drafts different text gets a `ConflictError`
-from Samva, which means the first draft was already submitted, and the tool reports
-`alreadyAnswered`. Eve never retries a tool itself, and a tool error goes back to the model.
+Events are delivered at least once. A replay that drafts different text is refused with
+`MailboxSendConflictError`, which carries the first reply's receipt, and the tool reports
+`alreadyAnswered` with the original action id. Any other conflict, such as a paused mailbox, is a
+failure. Eve never retries a tool itself, and a tool error goes back to the model.
 
 ## The relay
 

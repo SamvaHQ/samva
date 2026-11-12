@@ -46,8 +46,9 @@ job in one process with the Vercel AI SDK.
   that delivers the model's text.
 - **One run per message, no repeats.** The event id names the Eve session and keys the send, so a
   redelivered event reaches the same run and is ignored. Each reply is keyed `reply:<eventId>`, so
-  a replayed event cannot send twice. If the replay drafts different text, Samva answers with a
-  conflict and the tool reports `alreadyAnswered`. If a WhatsApp service window has closed, the tool
+  a replayed event cannot send twice. If the replay drafts different text, Samva refuses it with
+  `MailboxSendConflictError`, which carries the first reply's receipt, and the tool reports
+  `alreadyAnswered`. Any other conflict, such as a paused mailbox, is a failure. If a WhatsApp service window has closed, the tool
   reports `windowClosed`.
 - **The relay token.** The route accepts only requests carrying `EVE_RELAY_TOKEN` as a bearer token.
 

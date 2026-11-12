@@ -73,8 +73,9 @@ const leaveForPerson = tool({
 `samva`, `received`, `eventId`, and `log` come from the function that builds the tools for each
 message (`mailboxTools` in `src/tools.ts`). The reply is keyed by the event id: events are
 delivered at least once, and a retry with the same key returns the original receipt. The example's
-tool also catches `ConflictError` and `WhatsAppServiceWindowClosedError` for replayed events, and
-both tools claim the message before their first `await`, so two calls in one turn produce one
+tool also catches `MailboxSendConflictError` (Samva's refusal of a replay that drafts different
+text, which carries the first reply's receipt) and `WhatsAppServiceWindowClosedError` for replayed
+events. Any other conflict, such as a paused mailbox, is a failure. Both tools claim the message before their first `await`, so two calls in one turn produce one
 action.
 
 ## Run one turn per message

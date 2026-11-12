@@ -1,4 +1,4 @@
-import { ConflictError, WhatsAppServiceWindowClosedError, createClient } from "samva";
+import { MailboxSendConflictError, WhatsAppServiceWindowClosedError, createClient } from "samva";
 import type { SamvaClient } from "samva";
 
 import type { MessageRef } from "./message";
@@ -37,8 +37,12 @@ export const submitReply = async (
     return { state: receipt.state, actionId: receipt.actionId };
   } catch (error) {
     // A replayed event drafts again, and the model rarely writes the same text twice. Samva
-    // refuses a different body under a key it has seen: the first draft was already submitted.
-    if (error instanceof ConflictError) return { state: "alreadyAnswered" };
+    // refuses a different body under a key it has seen with `MailboxSendConflictError`, which
+    // carries the first reply's receipt. Any other conflict, such as a paused mailbox, recorded
+    // no reply and is thrown below.
+    if (error instanceof MailboxSendConflictError) {
+      return { state: "alreadyAnswered", actionId: error.receipt.actionId };
+    }
     // Free-form WhatsApp text needs the 24-hour service window a customer's message opens. A
     // replayed old event can find it closed; only an approved template reaches them then.
     if (error instanceof WhatsAppServiceWindowClosedError) return { state: "windowClosed" };

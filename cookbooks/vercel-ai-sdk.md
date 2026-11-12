@@ -99,6 +99,7 @@ export const mailboxTools = (
 The AI SDK turns an error thrown inside a tool into a result the model sees, so the reply tool
 records the error in `outcome` and the caller decides what to do with it. Events are delivered at
 least once, and the reply is keyed by the event id, so a replayed event cannot send twice.
+A replay that drafts different text is refused with `MailboxSendConflictError`, which carries the first reply's receipt; any other conflict, such as a paused mailbox, is a failure.
 
 ## Run one turn per message
 

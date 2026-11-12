@@ -78,7 +78,7 @@ const leave_for_person = tool(
 builds these inside `messageTools` in `src/tools.ts`, which also claims the message before its
 first `await` so a second call in the same run is refused, and handles the errors Samva can return
 for a replayed event. Keying the reply by
-the event id means a replayed event cannot send twice.
+the event id means a replayed event cannot send twice. A replay that drafts different text is refused with `MailboxSendConflictError`, which carries the first reply's receipt; any other conflict, such as a paused mailbox, is a failure.
 
 ## Run one invocation per message
 

@@ -1,5 +1,5 @@
 import { tool } from "@openai/agents";
-import { ConflictError, WhatsAppServiceWindowClosedError } from "samva";
+import { MailboxSendConflictError, WhatsAppServiceWindowClosedError } from "samva";
 import type { SamvaClient } from "samva";
 import { z } from "zod";
 
@@ -47,10 +47,13 @@ export const mailboxTools = (
         return `Submitted: ${receipt.state}.`;
       } catch (error) {
         // A replayed event runs the agent again, and the model rarely writes the same text twice.
-        // Samva refuses a different body under a key it has seen, which means the first reply was
-        // already submitted: there is nothing left to do for this event.
-        if (error instanceof ConflictError) {
-          log(`already answered ${received.messageId}`);
+        // Samva refuses a different body under a key it has seen with `MailboxSendConflictError`,
+        // which carries the first reply's receipt: there is nothing left to do for this event. Any
+        // other conflict, such as a paused mailbox, recorded no reply and is thrown below.
+        if (error instanceof MailboxSendConflictError) {
+          log(
+            `already answered ${received.messageId}: ${error.receipt.state}, action ${error.receipt.actionId}`,
+          );
           return "Already answered.";
         }
         // Free-form WhatsApp text needs the 24-hour service window a customer's message opens. A

@@ -49,7 +49,7 @@ export const handleEvent = async (
       log(`reply to ${received.messageId}: ${outcome.state}, action ${outcome.actionId}`);
       return;
     case "already-answered":
-      log(`already answered ${received.messageId}`);
+      log(`already answered ${received.messageId}: ${outcome.state}, action ${outcome.actionId}`);
       return;
     case "window-closed":
       log(`skipped ${received.messageId}: WhatsApp service window closed`);
