@@ -115,9 +115,11 @@ test("treats a replayed event whose new reply differs as already answered", asyn
   const { samva } = samvaHarness(() =>
     Response.json(
       {
-        _tag: "ConflictError",
+        _tag: "MailboxSendConflictError",
         message: "Idempotency-Key reused with a different request.",
-        resource: "idempotency_key",
+        resource: "MailboxAction",
+        id: receipt.actionId,
+        receipt,
       },
       { status: 409 },
     ),
@@ -127,7 +129,30 @@ test("treats a replayed event whose new reply differs as already answered", asyn
 
   await handleEvent(samva, received(), config, (line) => lines.push(line));
 
-  assert.deepEqual(lines, ["already answered msg_1"]);
+  assert.deepEqual(lines, ["already answered msg_1: approvalRequired, action mbxact_01"]);
+});
+
+test("does not treat a paused mailbox as answered", async () => {
+  // A plain conflict recorded no reply, so the event stays unhandled.
+  const { samva } = samvaHarness(() =>
+    Response.json(
+      {
+        _tag: "ConflictError",
+        message: "This mailbox is paused. Resume it before submitting a new send.",
+        resource: "Mailbox",
+      },
+      { status: 409 },
+    ),
+  );
+  const { config } = scripted(call("reply_to_customer", { text: "A second reply." }));
+  const lines: string[] = [];
+
+  await assert.rejects(
+    handleEvent(samva, received(), config, (line) => lines.push(line)),
+    /paused/,
+  );
+
+  assert.deepEqual(lines, []);
 });
 
 test("one action per message when the model calls both tools in one turn", async () => {

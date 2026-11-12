@@ -138,7 +138,9 @@ wait and its cause. Template operations report a transient template service fail
 `ServiceUnavailableError` (503) with `retryAfterSeconds` from the `Retry-After` header;
 wait that long and reuse the same idempotency key for writes. Policy refusal returns 403,
 validation 422, and competing actions 409. If a response is lost, repeat the same
-idempotency key and body.
+idempotency key and body. A reply or send that reuses a key with a different body is refused with
+`MailboxSendConflictError`, which carries the first send's `receipt`; treat it as already
+submitted. Any other conflict, such as a paused mailbox, recorded nothing and is a failure.
 Do not submit a replacement send to recover accepted or uncertain work.
 
 Only a permitted person can call `mailboxes.cancelAction({ id, actionId })` or

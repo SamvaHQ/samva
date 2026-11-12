@@ -97,6 +97,7 @@ Agent frameworks:
 
 - [`Claude Agent SDK`](./cookbooks/claude-agent-sdk.md)
 - [`Vercel AI SDK`](./cookbooks/vercel-ai-sdk.md)
+- [`Eve`](./cookbooks/eve.md)
 - [`OpenAI Agents SDK`](./cookbooks/openai-agents-sdk.md)
 - [`LangGraph`](./cookbooks/langgraph.md)
 
@@ -137,6 +138,8 @@ Agents and mailboxes:
   the same agent on the Claude Agent SDK, replying through two tools.
 - [`mailbox-agent-ai-sdk`](./examples/mailbox-agent-ai-sdk) — the same agent on
   the Vercel AI SDK.
+- [`mailbox-agent-eve`](./examples/mailbox-agent-eve) — the same agent on Eve, with
+  a channel that starts one run per message.
 - [`mailbox-agent-openai-agents`](./examples/mailbox-agent-openai-agents) — the
   same agent on the OpenAI Agents SDK.
 - [`mailbox-agent-langgraph`](./examples/mailbox-agent-langgraph) — the same

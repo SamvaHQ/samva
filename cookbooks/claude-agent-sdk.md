@@ -71,8 +71,10 @@ const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${ev
 ```
 
 In `src/tools.ts` both handlers claim the message before their first `await`, so a second call,
-even an overlapping one, is refused. The reply handler also turns a Samva conflict into "already
-answered", so a replayed event ends cleanly.
+even an overlapping one, is refused. The reply handler treats a `MailboxSendConflictError`, which Samva
+sends when a replayed event drafts different text, as "already answered" and logs the first reply's
+receipt, so a replayed event ends cleanly. Any other conflict, such as a paused mailbox, is a
+failure.
 
 ## Run one turn per message
 

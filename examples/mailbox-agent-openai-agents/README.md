@@ -37,6 +37,8 @@ hand instead of an agent framework.
 - **The tools fix the target.** The model cannot address a different recipient or thread.
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
   twice.
+  A replay that drafts different text is refused with `MailboxSendConflictError`, which carries
+  the first reply's receipt; any other conflict, such as a paused mailbox, is a failure.
 - **Failures are not hidden from the run.** The reply tool sets `errorFunction: null`, so a failed
   Samva request stops the turn and the event is replayed, instead of going back to the model as
   text.

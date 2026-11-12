@@ -37,6 +37,8 @@ Anthropic call instead of a framework loop.
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
   twice. The tools claim the message before their first `await`, so overlapping calls in one
   step produce at most one action.
+  A replay that drafts different text is refused with `MailboxSendConflictError`, which carries
+  the first reply's receipt; any other conflict, such as a paused mailbox, is a failure.
 
 ## Run the proof
 

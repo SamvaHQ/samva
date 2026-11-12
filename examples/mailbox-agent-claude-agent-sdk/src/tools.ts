@@ -1,5 +1,5 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
-import { ConflictError, WhatsAppServiceWindowClosedError } from "samva";
+import { MailboxSendConflictError, WhatsAppServiceWindowClosedError } from "samva";
 import type { SamvaClient } from "samva";
 import { z } from "zod";
 
@@ -8,7 +8,7 @@ import type { ReceivedMessage } from "./message";
 /** What the agent did with one message. `undefined` means it finished without choosing. */
 export type Outcome =
   | { readonly kind: "replied"; readonly state: string; readonly actionId: string }
-  | { readonly kind: "already-answered" }
+  | { readonly kind: "already-answered"; readonly state: string; readonly actionId: string }
   | { readonly kind: "window-closed" }
   | { readonly kind: "left"; readonly reason: string };
 
@@ -80,10 +80,15 @@ export const createMailboxTools = (
       return text(`Submitted. State: ${receipt.state}. Do not send anything else.`);
     } catch (error) {
       // A replayed event drafts again, and the model rarely writes the same text twice. Samva
-      // refuses a different body under a key it has seen, which means the first reply was already
-      // submitted: there is nothing left to do for this event.
-      if (error instanceof ConflictError) {
-        outcome = { kind: "already-answered" };
+      // refuses a different body under a key it has seen with `MailboxSendConflictError`, which
+      // carries the first reply's receipt: there is nothing left to do for this event. Any other
+      // conflict, such as a paused mailbox, recorded no reply and is a failure below.
+      if (error instanceof MailboxSendConflictError) {
+        outcome = {
+          kind: "already-answered",
+          state: error.receipt.state,
+          actionId: error.receipt.actionId,
+        };
         return text("This message was already answered. Stop.");
       }
       // Free-form WhatsApp text needs the 24-hour service window a customer's message opens. A
