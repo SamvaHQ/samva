@@ -1,0 +1,28 @@
+{
+  "name": "mailbox-agent-eve-samva",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable example of an Eve agent that reads a Samva mailbox and answers customers with tools, replies held for a person's approval, on email and WhatsApp.",
+  "type": "module",
+  "scripts": {
+    "dev": "eve dev",
+    "relay": "bun src/main.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ai": "^7.0.170",
+    "eve": "^1.0.0-rc.10",
+    "samva": "^0.43.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
