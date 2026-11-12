@@ -1,0 +1,24 @@
+{
+  "name": "mailbox-agent-ai-sdk-samva",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable example of a Vercel AI SDK agent that reads a Samva mailbox and answers customers with tools, replies held for a person's approval, on email and WhatsApp.",
+  "type": "module",
+  "scripts": {
+    "agent": "bun src/main.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.102",
+    "ai": "^7.0.170",
+    "samva": "^0.43.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
