@@ -44,7 +44,7 @@ packaging checks.
 
 ## SDK and CLI compatibility
 
-Use `samva@^0.43.0` and `@samva/cli@^0.37.0` with this repository's guidance.
+Use `samva@^0.44.0` and `@samva/cli@^0.39.0` with this repository's guidance.
 Samva is the email and WhatsApp API; the mailbox and transactional examples here
 use email explicitly. Shared template and message reads can return channels other
 than email, so inspect the channel before using email content.
@@ -62,6 +62,17 @@ require `reasoning` (`auto` preserves the default); `model` can be an alias or a
 catalog id, and `knowledgeSourceIds` is optional. Agent reads report owner/credit
 pauses and spend-cap state. The mailbox-agent example runs its own event loop;
 it does not create or replace hosted agents.
+
+`message.received` webhooks carry `disposition` and `reason`. Act only on `delivered`
+mail: Samva still sends the event, with its body, for mail it quarantined when it
+arrived, and `reason` says why (`verdict_missing` marks a receipt check that returned
+no verdict). Mailbox content screening can hold a message after this event; follow those
+holds through mailbox events and the quarantine API. Email senders report `sendable`.
+`templates.suggestStarters` and `templates.createFromBrief` (CLI `templates suggest` and
+`templates from-brief`) start a template from a brief, and `templates init` picks its
+gallery design with `--gallery-template`. The API, not the Effect SDK, now rejects
+control characters in sender names and subjects and malformed email addresses, with a
+`422` response.
 
 Mailbox sends and replies use scoped decision rules. Set a `write` minimum of `person` for
 reviewed keys or extension installations; `sendMode` and `--send-mode` are not accepted. Policy

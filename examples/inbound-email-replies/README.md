@@ -44,6 +44,13 @@ export async function POST(request: Request) {
 }
 ```
 
+Only delivered mail gets a reply. Every `message.received` event carries the
+`disposition` Samva committed at receipt and, for held mail, its `reason`. When
+`disposition` is not `"delivered"` (Samva quarantined or isolated the message for
+spam, malware, or failed authentication), the handler returns
+`{ accepted: false, reason: "not-delivered" }` without reading or sending, so a
+forged or malicious message never draws a reply.
+
 A conversation the handler cannot read sends no reply. When `conversations.getById`
 or `conversations.listMessages` throws, `handleInboundReply` returns
 `{ accepted: false, reason }` and sends nothing:

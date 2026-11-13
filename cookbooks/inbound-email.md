@@ -89,7 +89,9 @@ Return a non-2xx status for an invalid signature so the sender retries or alerts
 
 ## Read the conversation and reply in-thread
 
-The event carries the inbound `messageId`, `conversationId`, and sender. Load the
+The event carries the inbound `messageId`, `conversationId`, and sender, plus the
+`disposition` Samva gave the message when it arrived. Answer only `delivered` mail: a
+`quarantined` message is waiting for a person to review it, and `reason` says why. Load the
 conversation and its first page of messages (`{ items, nextCursor }`, oldest
 first; each body is at `samva.messages.getContent`), then send with `conversationId` and
 `inReplyToMessageId` so the reply joins the same thread.
@@ -102,7 +104,15 @@ const reply = verified.event.data as {
   from: string;
   subject?: string;
   isAutoReply?: boolean;
+  disposition: "delivered" | "quarantined" | "isolated";
+  reason: string | null;
 };
+
+// Samva held this message when it arrived (spam, a DMARC failure, or a missing
+// receipt verdict). Never answer it: a reply would reach whoever sent the held mail.
+if (reply.disposition !== "delivered") {
+  return new Response(null, { status: 204 });
+}
 
 if (reply.channel !== "email" || reply.isAutoReply) {
   return new Response(null, { status: 204 });
