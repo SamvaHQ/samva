@@ -199,7 +199,7 @@ describe("Samva agent plugin contract", () => {
       ) as { version: string };
       const guide = await readFile(resolve(repositoryRoot, guidePath), "utf8");
       expect(guide).toContain(`\`${manifest.version}\``);
-      expect(guide).toContain("`1.0.0`");
+      expect(guide).toContain("`1.1.0`");
     });
 
     it("rejects a guide that links another ChatGPT plugin", async () => {
