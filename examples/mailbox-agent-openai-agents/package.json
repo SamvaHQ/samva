@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@openai/agents": "^0.21.0",
-    "samva": "^0.43.0",
+    "samva": "^0.44.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

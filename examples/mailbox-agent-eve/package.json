@@ -13,7 +13,7 @@
   "dependencies": {
     "ai": "^7.0.170",
     "eve": "^1.0.0-rc.10",
-    "samva": "^0.43.0",
+    "samva": "^0.44.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

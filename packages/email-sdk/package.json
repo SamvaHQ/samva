@@ -47,11 +47,11 @@
   },
   "devDependencies": {
     "@opencoredev/email-sdk": "^3.0.1",
-    "samva": "^0.43.0"
+    "samva": "^0.44.0"
   },
   "peerDependencies": {
     "@opencoredev/email-sdk": "^3.0.1",
-    "samva": "^0.43.0"
+    "samva": "^0.44.0"
   },
   "engines": {
     "node": ">=22"
