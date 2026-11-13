@@ -1,3 +1,22 @@
+## @samva/better-auth@0.15.0
+
+### Require Samva SDK 0.44
+
+Both adapters now require `samva@^0.44.0` and validate against SDK 0.44.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and
+`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.44.
+What changed around them:
+
+- **Breaking:** `message.received` webhooks require `disposition` and `reason`. Act
+  only on `delivered` mail; `@samva/webhooks` validates both fields.
+- Email senders report `sendable`.
+- `templates.suggestStarters` and `templates.createFromBrief` start a template from a brief.
+- The API, not the Effect SDK, now checks control characters in sender names and
+  subjects, email address shape, and template paths, and rejects invalid values with
+  a `422` response.
+
 ## @samva/better-auth@0.14.0
 
 ### Require Samva SDK 0.43
