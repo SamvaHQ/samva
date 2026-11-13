@@ -9,7 +9,7 @@ directory, which is documented in [Codex and Cursor](./codex-and-cursor.md).
 
 | Artifact                 | Where it lives                     | Version                         |
 | ------------------------ | ---------------------------------- | ------------------------------- |
-| ChatGPT plugin listing   | The ChatGPT directory link above   | `1.0.0`, managed by the listing |
+| ChatGPT plugin listing   | The ChatGPT directory link above   | `1.1.0`, managed by the listing |
 | Codex and Cursor package | `plugins/samva` in this repository | `0.4.0`                         |
 
 The numbers are not comparable. The package in this repository carries a pinned
