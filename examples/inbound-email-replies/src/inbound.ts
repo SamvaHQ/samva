@@ -11,6 +11,8 @@ type InboundReply = {
   readonly from: string;
   readonly subject?: string;
   readonly isAutoReply?: boolean;
+  readonly disposition: string;
+  readonly reason: string | null;
 };
 
 const unreadableConversation = (error: unknown) => {
@@ -43,7 +45,9 @@ const isInboundReply = (value: unknown): value is InboundReply => {
     data.channel === "email" &&
     ["messageId", "conversationId", "from"].every((field) => typeof data[field] === "string") &&
     (data.subject === undefined || typeof data.subject === "string") &&
-    (data.isAutoReply === undefined || typeof data.isAutoReply === "boolean")
+    (data.isAutoReply === undefined || typeof data.isAutoReply === "boolean") &&
+    typeof data.disposition === "string" &&
+    (data.reason === null || typeof data.reason === "string")
   );
 };
 
@@ -110,6 +114,13 @@ export async function handleInboundReply(
   const verified = await verifyRequest(request, input.webhookSecret);
   if (verified.event.type !== "message.received" || !isInboundReply(verified.event.data)) {
     return { accepted: false, reason: "ignored" } as const;
+  }
+
+  // Samva quarantined or held this message at receipt (spam, malware, a failed
+  // or missing authentication verdict). Never answer it: a reply would reach
+  // whoever forged or sent the held mail.
+  if (verified.event.data.disposition !== "delivered") {
+    return { accepted: false, reason: "not-delivered" } as const;
   }
 
   // An out-of-office or otherwise automatic response must not trigger another reply.

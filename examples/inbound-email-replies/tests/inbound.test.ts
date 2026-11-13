@@ -142,6 +142,8 @@ const replyData = (overrides: Record<string, unknown> = {}) => ({
   conversationId: "conv_01",
   from: "ada@example.com",
   subject: "Question",
+  disposition: "delivered",
+  reason: null,
   ...overrides,
 });
 
@@ -257,6 +259,21 @@ test("ignores an auto-reply without reading or sending", async () => {
 
   assert.deepEqual(result, { accepted: false, reason: "auto-reply" });
   assert.equal(requests.length, 0);
+});
+
+test("ignores a message Samva did not deliver without reading or sending", async () => {
+  const { samva, requests } = createHarness();
+  const secret = generateWebhookSecret();
+  const processedWebhookIds = new Set<string>();
+
+  const result = await handleInboundReply(
+    await signedRequest(secret, replyData({ disposition: "quarantined", reason: "spam" })),
+    { samva, webhookSecret: secret, processedWebhookIds },
+  );
+
+  assert.deepEqual(result, { accepted: false, reason: "not-delivered" });
+  assert.equal(requests.length, 0);
+  assert.equal(processedWebhookIds.size, 0);
 });
 
 test("replies to a subjectless message with a fallback subject", async () => {
