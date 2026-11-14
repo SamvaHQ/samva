@@ -21,7 +21,7 @@ sent.
 bun add ai @ai-sdk/anthropic samva zod
 ```
 
-The example uses `ai@^7.0.170`, `@ai-sdk/anthropic@^4.0.102`, and `samva@^0.44.0`. Create a
+The example uses `ai@^7.0.170`, `@ai-sdk/anthropic@^4.0.102`, and `samva@^0.45.0`. Create a
 mailbox and a restricted key as shown in the [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key),
 and give the agent only that key.
 

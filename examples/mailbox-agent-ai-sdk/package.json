@@ -12,7 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.102",
     "ai": "^7.0.170",
-    "samva": "^0.44.0",
+    "samva": "^0.45.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
