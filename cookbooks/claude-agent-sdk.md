@@ -24,7 +24,7 @@ and the approval flow are in the [mailboxes cookbook](./mailboxes.md). Full refe
 bun add samva @anthropic-ai/claude-agent-sdk zod
 ```
 
-The example uses `samva@^0.44.0` and `@anthropic-ai/claude-agent-sdk@^0.3.322`.
+The example uses `samva@^0.45.0` and `@anthropic-ai/claude-agent-sdk@^0.3.322`.
 
 ## The two tools
 

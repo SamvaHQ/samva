@@ -23,7 +23,7 @@ run finishes without calling either, nothing is sent.
 bun add eve ai samva zod
 ```
 
-The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.44.0`, and Node.js 24 or newer. Create a mailbox
+The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.45.0`, and Node.js 24 or newer. Create a mailbox
 and a restricted key as shown in the
 [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key), and give the agent only
 that key.

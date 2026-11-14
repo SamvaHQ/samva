@@ -23,7 +23,7 @@ choose the recipient, channel, or thread.
 bun add samva langchain @langchain/core @langchain/anthropic zod
 ```
 
-These examples use `samva@^0.44.0`, `langchain@^1.6.5`, `@langchain/core@^1.4.0`, and
+These examples use `samva@^0.45.0`, `langchain@^1.6.5`, `@langchain/core@^1.4.0`, and
 `@langchain/anthropic@^1.6.4`. `createAgent` comes from `langchain`; it replaces the older
 `createReactAgent` in `@langchain/langgraph/prebuilt`.
 

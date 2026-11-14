@@ -22,7 +22,7 @@
       "dependencies": {
         "@astrojs/cloudflare": "^14.4.4",
         "astro": "^7.4.5",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.12",
@@ -40,7 +40,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -59,7 +59,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "server-only": "^0.0.1",
       },
       "devDependencies": {
@@ -74,7 +74,7 @@
       "version": "0.0.0",
       "dependencies": {
         "effect": "4.1.2",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -86,7 +86,7 @@
       "dependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
         "@samva/email-sdk": "workspace:*",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -97,7 +97,7 @@
       "version": "0.0.0",
       "dependencies": {
         "hono": "^4.13.16",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^5.20261104.1",
@@ -109,7 +109,7 @@
       "name": "inbound-email-replies-samva",
       "version": "0.0.0",
       "dependencies": {
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -121,7 +121,7 @@
       "name": "mailbox-agent-samva",
       "version": "0.0.0",
       "dependencies": {
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -136,7 +136,7 @@
       "dependencies": {
         "@ai-sdk/anthropic": "^4.0.102",
         "ai": "^7.0.170",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -151,7 +151,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@anthropic-ai/sdk": "^1.8.0",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -166,7 +166,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.3.322",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -182,7 +182,7 @@
       "dependencies": {
         "ai": "^7.0.170",
         "eve": "^1.0.0-rc.10",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -200,7 +200,7 @@
         "@langchain/core": "^1.4.0",
         "@langchain/langgraph": "^1.7.3",
         "langchain": "^1.6.5",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -215,7 +215,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@openai/agents": "^0.21.0",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -232,7 +232,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "server-only": "^0.0.1",
       },
       "devDependencies": {
@@ -249,7 +249,7 @@
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "react-email": "^6.11.6",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -264,7 +264,7 @@
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "react-email": "^6.11.6",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "standardwebhooks": "^1.1.1",
       },
       "devDependencies": {
@@ -278,7 +278,7 @@
       "name": "sveltekit-transactional-samva",
       "version": "0.0.0",
       "dependencies": {
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "devDependencies": {
         "@sveltejs/adapter-node": "^6.0.1",
@@ -298,7 +298,7 @@
         "@tanstack/react-start": "^1.169.4",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
         "zod": "^4.6.7",
       },
       "devDependencies": {
@@ -331,12 +331,12 @@
       "devDependencies": {
         "@react-email/render": "^2.2.0",
         "better-auth": "^1.7.17",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "peerDependencies": {
         "@react-email/render": "^2.0.0",
         "better-auth": "^1.7.2",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "optionalPeers": [
         "@react-email/render",
@@ -347,11 +347,11 @@
       "version": "0.16.0",
       "devDependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
       "peerDependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
-        "samva": "^0.44.0",
+        "samva": "^0.45.0",
       },
     },
   },
@@ -922,7 +922,7 @@
 
     "@samva/vite": ["@samva/vite@0.23.0", "", { "dependencies": { "@samva/markup": "^0.23.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-30Mvjfu4J1u+mw077QkVEcN1dcYIJge5q3YpCoikpRvdmukW936B9cNesNf4gaNTpSBOhjGF4Bg+HgNHsRwC4Q=="],
 
-    "@samva/webhooks": ["@samva/webhooks@0.44.0", "", { "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-O3PI76ViQg1npCtFVtTq4bB7YzadxDq5SxYy7Hmz56hOXspOrfERdvGReoz+Vzruzk3RUgVhlMbjHQ6iia90HQ=="],
+    "@samva/webhooks": ["@samva/webhooks@0.45.0", "", { "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-dhsxTQqIUQs9e6Th7OtcsoGTnx3n/tc5gL3kHPdfIUVsFQGu6MMY5pFeKkacOyp299HDS0RZ87Z6zmDEQ5XOwQ=="],
 
     "@selderee/plugin-htmlparser2": ["@selderee/plugin-htmlparser2@0.12.0", "", { "dependencies": { "domelementtype": "~2.3.0", "domhandler": "~5.0.3" }, "peerDependencies": { "selderee": "~0.12.0" } }, "sha512-oELmoyA6ML9jDRMV3kgcMQFKxUfBU0yFVn6yTctVaLT5ygXnxH52I3TZEgV9EhXJC68/uFvE5Daj1/25c0Xa/A=="],
 
@@ -1890,7 +1890,7 @@
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
 
-    "samva": ["samva@0.44.0", "", { "dependencies": { "@samva/webhooks": "0.44.0" }, "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-EMB5naK25tDIKwQmC687KFtgAXd9I8BrrK/+AC8KeciePvkInGxlcKfA926L9VWCpfbzFFaJ/ZahHBUeBFZSrQ=="],
+    "samva": ["samva@0.45.0", "", { "dependencies": { "@samva/webhooks": "0.45.0" }, "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-zLzB0eQP9qXaIfhQu9wYekV/2lBSVKWbFF1UeoiygJdL/yA0wa47kXgyM6zzotVJN6HNeyWMligQwjPFQoyvDA=="],
 
     "satteri": ["satteri@0.10.5", "", { "dependencies": { "@types/estree-jsx": "^1.0.5", "@types/hast": "^3.0.5", "@types/mdast": "^4.0.4", "@types/unist": "^3.0.3" }, "optionalDependencies": { "@bruits/satteri-darwin-arm64": "0.10.5", "@bruits/satteri-darwin-x64": "0.10.5", "@bruits/satteri-linux-arm64-gnu": "0.10.5", "@bruits/satteri-linux-arm64-musl": "0.10.5", "@bruits/satteri-linux-x64-gnu": "0.10.5", "@bruits/satteri-linux-x64-musl": "0.10.5", "@bruits/satteri-wasm32-wasi": "0.10.5", "@bruits/satteri-win32-arm64-msvc": "0.10.5", "@bruits/satteri-win32-x64-msvc": "0.10.5" } }, "sha512-Ao1LKpAEa9Wdg0otgbVKViZHEq9ebdXe4DMrp3s9vQAU0HNIuHnFEuMuOcm0ZIXyV0Yzxj91NvhLpvXZJO/5ZQ=="],
 
