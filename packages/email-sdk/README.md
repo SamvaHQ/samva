@@ -60,7 +60,8 @@ Samva Promise `client`. An API key is required unless a client is injected.
 | `subject`, `html`, `text`                     | Forwarded without rewriting.                                                                                                  |
 | `metadata`                                    | Forwarded to Samva message metadata.                                                                                          |
 | In-memory attachments                         | Raw or base64 strings, `Uint8Array`, `ArrayBuffer`, and `Blob` become base64 with exact byte size. `contentType` is required. |
-| `headers`, `tags`, `sendAt`                   | Rejected before the Samva client is called.                                                                                   |
+| `headers`, `tags`                             | Non-empty collections are rejected before the Samva client is called; empty collections are accepted and omitted.             |
+| `sendAt`                                      | Any defined value is rejected before the Samva client is called.                                                              |
 | Attachment `path`, `contentId`, `disposition` | Rejected before the Samva client is called. URL attachment paths are not supported.                                           |
 | Send `idempotencyKey`                         | Forwarded as Samva's `Idempotency-Key` header.                                                                                |
 

@@ -26,6 +26,10 @@ export const auth = betterAuth(
 );
 ```
 
+`withSamva` wires change-email and delete-account callbacks only when you configure
+Better Auth's `user.changeEmail` and `user.deleteUser` options, respectively.
+It preserves any send callbacks you supply.
+
 Configure a default sender for auth callbacks; this package has no `from`
 option. If no default applies, the SDK throws `FromAddressRequiredError` with
 `verifiedDomains`, and the adapter propagates it to the callback caller.
