@@ -55,10 +55,10 @@ const key = await samva.apiKeys.create({
   },
 });
 
-const currentPolicy = await samva.policies.getPolicy({ kind: "apiKey", id: key.apiKey.id });
+const currentPolicy = await samva.policies.getPolicy({ kind: "apiKey", id: key.id });
 await samva.policies.setPolicy({
   kind: "apiKey",
-  id: key.apiKey.id,
+  id: key.id,
   ifVersion: currentPolicy.version,
   presets: [],
   rules: [{ match: { effect: "write" }, atLeast: "person" }],
