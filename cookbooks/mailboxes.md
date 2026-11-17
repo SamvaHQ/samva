@@ -22,7 +22,12 @@ bun add samva
 ```
 
 These examples use `samva@^0.47.0`. Agent module helpers are part of the SDK at `samva/agent`
-and `samva/agent/test`.
+and `samva/agent/test`, which need `effect` at runtime. To add an agent module to an existing
+project, install it too (`samva agents init` adds it for a new one):
+
+```sh
+bun add samva effect
+```
 
 ## Create a mailbox and a scoped key
 
