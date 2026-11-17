@@ -21,7 +21,7 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.45.0`. Agent module helpers are part of the SDK at `samva/agent`
+These examples use `samva@^0.47.0`. Agent module helpers are part of the SDK at `samva/agent`
 and `samva/agent/test`.
 
 ## Create a mailbox and a scoped key

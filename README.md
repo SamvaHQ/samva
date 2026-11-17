@@ -69,7 +69,8 @@ tutorial. The free plan needs no card and includes one mailbox; WhatsApp is on p
 
 While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.45. Workspace
 packages require `samva@^0.45.0` as a peer and test against `0.45.0`. Examples use
-`samva@^0.45.0`; copyable external import maps pin `samva@0.45.0`.
+`samva@^0.45.0`, except `examples/mailbox-agent`, which needs `samva@^0.47.0` for `samva/agent`;
+copyable external import maps pin `samva@0.45.0`.
 
 ## Package integrations
 
