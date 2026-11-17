@@ -1,3 +1,21 @@
+## @samva/email-sdk@0.17.0
+
+### Require Samva SDK 0.45
+
+Both adapters now require `samva@^0.45.0` and validate against SDK 0.45.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and
+`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.45.
+
+### Require Samva SDK 0.47
+
+Both adapters now require `samva@^0.47.0` and validate against SDK 0.47.0.
+Only the current SDK minor is supported; upgrade Samva alongside the adapter.
+
+The adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and
+`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.47.
+
 ## @samva/email-sdk@0.16.0
 
 ### Require Samva SDK 0.44
