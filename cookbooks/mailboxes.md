@@ -2,7 +2,7 @@
 
 Give an agent its own email address. A Samva mailbox holds threads, drafts, and
 attachments, and an agent reads and replies through the API, an event stream, or an
-installed extension.
+agent module that Samva runs on each event.
 
 The runnable example lives in [`examples/mailbox-agent`](../examples/mailbox-agent).
 The tests use fakes, so the whole flow runs without an account. Full reference:
@@ -21,9 +21,8 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.45.0`. Extension helpers are part of the SDK at
-`samva/mailbox`, `samva/mailbox/test`, and `samva/mailbox/webhook`; the standalone
-`@samva/mailbox` package is deprecated in its favour.
+These examples use `samva@^0.45.0`. Agent module helpers are part of the SDK at `samva/agent`
+and `samva/agent/test`.
 
 ## Create a mailbox and a scoped key
 
@@ -175,70 +174,78 @@ await person.mailboxes.approveAction({
 Key the reply by the event id. Events are delivered at least once, and a retry
 with the same key and body returns the original action's current receipt.
 
-## Extensions
+## Agent modules
 
-An extension is code Samva calls with mailbox events. Author it with
-`samva/mailbox` and serve it from your own server with `runtime: "webhook"`.
+An agent module is code Samva runs on mailbox events. Author it with `defineAgent` from
+`samva/agent`, register a handler under `events`, and publish it with the CLI.
 
 ```ts
-import { defineExtension } from "samva/mailbox";
+import { defineAgent } from "samva/agent";
 
-export default defineExtension({
+export default defineAgent({
   manifest: {
-    name: "reply-agent",
-    displayName: "Reply agent",
+    name: "Reply agent",
     version: "1.0.0",
-    runtime: "webhook",
-    events: ["mailbox.message.received"],
-    permissions: ["read", "send"],
+    endpointIds: ["mbe_..."],
+    integrations: [],
+    eventTriggers: [],
+    policy: { presets: [], rules: [{ match: { effect: "write" }, atLeast: "person" }] },
+    model: "standard",
+    reasoning: "auto",
+    workingHours: null,
+    takeoverTimeoutMinutes: 30,
   },
-  on: {
-    "mailbox.message.received": async (event, { samva, log }) => {
-      const receipt = await samva.mailboxes.reply({
+  instructions: "Acknowledge incoming mail through the registered event handler.",
+  events: {
+    "mailbox.message.received": async (event, ctx) => {
+      const receipt = await ctx.samva.mailboxes.reply({
         id: event.data.mailboxId,
         messageId: event.data.message.id,
         text: "Thanks, we got it.",
       });
-      log(receipt.state, receipt.actionId);
+      ctx.log(receipt.state, receipt.actionId);
     },
   },
 });
 ```
 
-```ts
-import { createWebhookHandler } from "samva/mailbox/webhook";
-
-Bun.serve({
-  fetch: createWebhookHandler(extension, {
-    apiKey: process.env.SAMVA_API_KEY!,
-    webhookSecret: process.env.SAMVA_WEBHOOK_SECRET!,
-  }),
-});
+```sh
+samva agents init ./reply-agent --name "Reply agent"
+samva agents info ./reply-agent
+samva agents publish "$AGENT_ID" --dir ./reply-agent
 ```
 
-`createWebhookHandler` verifies the signature (401 on failure) and answers 500 when
-a handler throws so Samva retries. Install with
-`--policy '{"presets":[],"rules":[{"match":{"effect":"write"},"atLeast":"person"}]}'`
-and the fewest permissions the handler needs. An extension can never approve a send,
-release held mail, or change grants.
+A handler gets the event and a per-call `ctx`. In a mailbox handler `ctx.samva` reads the
+event's mailbox and replies to the received message; any other operation fails with HTTP 403. A
+handler that throws is retried with the same event id, so keep it safe to repeat. The manifest's
+`policy` holds each write for a person, and an agent can never approve a send, release held mail,
+or change grants. To receive events on your own server instead, use a
+[webhook](https://samva.dev/docs/platform/webhooks). Reference:
+<https://samva.dev/docs/agents#event-handlers>.
 
 ## Test locally
 
 ```ts
-import { createTestClient, mailboxEvent, runExtension } from "samva/mailbox/test";
+import { createTestClient, runAgent } from "samva/agent/test";
 
-const result = await runExtension(extension, mailboxEvent("mailbox.message.received"), {
-  client: createTestClient(),
+const client = createTestClient();
+await runAgent(agent, ctx(client)).event({
+  id: "evt_01",
+  type: "mailbox.message.received",
+  timestamp: "2026-10-10T12:00:00.000Z",
+  data: { mailboxId: "mbx_01", message: { id: "msg_01" } },
 });
-// result.ok, result.logs, result.calls
+// client.calls records each request's method, path, body, and idempotencyKey
 ```
 
-Each recorded call has its method, path, body, and `idempotencyKey`
-(`<event id>:reply:1`), so a test can assert a rerun cannot send twice.
+`ctx` is the fake per-call context your test builds: a capability, `client` as `samva`, and a
+`log` collector. The runnable example builds one in
+[`tests/agent-module.test.ts`](../examples/mailbox-agent/tests/agent-module.test.ts).
 
-A send key is derived per run, so a handler that makes the same calls in the same order reuses
-them after a retry. Pass `{ idempotencyKey }` as the call's second argument when a different
-deduplication window is needed.
+In a published module, a write's idempotency key derives from the agent, event, operation, and
+call order, so a handler that makes the same calls in the same order reuses them after a retry.
+Pass `{ idempotencyKey }` as the call's second argument when a different deduplication window is
+needed.
 
 ```sh
 bun --cwd examples/mailbox-agent run typecheck
@@ -248,5 +255,5 @@ bun --cwd examples/mailbox-agent run test
 ## Example
 
 See the runnable [`mailbox-agent` example](../examples/mailbox-agent) for the event
-loop with cursor persistence and cursor-expiry recovery, and the same behavior as a
-webhook extension.
+loop with cursor persistence and cursor-expiry recovery, and the same behavior as an
+agent module.

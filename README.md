@@ -130,7 +130,7 @@ Agents and mailboxes:
 
 - [`mailbox-agent`](./examples/mailbox-agent) — an agent that follows a mailbox
   event stream and answers email and WhatsApp in approval mode, plus the same
-  behavior as an `@samva/mailbox` webhook extension.
+  behavior as an agent module with a `mailbox.message.received` handler.
 - [`mailbox-agent-claude`](./examples/mailbox-agent-claude) — an agent that asks
   Claude to draft each reply to a mailbox's email and WhatsApp messages and sends
   it held for a person's approval.

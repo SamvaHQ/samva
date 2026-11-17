@@ -75,7 +75,7 @@ control characters in sender names and subjects and malformed email addresses, w
 `422` response.
 
 Mailbox sends and replies use scoped decision rules. Set a `write` minimum of `person` for
-reviewed keys or extension installations; `sendMode` and `--send-mode` are not accepted. Policy
+reviewed keys; `sendMode` and `--send-mode` are not accepted. Policy
 writes and approvals use a person's OAuth session. Approval and denial carry the observed
 `decision.reviewRound`, and CLI decisions require `--review-round`. A stale round returns `409`.
 
