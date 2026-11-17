@@ -18,21 +18,9 @@ bun run build
 bun run info
 ```
 
-The example requires the SDK release containing `samva/agent`, `samva/agent/test`, and the flat
-`contacts.mergeByConnection({ id, connection })` contract. Published `samva@0.46.1` lacks the agent
-exports. Until that release, build the SDK from Samva main and use an uncommitted local link:
-
-```sh
-# In the Samva application checkout:
-cd ~/Developer/samva/packages/sdk
-bun run build
-bun link
-# In this example:
-bun link samva
-```
-
-Use the application checkout's CLI for `samva agents build` and `samva agents info` if the installed
-CLI lacks those commands. The committed dependency remains a registry range, never a local path.
+The example uses `samva@^0.47.0` for `samva/agent`, `samva/agent/test`, and
+`contacts.mergeByConnection({ id, connection })`. It uses `@samva/cli@^0.41.0` for
+`samva agents build` and `samva agents info`.
 
 Offline evals exercise declaration loading for lifecycle turns, contact scope, bounded tool grants,
 and owner approval floors. They do not run a model, authenticate a person, merge contacts, or send

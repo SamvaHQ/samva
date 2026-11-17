@@ -52,11 +52,9 @@ WhatsApp setup stays in the dashboard.
 
 ## Validate before publishing
 
-Run the example's typecheck, offline eval, build and info commands. Published `samva@0.46.1` lacks
-the agent exports; the README documents developing with a local SDK link without committing it.
-The needed release includes code-first agents and the flat connection-merge contract. Offline
-declaration checks do not establish the conversation flow; verify sign-in, identity binding,
-approval and event-driven delivery through a managed E2E run before enabling the agent.
+Run the typecheck, offline eval, build, and info commands in the
+[example README](../examples/onboarding-agent/README.md). Before enabling the agent, use a managed
+E2E run to verify sign-in, identity binding, approval, and event-driven delivery.
 
 For the owner's approval page, use `samva.approval_requests_create` to propose one immutable batch
 of exact `email_domains_add` and `email_senders_add` calls. Creating the proposal runs without an
