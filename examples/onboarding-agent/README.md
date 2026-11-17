@@ -55,8 +55,8 @@ address or a connection account ID as identity proof.
 
 ## Approval and delivery
 
-The selected integration tools reach the contact's own connected account. Domain and sender
-creation have explicit `person` policy floors, in addition to the host's integration policy and
+The selected integration tools reach the contact's own connected account. The integration catalog qualifies names as `samva.<MCP tool name>`, which is what the manifest
+grant and tool policy match. Domain and sender creation have explicit `person` policy floors, in addition to the host's integration policy and
 approval rules. Approval belongs on the owner's approval page; it is not an agent tool.
 
 The lead's instructions must distinguish a starter from a completed design, verify the connection

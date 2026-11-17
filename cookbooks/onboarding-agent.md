@@ -29,8 +29,12 @@ Read brands with `brands_list` and `brands_get`, then update their fields with `
 Brand sections replace whole sections, so preserve fields the customer has not asked to change.
 Never describe the result as a finished design, a published template, or a delivered message.
 
+Connected-tool names have the catalog prefix `samva.`; for example, call
+`ctx.connections.call(integrationId, "samva.brands_get", { arguments: { slug } })`. Grants and policy matches use
+these qualified names. The MCP server itself advertises unqualified names.
+
 The manifest permits only the reads and writes needed for this flow. It requires person approval
-for `email_domains_add` and `email_senders_add`; the host also applies its integration policy.
+for `samva.email_domains_add` and `samva.email_senders_add`; the host also applies its integration policy.
 Present the approval page and wait for its recorded decision. Observe domain status before
 claiming verification. Do not retry a held action as a new write.
 

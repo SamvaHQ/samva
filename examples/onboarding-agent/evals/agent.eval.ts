@@ -41,19 +41,24 @@ const evaluation = defineEval({
     assert.equal(grant?.subject, "contact");
     assert.equal(grant?.tools.kind, "selected");
     if (grant?.tools.kind !== "selected") throw new Error("Expected a bounded tool grant");
+    assert.ok(grant.tools.names.every((name) => name.startsWith("samva.")));
     for (const required of [
-      "templates_create_from_website",
-      "brands_update",
-      "email_domains_add",
-      "email_senders_add",
+      "samva.templates_create_from_website",
+      "samva.brands_update",
+      "samva.email_domains_add",
+      "samva.email_senders_add",
     ]) {
       assert.ok(grant.tools.names.includes(required), `Missing connected tool ${required}`);
     }
-    for (const forbidden of ["email_send", "whatsapp_setup_links_create", "contacts_merge"]) {
+    for (const forbidden of [
+      "samva.email_send",
+      "samva.whatsapp_setup_links_create",
+      "samva.contacts_merge",
+    ]) {
       assert.ok(!grant.tools.names.includes(forbidden), `Unexpected connected tool ${forbidden}`);
     }
     assert.equal(definition.manifest.followUpTemplate, "onboarding-follow-up");
-    for (const tool of ["email_domains_add", "email_senders_add"]) {
+    for (const tool of ["samva.email_domains_add", "samva.email_senders_add"]) {
       assert.ok(
         definition.manifest.policy.rules.some(
           (rule) => rule.match.tool === tool && rule.atLeast === "person",
