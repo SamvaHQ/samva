@@ -23,6 +23,8 @@ export const createOnboardingAgent = (
           kind: "selected",
           names: [
             "samva.profile_get",
+            "samva.approval_requests_create",
+            "samva.approval_requests_get",
             "samva.brands_list",
             "samva.brands_get",
             "samva.brands_update",
@@ -46,8 +48,13 @@ export const createOnboardingAgent = (
       presets: [],
       rules: [
         { match: { effect: "read" }, decide: "run" },
+        { match: { kind: "reply" }, decide: "run" },
+        { match: { tool: "samva.templates_create_from_website" }, decide: "run" },
+        { match: { tool: "samva.templates_create_from_brief" }, decide: "run" },
         { match: { effect: "write" }, decide: "model" },
         { match: { effect: "final" }, decide: "person" },
+        { match: { tool: "samva.approval_requests_create" }, decide: "run" },
+        { match: { tool: "samva.brands_update" }, decide: "run" },
         { match: { tool: "samva.email_domains_add" }, atLeast: "person" },
         { match: { tool: "samva.email_senders_add" }, atLeast: "person" },
       ],

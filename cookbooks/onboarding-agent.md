@@ -57,3 +57,8 @@ the agent exports; the README documents developing with a local SDK link without
 The needed release includes code-first agents and the flat connection-merge contract. Offline
 declaration checks do not establish the conversation flow; verify sign-in, identity binding,
 approval and event-driven delivery through a managed E2E run before enabling the agent.
+
+For the owner's approval page, use `samva.approval_requests_create` to propose one immutable batch
+of exact `email_domains_add` and `email_senders_add` calls. Creating the proposal runs without an
+agent-policy hold; the connected account's owner still has to approve its execution. Read its
+status with `samva.approval_requests_get`. Direct domain/sender calls retain their person floors.

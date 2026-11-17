@@ -45,6 +45,8 @@ const evaluation = defineEval({
     assert.ok(grant.tools.names.every((name) => name.startsWith("samva.")));
     for (const required of [
       "samva.templates_create_from_website",
+      "samva.approval_requests_create",
+      "samva.approval_requests_get",
       "samva.brands_update",
       "samva.email_domains_add",
       "samva.email_senders_add",
