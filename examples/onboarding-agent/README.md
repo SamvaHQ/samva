@@ -5,8 +5,9 @@ A code-first Samva agent declaration that uses the conversation host's `request_
 template and updates brand fields in the connected owner's account. It does not restyle or publish
 an email.
 
-The instruction and skill files contain `TODO(lead)` placeholders. Replace them before publishing;
-the declaration alone does not implement the onboarding conversation.
+`instructions.md` sets the conversation's rules, and `skills/onboarding.md` walks the agent through
+each step: connect, link the verified account, draft the starter and brand, propose the domain and
+sender, and follow up on lifecycle events.
 
 ## Install and check
 
@@ -47,9 +48,22 @@ The selected integration tools reach the contact's own connected account. The in
 grant and tool policy match. Domain and sender creation have explicit `person` policy floors, in addition to the host's integration policy and
 approval rules. Approval belongs on the owner's approval page; it is not an agent tool.
 
-The lead's instructions must distinguish a starter from a completed design, verify the connection
-before binding, preserve intent across event turns, and handle the 24-hour WhatsApp window.
-Setup links, portal links, verification codes, and webhook secrets stay out of chat. WhatsApp
+The instructions distinguish a starter from a completed design, link the account only after the
+connection completes, and pick up across event turns. Outside the 24-hour WhatsApp window the host
+sends the configured follow-up template in place of the reply. Setup links, portal links, verification codes, and webhook secrets stay out of chat. WhatsApp
 setup belongs in the dashboard.
+
+## Publish
+
+Create the hosted agent once, then publish this module as its next version:
+
+```sh
+samva agents create "WhatsApp onboarding" --json
+samva agents publish <agent-id> --dir . --entry agent.ts --dry-run
+samva agents publish <agent-id> --dir . --entry agent.ts
+```
+
+`--dry-run` builds and validates locally without calling the API. The manifest's `endpointIds`
+decide which WhatsApp endpoints the published version answers.
 
 See the [cookbook](../../cookbooks/onboarding-agent.md) for the conversation and host boundaries.

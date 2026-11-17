@@ -2,7 +2,7 @@
 
 The [onboarding agent example](../examples/onboarding-agent) declares a contact-scoped Samva MCP
 grant, lifecycle triggers, owner approval floors, and an approved WhatsApp follow-up template.
-The instructions and skill are placeholders for the operator to supply before publishing.
+Its instructions hold the conversation's rules, and its onboarding skill walks each step below.
 
 ```text
 WhatsApp contact → request_connection → authorization page and emailed code
@@ -45,16 +45,27 @@ conversation turns with event context, not authored `events` handlers. Platform 
 must be configured for the owner email's contact; verified binding joins that identity to the
 WhatsApp contact.
 
-Inside the 24-hour WhatsApp service window, use the ordinary reply path. Outside it, the configured
-approved follow-up template is required. Preserve idempotency and inspect receipts rather than
+Inside the 24-hour WhatsApp service window, the reply goes out as written. Outside it, the host
+sends the configured approved follow-up template in place of the reply, so the agent repeats
+anything important when the contact writes back. Preserve idempotency and inspect receipts rather than
 assuming a reply was sent. Credentials and verification codes stay on the authorization page;
 WhatsApp setup stays in the dashboard.
 
-## Validate before publishing
+## Validate and publish
 
 Run the typecheck, offline eval, build, and info commands in the
-[example README](../examples/onboarding-agent/README.md). Before enabling the agent, use a managed
-E2E run to verify sign-in, identity binding, approval, and event-driven delivery.
+[example README](../examples/onboarding-agent/README.md). Then create the hosted agent and publish
+the module as its version:
+
+```sh
+samva agents create "WhatsApp onboarding" --json
+samva agents publish <agent-id> --dir examples/onboarding-agent --entry agent.ts --dry-run
+samva agents publish <agent-id> --dir examples/onboarding-agent --entry agent.ts
+```
+
+Before enabling it on a live WhatsApp endpoint, sign in through the connection link from a test
+number and walk the flow once: binding, starter template, approval, and the `domain.updated`
+follow-up.
 
 For the owner's approval page, use `samva.approval_requests_create` to propose one immutable batch
 of exact `email_domains_add` and `email_senders_add` calls. Creating the proposal runs without an
