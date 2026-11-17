@@ -83,9 +83,8 @@ Resolution order is deterministic:
 | Message inspection       | `samva messages` with `list`, `get`, `events`, or `wait`                                                                                                                                                                        |
 | Scheduled email          | `samva scheduled-messages` with `create`, `list`, `get`, `cancel`, or `resume`                                                                                                                                                  |
 | Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, `report <campaignId> <runId>` (email only; directional opens/clicks), and the `runs` group                                                                 |
-| Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, `from-website`, and remote lifecycle commands                                                                                          |
+| Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, `suggest`, `from-brief`, `from-website`, and remote lifecycle commands                                                                 |
 | Mailboxes                | `samva mailboxes` with `list`, `create`, `get`, `update`, `pause`, `resume`, `remove`, `threads`, `read`, `send`, `reply`, `events`, `actions list\|get\|cancel\|retry\|approve\|deny`, and `quarantine list\|release\|discard` |
-| Agent modules            | `samva agents` with `init`, `build`, `publish`, and `info`; `publish <agent-id> --dir <dir>` publishes the module as the agent's next version                                                                                   |
 | Customer webhooks        | `samva webhooks` with `list`, `get`, `secret`, `test`, `logs`, `stats`, `retry`, `rotate-secret`, `create`, `update`, or `remove`                                                                                               |
 | API keys                 | `samva api-keys` with `list`, `get`, `create`, `update`, `rotate`, or `revoke`                                                                                                                                                  |
 | Execution profiles       | `samva profile` with `list`, `show`, `create`, `use`, or `delete`                                                                                                                                                               |
@@ -168,6 +167,12 @@ location it names and run it again. `snapshot` writes desktop and mobile PNGs in
 [template authoring](template-authoring.md) for the language.
 
 ## Create and share remote templates
+
+`samva templates suggest "<brief>" --json` ranks gallery designs for a brief.
+`samva templates from-brief "<brief>" --idempotency-key example-welcome --json` creates a project
+from the best match (or `--gallery-template <id>`) and returns `startedFrom`, `recreation`, the
+assistant `ask`, and an editor link that prefills the `ask` for the user to send. `templates init
+--gallery-template <id>` starts a cloned project from a gallery design.
 
 `samva templates from-website example.com --idempotency-key example-welcome --json` creates a
 project and returns its website, assistant `ask`, and editor link. It writes immediately and has
