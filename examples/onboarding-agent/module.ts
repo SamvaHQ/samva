@@ -39,7 +39,7 @@ export const createOnboardingAgent = (
         },
       },
     ],
-    eventTriggers: ["domain.updated", "review.updated"],
+    eventTriggers: ["contact.connection_completed", "domain.updated", "review.updated"],
     followUpTemplate: configuration.followUpTemplate,
     knowledgeSourceIds: [],
     policy: {

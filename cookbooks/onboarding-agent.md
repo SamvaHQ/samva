@@ -40,7 +40,7 @@ claiming verification. Do not retry a held action as a new write.
 
 ## Resume on lifecycle events
 
-`eventTriggers` subscribes the conversation to `domain.updated` and `review.updated`. These are
+`eventTriggers` subscribes the conversation to `contact.connection_completed`, `domain.updated` and `review.updated`. These are
 conversation turns with event context, not authored `events` handlers. Platform lifecycle routing
 must be configured for the owner email's contact; verified binding joins that identity to the
 WhatsApp contact.

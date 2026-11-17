@@ -5,6 +5,7 @@ import type { AgentContext, AgentModuleAuthority } from "samva/agent";
 import { defineEval, runAgent, runEval } from "samva/agent/test";
 
 import agent from "../agent";
+import configuration from "../configuration";
 
 const unexpected = async (): Promise<never> => {
   throw new Error("Declaration loading must not make a host call");
@@ -51,13 +52,13 @@ const evaluation = defineEval({
       assert.ok(grant.tools.names.includes(required), `Missing connected tool ${required}`);
     }
     for (const forbidden of [
-      "samva.email_send",
+      "samva.messages_send_email",
       "samva.whatsapp_setup_links_create",
       "samva.contacts_merge",
     ]) {
       assert.ok(!grant.tools.names.includes(forbidden), `Unexpected connected tool ${forbidden}`);
     }
-    assert.equal(definition.manifest.followUpTemplate, "onboarding-follow-up");
+    assert.equal(definition.manifest.followUpTemplate, configuration.followUpTemplate);
     for (const tool of ["samva.email_domains_add", "samva.email_senders_add"]) {
       assert.ok(
         definition.manifest.policy.rules.some(
@@ -71,19 +72,21 @@ const evaluation = defineEval({
     assert.ok(local.skill("onboarding").trim().length > 0);
     const expectedInstructions = await local.instructions();
     await Promise.all(
-      ["domain.updated", "review.updated"].map(async (eventType) => {
-        assert.ok(definition.manifest.eventTriggers?.includes(eventType));
-        // oxlint-disable-next-line no-underscore-dangle -- Exercise the SDK runtime entry used by the host.
-        const instructions = await definition.__samvaAgentRuntime(
-          { kind: "instructions" },
-          {
-            ...context.capability,
-            trigger: { kind: "event", eventId: `eval-${eventType}`, eventType },
-          },
-          authority,
-        );
-        assert.equal(instructions, expectedInstructions);
-      }),
+      ["contact.connection_completed", "domain.updated", "review.updated"].map(
+        async (eventType) => {
+          assert.ok(definition.manifest.eventTriggers?.includes(eventType));
+          // oxlint-disable-next-line no-underscore-dangle -- Exercise the SDK runtime entry used by the host.
+          const instructions = await definition.__samvaAgentRuntime(
+            { kind: "instructions" },
+            {
+              ...context.capability,
+              trigger: { kind: "event", eventId: `eval-${eventType}`, eventType },
+            },
+            authority,
+          );
+          assert.equal(instructions, expectedInstructions);
+        },
+      ),
     );
   },
 });

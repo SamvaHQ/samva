@@ -49,7 +49,7 @@ Replace every identifier in `configuration.ts` with your installation's values:
 | `followUpTemplate` | Approved WhatsApp follow-up template for closed service windows                 |
 
 Configure Samva's platform lifecycle organization so owner lifecycle events resolve into that
-organization's contacts. The manifest subscribes to `domain.updated` and `review.updated`.
+organization's contacts. The manifest subscribes to `contact.connection_completed`, `domain.updated` and `review.updated`.
 Connection authorization and verified binding use the built-ins; no module tool accepts an email
 address or a connection account ID as identity proof.
 
