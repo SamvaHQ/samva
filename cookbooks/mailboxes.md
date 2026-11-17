@@ -217,6 +217,7 @@ export default defineAgent({
 ```sh
 samva agents init ./reply-agent --name "Reply agent"
 samva agents info ./reply-agent
+AGENT_ID=$(samva agents create "Reply agent" --json | jq -r .data.id)
 samva agents publish "$AGENT_ID" --dir ./reply-agent
 ```
 

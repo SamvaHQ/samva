@@ -90,11 +90,13 @@ Reaching the customer then takes an approved template (`templateId` and `templat
 
 ## Publish the agent module
 
-Set `endpointIds` in `src/agent-module.ts` to your mailbox's endpoint id, then check and publish
-the module as an agent's next version:
+Set `endpointIds` in `src/agent-module.ts` to your mailbox's endpoint id, then check the module,
+create the agent it runs as (or set `AGENT_ID` to an existing one from `samva agents list`), and
+publish the module as that agent's next version:
 
 ```sh
 samva agents info . --entry src/agent-module.ts
+AGENT_ID=$(samva agents create "Mailbox agent" --json | jq -r .data.id)
 samva agents publish "$AGENT_ID" --dir . --entry src/agent-module.ts
 ```
 
