@@ -18,7 +18,7 @@ const ctx: AgentContext = {
     versionId: "eval-version",
     bundleSha256: "0".repeat(64),
     expiresAt: Date.now() + 60_000,
-    trigger: { kind: "event", eventId: "eval-domain", eventType: "domain.updated" },
+    trigger: { kind: "event", eventId: "eval-domain", eventType: "domain.updated", attempt: 1 },
   },
   samva: createClient({ apiKey: "offline-eval", baseUrl: "http://127.0.0.1:1" }),
   connections: { call: unexpected },
@@ -82,7 +82,7 @@ const evaluation = defineEval({
             { kind: "instructions" },
             {
               ...context.capability,
-              trigger: { kind: "event", eventId: `eval-${eventType}`, eventType },
+              trigger: { kind: "event", eventId: `eval-${eventType}`, eventType, attempt: 1 },
             },
             authority,
           );
