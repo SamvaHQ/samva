@@ -7,9 +7,9 @@ description: >-
   domains and senders, inbound receiving, webhooks, templates, WhatsApp's
   24-hour service window and setup links, schedules, campaigns, usage,
   readiness, authentication, mailboxes for agents (threads, replies, approval
-  sends, quarantine, event streams, extensions), or choosing the right Samva
+  sends, quarantine, event streams, agent event handlers), or choosing the right Samva
   surface. Triggers on samva, samva.dev, the `samva` package, `@samva/cli`,
-  `samva/mailbox`, mcp.samva.dev, SAMVA_API_KEY, agent mailbox, Samva
+  `samva/agent`, mcp.samva.dev, SAMVA_API_KEY, agent mailbox, Samva
   WhatsApp, SML, Samva Markup Language, and template editor agent.
 metadata:
   version: 0.4.0
@@ -33,7 +33,7 @@ What is the intent?
 ├─ Configure or inspect resources visually     → dashboard (`https://samva.dev`)
 ├─ Give an agent its own inbox to read and reply → mailbox (`samva.mailboxes`, `samva mailboxes`)
 ├─ Send or answer on WhatsApp                    → WhatsApp reference (`channel: "whatsapp"`)
-├─ React to mailbox events with code Samva runs  → mailbox extension (`samva/mailbox`)
+├─ React to mailbox events with code Samva runs  → agent event handlers (`samva/agent`)
 └─ Author or repair a TSX email template      → template authoring reference
 ```
 
@@ -56,8 +56,8 @@ Read only the reference needed for the selected surface:
 - [SDK and REST](references/sdk.md): Promise SDK, Effect SDK, and direct HTTP.
 - [CLI](references/cli.md): installation, authentication, and shipped command families.
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
-- [Mailboxes](references/mailbox-extensions.md): approval sends, quarantine, the event stream, and
-  authoring extensions with `samva/mailbox`. The SDK, CLI, and MCP references cover the calls.
+- [Mailboxes](references/mailbox-events.md): approval sends, quarantine, the event stream, and
+  agent event handlers with `samva/agent`. The SDK, CLI, and MCP references cover the calls.
 - [WhatsApp](references/whatsapp.md): the 24-hour service window, template and free-form sends,
   WhatsApp threads in a mailbox, and setup links for customers' numbers.
 - [Template authoring](references/template-authoring.md): the static TSX profile, the check-render-look loop, and revision-safe editing.
@@ -92,7 +92,7 @@ Docs: <https://samva.dev/docs/mailboxes> and <https://samva.dev/docs/mailboxes/c
   wait for a different person. The action's `resolution` and the `mailbox.action.resolved` event
   say how the wait ended. Draft with `mailboxes.createDraft` when a send is not needed.
 - Only a person signed in (`samva login` or an OAuth connection) approves or denies an action and
-  releases or discards held mail. No API key, extension, or MCP tool can.
+  releases or discards held mail. No API key or MCP tool can.
 - Approval and denial must carry the positive `decision.reviewRound` observed in `getAction` or
   `getNeedsYou`; CLI decisions require `--review-round`. A stale round returns `409`. Refresh and
   review the action before deciding its new round; never default or silently substitute a round.

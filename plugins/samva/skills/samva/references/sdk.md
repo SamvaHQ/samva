@@ -336,10 +336,8 @@ try {
 With Effect, `Mailboxes.events(options)` is a `Stream` of the same events that fails with a
 `MailboxEventStreamFailure`; handle one cause with `Effect.catchTag("CursorExpiredError", ...)`.
 
-`samva.namespaces` (sub-tenants), `samva.extensions` (`publish`, `list`, `get`, `listVersions`,
-`getVersion`), and `samva.extensionInstallations` (`install`, `list`, `get`, `disable`, `enable`,
-`uninstall`, `listRuns`, `getRun`) complete the surface. Extension authoring lives in
-[mailbox-extensions](mailbox-extensions.md).
+`samva.namespaces` (sub-tenants) completes the surface. Agent event handlers live in
+[mailbox-events](mailbox-events.md).
 
 ## Create a template project from a website
 
@@ -355,7 +353,7 @@ idempotency key when retrying the same request. The Effect equivalent is
 The client's namespaces are `agents`, `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
 `contactGroups`, `contacts`, `conversations`, `customFields`, `email` (the send
 facade plus domains, senders, tracking, review, and blocks), `events`,
-`extensionInstallations`, `extensions`, `feedback`, `journeys`, `mailboxes`, `media`,
+`feedback`, `journeys`, `mailboxes`, `media`,
 `messages`, `namespaces`, `operations`, `organizations`, `scheduledMessages`,
 `subscriptions`, `templates`, `topics`, `webhooks`, and `whoami`. Each method is named for the API operation
 it calls, so `samva.contacts.find` is documented at

@@ -85,7 +85,7 @@ Resolution order is deterministic:
 | Campaigns                | `samva campaigns` with `create`, `list`, `get`, `update`, `archive`, `report <campaignId> <runId>` (email only; directional opens/clicks), and the `runs` group                                                                 |
 | Templates                | `samva templates` with `init`, `dev`, `check`, `render`, `snapshot`, `publish`, `types`, `from-website`, and remote lifecycle commands                                                                                          |
 | Mailboxes                | `samva mailboxes` with `list`, `create`, `get`, `update`, `pause`, `resume`, `remove`, `threads`, `read`, `send`, `reply`, `events`, `actions list\|get\|cancel\|retry\|approve\|deny`, and `quarantine list\|release\|discard` |
-| Mailbox extensions       | `samva extensions` with `init`, `build`, `dev`, `publish`, `list`, `versions`, `version`, `install`, `installations`, `installation`, `upgrade`, `enable`, `disable`, `uninstall`, `runs`, `run`                                |
+| Agent modules            | `samva agents` with `init`, `build`, `publish`, and `info`; `publish <agent-id> --dir <dir>` publishes the module as the agent's next version                                                                                   |
 | Customer webhooks        | `samva webhooks` with `list`, `get`, `secret`, `test`, `logs`, `stats`, `retry`, `rotate-secret`, `create`, `update`, or `remove`                                                                                               |
 | API keys                 | `samva api-keys` with `list`, `get`, `create`, `update`, `rotate`, or `revoke`                                                                                                                                                  |
 | Execution profiles       | `samva profile` with `list`, `show`, `create`, `use`, or `delete`                                                                                                                                                               |
@@ -248,7 +248,7 @@ for delivered or read status, or a terminal delivery failure. Its default timeou
 `--timeout` requires `--wait`, and `--wait` cannot combine with `--dry-run` because a dry run makes
 no API call. A timeout or terminal failure keeps the last message output and exits non-zero.
 
-## Mailboxes and extensions
+## Mailboxes
 
 `samva mailboxes` reads and sends as a mailbox. `list`, `threads`, and quarantine `list` page with
 `--limit`, `--cursor`, and `--all --jsonl`. `threads <mailbox-id>` filters with `--folder`,
@@ -302,31 +302,6 @@ cursor on stderr or in `details.lastCursor`; resume with `--cursor`. Pass `--no-
 Held mail: `samva mailboxes quarantine list <mailbox-id>` shows metadata only. `quarantine
 release <mailbox-id> <message-id>` and `quarantine discard <mailbox-id> <message-id>` need a person signed in
 with `samva login`; an API key cannot.
-
-`samva extensions` is the authoring loop for `samva/mailbox` (see
-[mailbox-extensions](mailbox-extensions.md)):
-
-```bash
-samva extensions init ./acknowledge --name acknowledge --runtime hosted   # or webhook
-cd acknowledge && bun install
-samva extensions dev . --mailbox mbx_... --jsonl    # run handlers against live events
-samva extensions build . --out dist/extension.js
-samva extensions publish .                           # immutable version; needs samva login
-samva extensions install acknowledge --mailbox mbx_... --permission read --permission send \
-  --policy '{"presets":[],"rules":[{"match":{},"decide":"person"}]}'
-samva extensions runs <installation-id>
-```
-
-`install` also takes `--version`, `--namespace`, and `--webhook-url` (webhook runtime). It can only
-narrow the manifest's permissions. A webhook install prints its API key and webhook secret once.
-`disable`, `enable`, and `uninstall --yes` take the installation id.
-`upgrade <installation-id> [--version <semver-or-id>]` needs a person signed in with `samva login`.
-Preview with `--dry-run --json`, review `permissionDiff.added`, then pass one
-`--accept-permissions <exact-grant-string>` per addition and `--yes` to confirm. `--yes` does not
-acknowledge grants. Roll back by choosing the previous version with the same safety steps. See
-[upgrade and rollback](https://samva.dev/docs/mailboxes/extensions#upgrade-or-roll-back-an-installation).
-Human installation output includes permissions, scope, decision policy, webhook, and timestamps;
-`runs` shows event, timing, outcome, and error, while `run` also includes every handler log line.
 
 ## Safe mutations and output
 
