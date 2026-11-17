@@ -15,7 +15,7 @@ mailbox's rules hold each reply until a person approves it.
 - `src/prompt.ts` holds the system prompt and the user turn.
 
 The [`mailbox-agent`](../mailbox-agent) example covers the mailbox mechanics in more depth
-(cursor recovery, the webhook extension form) with a fixed reply instead of a model. The
+(cursor recovery, the agent module form) with a fixed reply instead of a model. The
 [`mailbox-agent-claude`](../mailbox-agent-claude) example does the same job with a direct
 Anthropic call instead of a framework loop.
 

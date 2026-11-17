@@ -7,29 +7,31 @@ two ways:
 - `src/agent.ts` follows `samva.mailboxes.events` for one mailbox, saves the stream cursor after
   each handled event, and drafts a reply to every `mailbox.message.received`. It restarts without a
   cursor when the retained window has passed (`CursorExpiredError`).
-- `src/extension.ts` is the same behavior as a `samva/mailbox` extension with
-  `runtime: "webhook"`, served by `src/server.ts` through `createWebhookHandler`.
+- `src/agent-module.ts` is the same behavior as a `samva/agent` module: a
+  `mailbox.message.received` handler under `events` that Samva runs for each event on the
+  mailbox, published with `samva agents publish`.
 
 The "agent" decision (`composeReply` in `src/reply.ts`) is a deterministic function so the example
 stays about mailbox mechanics. Replace it with your own logic.
 
 ## Safety stance
 
-- **Decision rules.** Set a mailbox-scoped key policy, or an extension installation policy, with
+- **Decision rules.** Set a mailbox-scoped key policy, or the module's manifest `policy`, with
   `{ match: { effect: "write" }, atLeast: "person" }`. Policy reads return `version`; replacements must send that value as `ifVersion`. Reload and review current rules after a `409` conflict. A reply returns `state: "approvalRequired"` and an `actionId`; nothing is
   sent until a person approves it with a person's OAuth credential in the dashboard, the CLI
   (`samva login`), or `samva.mailboxes.approveAction`. Approval and denial carry the observed
   `decision.reviewRound`; CLI commands require `--review-round`. An API key can never approve a send.
-- **Least privilege.** The extension asks for `read` and `send` only, on the one event it handles.
-  The key reaches one mailbox.
-- **Fail loudly.** Missing `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, or `SAMVA_WEBHOOK_SECRET` stops the
-  process at startup. The webhook handler verifies the signature on every request.
+- **Least privilege.** The module registers one handler, and its `ctx.samva` reads the event's
+  mailbox and replies to the received message; any other operation fails with HTTP 403. The key
+  reaches one mailbox.
+- **Fail loudly.** Missing `SAMVA_API_KEY` or `SAMVA_MAILBOX_ID` stops the agent at startup. The module holds no
+  secrets: Samva gives each call its own `ctx`.
 - **Mail is untrusted data.** The example never interprets message bodies as instructions.
-- **Idempotent replies.** The agent keys each reply by event id; the extension client derives the
-  `Idempotency-Key` from the event id. Redelivery cannot send twice.
+- **Idempotent replies.** The agent keys each reply by event id; the module's SDK client derives the
+  `Idempotency-Key` from the agent, event, and call order. Redelivery cannot send twice.
 
 Replies return send receipts, and the example logs each receipt's `state`. Follow the action
-with `mailboxes.getAction` — a `samva/mailbox` handler receives the normal client, so it calls the
+with `mailboxes.getAction` — a handler's `ctx.samva` is the normal client, so it calls the
 same method — to see it progress.
 `queued` is waiting for acceptance; `accepted` and `completed` do not mean recipient
 delivery. `messageId` and `acceptedAt` remain null until acceptance. Follow the
@@ -48,7 +50,7 @@ bun run test
 ```
 
 The tests use a fake event stream, the Samva client with a mocked HTTP transport, and
-`samva/mailbox/test`. They never contact Samva.
+`samva/agent/test`. They never contact Samva.
 
 ## Run the event-stream agent
 
@@ -86,23 +88,27 @@ API refuses the text with `WhatsAppServiceWindowClosedError` and the agent logs 
 Reaching the customer then takes an approved template (`templateId` and `templateData` in place of
 `text`). WhatsApp needs a paid plan.
 
-## Run the webhook extension
+## Publish the agent module
+
+Set `endpointIds` in `src/agent-module.ts` to your mailbox's endpoint id, then check the module,
+create the agent it runs as (or set `AGENT_ID` to an existing one from `samva agents list`), and
+publish the module as that agent's next version:
 
 ```sh
-SAMVA_API_KEY=samva_sk_test_... SAMVA_WEBHOOK_SECRET=whsec_... bun run serve
+samva agents info . --entry src/agent-module.ts
+AGENT_ID=$(samva agents create "Mailbox agent" --json | jq -r .data.id)
+samva agents publish "$AGENT_ID" --dir . --entry src/agent-module.ts
 ```
 
-Publish and install the extension with the Samva CLI (`samva extensions`), installing with
-`--policy '{"presets":[],"rules":[{"match":{"effect":"write"},"atLeast":"person"}]}'`. Extension helpers ship in the `samva` package at `samva/mailbox`,
-`samva/mailbox/test`, and `samva/mailbox/webhook`; `@samva/mailbox` is deprecated. The install
-returns the key and signing secret once. Point the installation at the public URL of this server.
+`info` validates the manifest and lists the registered handlers; `publish` bundles the module with
+`samva agents build` and publishes it. Samva runs the handler on each `mailbox.message.received`
+event for the mailbox without a model turn, and the manifest's `policy` holds each reply for a
+person. To receive events on your own server instead, use a [webhook](https://samva.dev/docs/platform/webhooks).
 
-| Variable               | Used by       | Meaning                                         |
-| ---------------------- | ------------- | ----------------------------------------------- |
-| `SAMVA_API_KEY`        | agent, server | Mailbox-scoped key whose writes wait for review |
-| `SAMVA_MAILBOX_ID`     | agent         | The mailbox to follow                           |
-| `SAMVA_WEBHOOK_SECRET` | server        | Signing secret for the extension installation   |
-| `PORT`                 | server        | Listen port, default `3000`                     |
+| Variable           | Used by | Meaning                                         |
+| ------------------ | ------- | ----------------------------------------------- |
+| `SAMVA_API_KEY`    | agent   | Mailbox-scoped key whose writes wait for review |
+| `SAMVA_MAILBOX_ID` | agent   | The mailbox to follow                           |
 
 See the [mailboxes cookbook](../../cookbooks/mailboxes.md) and
 <https://samva.dev/docs/mailboxes>.

@@ -69,7 +69,8 @@ tutorial. The free plan needs no card and includes one mailbox; WhatsApp is on p
 
 While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.45. Workspace
 packages require `samva@^0.45.0` as a peer and test against `0.45.0`. Examples use
-`samva@^0.45.0`; copyable external import maps pin `samva@0.45.0`.
+`samva@^0.45.0`, except `examples/mailbox-agent`, which needs `samva@^0.47.0` for `samva/agent`;
+copyable external import maps pin `samva@0.45.0`.
 
 ## Package integrations
 
@@ -130,7 +131,7 @@ Agents and mailboxes:
 
 - [`mailbox-agent`](./examples/mailbox-agent) — an agent that follows a mailbox
   event stream and answers email and WhatsApp in approval mode, plus the same
-  behavior as an `@samva/mailbox` webhook extension.
+  behavior as an agent module with a `mailbox.message.received` handler.
 - [`mailbox-agent-claude`](./examples/mailbox-agent-claude) — an agent that asks
   Claude to draft each reply to a mailbox's email and WhatsApp messages and sends
   it held for a person's approval.

@@ -17,7 +17,7 @@ until a person approves it, and one leaves the message for a person.
 
 The [`mailbox-agent-claude`](../mailbox-agent-claude) example does the same job with a direct
 model call and no agent loop. The [`mailbox-agent`](../mailbox-agent) example covers the mailbox
-mechanics in more depth (cursor recovery, the webhook extension form) with a fixed reply instead
+mechanics in more depth (cursor recovery, the agent module form) with a fixed reply instead
 of a model.
 
 ## Safety stance

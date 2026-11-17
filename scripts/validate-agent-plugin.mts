@@ -12,7 +12,7 @@ const expectedReferences = [
   "auth.md",
   "cli.md",
   "executor.md",
-  "mailbox-extensions.md",
+  "mailbox-events.md",
   "mcp.md",
   "sdk.md",
   "template-authoring.md",

@@ -13,7 +13,7 @@ until a person approves it.
   structured output that is either a reply or "leave this for a person".
 
 The [`mailbox-agent`](../mailbox-agent) example covers the mailbox mechanics in more depth
-(cursor recovery, the webhook extension form) with a fixed reply instead of a model.
+(cursor recovery, the agent module form) with a fixed reply instead of a model.
 
 ## Safety stance
 
