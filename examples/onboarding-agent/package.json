@@ -1,0 +1,21 @@
+{
+  "name": "onboarding-agent-samva",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "samva agents build",
+    "info": "samva agents info --json",
+    "eval": "bun run evals/agent.eval.ts",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "effect": "^4.1.4",
+    "samva": "^0.47.0"
+  },
+  "devDependencies": {
+    "@samva/cli": "^0.41.0",
+    "@types/bun": "^1.4.4",
+    "@typescript/native-preview": "^7.0.0-dev.20260624.1"
+  }
+}
