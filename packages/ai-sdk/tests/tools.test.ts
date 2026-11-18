@@ -60,3 +60,39 @@ it("returns the original receipt when redelivery drafts different text", async (
     receipt: held,
   });
 });
+
+it("leaves the event for a person before a competing reply", async () => {
+  const client = createClient({ apiKey: "test" });
+  const reply = vi.spyOn(client.mailboxes, "reply");
+  const tools = samvaTools({ client, message, eventId: "evt" });
+  expect(tools.leave_for_person.execute({ reason: "Escalate" }, call)).toEqual({
+    status: "left for a person",
+    reason: "Escalate",
+  });
+  await expect(tools.reply_to_customer.execute({ text: "Too late" }, call)).resolves.toEqual({
+    status: "already handled",
+  });
+  expect(reply).not.toHaveBeenCalled();
+});
+
+it("scopes thread reads and search to the inbound mailbox", async () => {
+  const client = createClient({ apiKey: "test" });
+  const page = { items: [], nextCursor: null };
+  const getThread = vi.spyOn(client.mailboxes, "getThreadContent").mockResolvedValue(page);
+  const search = vi.spyOn(client.mailboxes, "listThreads").mockResolvedValue(page);
+  const tools = samvaTools({ client, message, eventId: "evt" });
+
+  await expect(tools.get_thread.execute({ threadId: "thread", limit: 10 }, call)).resolves.toEqual(
+    page,
+  );
+  await expect(
+    tools.search_threads.execute({ query: "order", cursor: "next", limit: 10 }, call),
+  ).resolves.toEqual(page);
+  expect(getThread).toHaveBeenCalledWith({
+    id: "mbx",
+    threadId: "thread",
+    limit: 10,
+    cursor: undefined,
+  });
+  expect(search).toHaveBeenCalledWith({ id: "mbx", q: "order", cursor: "next", limit: 10 });
+});
