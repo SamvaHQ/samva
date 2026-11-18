@@ -32,7 +32,22 @@ async function delivery({
   key = secret,
   channel = "whatsapp",
   id = "evt_1",
-}: { mailbox?: string; key?: string; channel?: "email" | "whatsapp"; id?: string } = {}) {
+  from,
+  headerFields,
+  subject = null,
+  text = "Hello",
+  replyText = null,
+}: {
+  mailbox?: string;
+  key?: string;
+  channel?: "email" | "whatsapp" | null;
+  id?: string;
+  from?: string;
+  headerFields?: Record<string, string | string[]>;
+  subject?: string | null;
+  text?: string | null;
+  replyText?: string | null;
+} = {}) {
   const occurredAt = new Date().toISOString();
   const body = JSON.stringify({
     type: "mailbox.message.received",
@@ -43,14 +58,17 @@ async function delivery({
       thread: { id: "thread_0000000000000000", subject: null, preview: null },
       message: {
         id: "msg_0000000000000000",
-        channel,
+        ...(channel === null ? {} : { channel }),
         threadId: "thread_0000000000000000",
-        from: { address: channel === "whatsapp" ? "+15555550100" : "customer@example.com" },
+        from: {
+          address: from ?? (channel === "whatsapp" ? "+15555550100" : "customer@example.com"),
+        },
+        headers: headerFields,
         to: [],
         cc: [],
-        subject: null,
-        text: "Hello",
-        replyText: null,
+        subject,
+        text,
+        replyText,
         attachments: [],
         occurredAt,
       },
@@ -68,8 +86,13 @@ async function delivery({
   });
 }
 
-function setup() {
-  const adapter = createSamvaAdapter({ apiKey: "test", mailboxId, webhookSecret: secret });
+function setup(includeAutomatedEmail = false) {
+  const adapter = createSamvaAdapter({
+    apiKey: "test",
+    mailboxId,
+    webhookSecret: secret,
+    includeAutomatedEmail,
+  });
   const chat = new Chat({
     userName: "Samva",
     adapters: { samva: adapter },
@@ -293,3 +316,72 @@ it("caches the backward history index and fetches bodies for each requested wind
   expect(second.nextCursor).toBe("msg_2");
   expect(fetch).toHaveBeenCalledTimes(4);
 });
+
+it.each([
+  { from: "notifications.NO-REPLY@example.com" },
+  { from: "no_reply+notifications@example.com" },
+  { from: "mailer-daemon@example.com" },
+  { from: "postmaster@example.com" },
+  { from: "bounce-12345@example.com" },
+  { headerFields: { "aUtO-sUbMiTtEd": "auto-replied; comment=delivery" } },
+  { headerFields: { Precedence: ["LIST"] } },
+])(
+  "acknowledges automated and legacy email without dispatching $from $headerFields",
+  async (input) => {
+    const { chat } = setup();
+    const processMessage = vi.spyOn(chat, "processMessage");
+    expect((await chat.webhooks.samva(await delivery({ channel: null, ...input }))).status).toBe(
+      204,
+    );
+    expect(processMessage).not.toHaveBeenCalled();
+  },
+);
+
+it("allows automated email when explicitly opted in", async () => {
+  const { chat } = setup(true);
+  const processMessage = vi.spyOn(chat, "processMessage").mockResolvedValue();
+  const request = await delivery({ channel: "email", from: "noreply@example.com" });
+  expect((await chat.webhooks.samva(request)).status).toBe(204);
+  expect(processMessage).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  {
+    channel: "email",
+    subject: "Cancel order 1042",
+    text: "Thanks",
+    expected: "Subject: Cancel order 1042\n\nThanks",
+  },
+  {
+    channel: null,
+    subject: "Re: Order 1042",
+    text: "Thanks\n\n> Quoted text",
+    replyText: "Thanks",
+    expected: "Subject: Re: Order 1042\n\nThanks",
+  },
+  { channel: "email", subject: "Order 1042", text: null, expected: "Subject: Order 1042" },
+  { channel: "email", subject: null, text: "Thanks", expected: "Thanks" },
+  { channel: "whatsapp", subject: "Ignored for WhatsApp", text: "Thanks", expected: "Thanks" },
+] as const)(
+  "preserves the text supplied to Chat for $channel and $subject",
+  async ({ expected, ...input }) => {
+    const { chat } = setup();
+    const processMessage = vi
+      .spyOn(chat, "processMessage")
+      .mockImplementation(async (_adapter, _id, message) => {
+        expect(message).toMatchObject({
+          text: expected,
+          formatted: { children: [{ children: [{ value: expected }] }] },
+        });
+      });
+    const request = await delivery({
+      ...input,
+      from: input.channel === "whatsapp" ? "+15555550100" : "bouncehouse@example.com",
+      headerFields: {
+        "Auto-Submitted": input.channel === "whatsapp" ? "auto-generated" : "no",
+      },
+    });
+    expect((await chat.webhooks.samva(request)).status).toBe(204);
+    expect(processMessage).toHaveBeenCalledTimes(1);
+  },
+);

@@ -54,4 +54,6 @@ Use a shared Chat SDK state adapter when deploying across workers so webhook ded
 
 Email uses thread scope and WhatsApp arrives as a direct message. Replies posted from the webhook handler address its inbound message, even if another message arrives during the turn. Posts outside that handler resolve the thread's most recent inbound message. Use the example's Chat SDK concurrency mode to keep each handler in its own webhook context. Within a webhook handler, each post gets a key based on the delivery ID and its position in the handler. Keep posts in the same order when retrying a delivery. If a retry drafts different text for an existing post, the adapter returns that post’s saved receipt. Outside a webhook, matching text to the same inbound message reuses its action. `openDM(address)` starts a new conversation when you post to the returned ID. Use an email address or an E.164 phone number.
 
+The adapter skips automated email by sender address and by `Auto-Submitted` or `Precedence` headers when included in the signed webhook. Set `includeAutomatedEmail: true` to receive those messages. Parsed email text includes the subject followed by the body.
+
 A held send returns its Samva action ID and receipt. Streams buffer before submitting. Cards use fallback text. Edits, deletion, and reactions are unsupported. WhatsApp free text requires an open service window.

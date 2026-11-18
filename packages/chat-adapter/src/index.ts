@@ -25,6 +25,8 @@ export interface SamvaAdapterOptions {
   readonly mailboxId: string;
   readonly webhookSecret: string;
   readonly userName?: string;
+  /** Dispatch automated email to Chat SDK handlers when explicitly enabled. */
+  readonly includeAutomatedEmail?: boolean;
 }
 
 type Mailboxes = SamvaClient["mailboxes"];
@@ -66,6 +68,34 @@ function messageText(message: AdapterPostableMessage): string {
   return stringifyMarkdown(message.ast);
 }
 
+const AUTOMATED_LOCAL_PART =
+  /(^|[._+-])(?:no[._-]?reply|do[._-]?not[._-]?reply|mailer-daemon|postmaster|bounces?)(?=$|[._+-])/i;
+
+function isAutomatedEmail(message: Received["data"]["message"]): boolean {
+  const address = message.from.address.trim();
+  const at = address.lastIndexOf("@");
+  if (at > 0 && AUTOMATED_LOCAL_PART.test(address.slice(0, at))) return true;
+
+  // Samva webhooks can omit headers. Inspect them when present in the signed payload.
+  const headers = message.headers;
+  if (typeof headers !== "object" || headers === null || Array.isArray(headers)) return false;
+  return Object.entries(headers).some(([name, raw]) => {
+    const values = Array.isArray(raw) ? raw : [raw];
+    return values.some((value) => {
+      if (typeof value !== "string") return false;
+      const token = value.split(";", 1)[0]?.trim().toLowerCase();
+      switch (name.toLowerCase()) {
+        case "auto-submitted":
+          return !!token && token !== "no";
+        case "precedence":
+          return token === "bulk" || token === "list" || token === "junk";
+        default:
+          return false;
+      }
+    });
+  });
+}
+
 function unsupported(): never {
   throw new NotImplementedError("Samva messages do not support edits, deletion, or reactions.");
 }
@@ -77,10 +107,17 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
   private readonly client: SamvaClient;
   private readonly mailboxId: string;
   private readonly webhookSecret: string;
+  private readonly includeAutomatedEmail: boolean;
   private readonly inbound = new AsyncLocalStorage<DeliveryContext>();
   private chat?: ChatInstance;
 
-  constructor({ apiKey, mailboxId, webhookSecret, userName = "Samva" }: SamvaAdapterOptions) {
+  constructor({
+    apiKey,
+    mailboxId,
+    webhookSecret,
+    userName = "Samva",
+    includeAutomatedEmail = false,
+  }: SamvaAdapterOptions) {
     if (!apiKey.trim() || !mailboxId.trim() || mailboxId.includes(":") || !webhookSecret.trim()) {
       throw new Error("Samva adapter requires an API key, mailbox ID, and webhook secret.");
     }
@@ -88,6 +125,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     this.mailboxId = mailboxId;
     this.webhookSecret = webhookSecret;
     this.userName = userName;
+    this.includeAutomatedEmail = includeAutomatedEmail;
   }
 
   async initialize(chat: ChatInstance): Promise<void> {
@@ -155,6 +193,14 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     ) {
       return new Response(null, { status: 204 });
     }
+    const inbound = event.data.message;
+    if (
+      !this.includeAutomatedEmail &&
+      (inbound.channel ?? "email") === "email" &&
+      isAutomatedEmail(inbound)
+    ) {
+      return new Response(null, { status: 204 });
+    }
     const chat = this.chat;
     if (!chat) throw new Error("Initialize the Samva adapter with Chat before handling webhooks.");
     const raw = { eventId: id, data: event.data };
@@ -186,11 +232,10 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     if ("actionId" in raw) throw new Error("A send receipt does not contain a message body.");
     const message = "data" in raw ? raw.data.message : raw;
     const isMe = "direction" in message && message.direction === "outbound";
-    const text =
-      ("replyText" in message ? message.replyText : undefined) ??
-      message.text ??
-      ("subject" in message ? message.subject : undefined) ??
-      "";
+    const body = ("replyText" in message ? message.replyText : undefined) ?? message.text ?? "";
+    const email = (message.channel ?? "email") === "email";
+    const subject = email && "subject" in message ? message.subject?.trim() : undefined;
+    const text = subject ? `Subject: ${subject}${body.trim() ? `\n\n${body}` : ""}` : body;
     const { address } = message.from;
     const name = "data" in raw ? raw.data.message.from.name : raw.from.displayName;
     return new Message({
@@ -206,7 +251,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
         userId: address,
         userName: address,
         fullName: name ?? address,
-        ...(message.channel === "whatsapp" || message.channel === "sms" ? {} : { email: address }),
+        ...(email ? { email: address } : {}),
         isBot: isMe ? true : "unknown",
         isMe,
       },
