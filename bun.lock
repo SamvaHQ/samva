@@ -181,10 +181,13 @@
       "name": "mailbox-agent-eve-samva",
       "version": "0.0.0",
       "dependencies": {
+        "@chat-adapter/state-memory": "4.42.0",
+        "@chat-adapter/state-redis": "4.42.0",
+        "@samva/eve": "workspace:*",
         "ai": "^7.0.170",
+        "chat": "4.42.0",
         "eve": "^1.0.0-rc.10",
         "samva": "^0.47.0",
-        "zod": "^4.0.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -578,6 +581,8 @@
 
     "@chat-adapter/state-memory": ["@chat-adapter/state-memory@4.42.0", "", { "dependencies": { "chat": "4.42.0" } }, "sha512-hSI5VmQ7RAlV+7JoIwsE3ZSZ0AQtMP6fpkUzJ36izJIfrfPOID2yn/Yr7UkwoHHZz5l8vN/hy5pFGH+Xf1XHzQ=="],
 
+    "@chat-adapter/state-redis": ["@chat-adapter/state-redis@4.42.0", "", { "dependencies": { "chat": "4.42.0", "redis": "^5.11.0" } }, "sha512-EKLP2Uh5ZeHbj036H4Xcq2DnNR41RJHACpnJN4lB+F17oK/+8wYrQJEgQvBiYxnEIVTbYskLgYg2x/UZwdLtrQ=="],
+
     "@clack/core": ["@clack/core@1.5.1", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ=="],
 
     "@clack/prompts": ["@clack/prompts@1.8.1", "", { "dependencies": { "@clack/core": "1.5.1", "fast-string-width": "^3.0.2", "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ=="],
@@ -943,6 +948,16 @@
     "@react-email/tailwind": ["@react-email/tailwind@2.0.7", "", { "dependencies": { "tailwindcss": "^4.1.18" }, "peerDependencies": { "@react-email/body": ">=0", "@react-email/button": ">=0", "@react-email/code-block": ">=0", "@react-email/code-inline": ">=0", "@react-email/container": ">=0", "@react-email/heading": ">=0", "@react-email/hr": ">=0", "@react-email/img": ">=0", "@react-email/link": ">=0", "@react-email/preview": ">=0", "@react-email/text": ">=0", "react": "^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@react-email/body", "@react-email/button", "@react-email/code-block", "@react-email/code-inline", "@react-email/container", "@react-email/heading", "@react-email/hr", "@react-email/img", "@react-email/link", "@react-email/preview"] }, "sha512-kGw80weVFXikcnCXbigTGXGWQ0MRCSYNCudcdkWxebkWYd0FG6/NPoN3V1p/u68/4+NxZwYPVi2fhnp0x23HdA=="],
 
     "@react-email/text": ["@react-email/text@0.1.6", "", { "peerDependencies": { "react": "^18.0 || ^19.0 || ^19.0.0-rc" } }, "sha512-TYqkioRS45wTR5il3dYk/SbUjjEdhSwh9BtRNB99qNH1pXAwA45H7rAuxehiu8iJQJH0IyIr+6n62gBz9ezmsw=="],
+
+    "@redis/bloom": ["@redis/bloom@5.12.4", "", { "peerDependencies": { "@redis/client": "^5.12.4" } }, "sha512-ASe3hQTNFjIr4aFMuUOY89iP9Qu/1aYgMAZreIZDzBu5WDfArF/1r3r8Dd2ZttAlWTFqYYxhfy6o+Mu+Tk40Yw=="],
+
+    "@redis/client": ["@redis/client@5.12.4", "", { "dependencies": { "cluster-key-slot": "1.1.2" }, "peerDependencies": { "@node-rs/xxhash": "^1.1.0", "@opentelemetry/api": ">=1 <2" }, "optionalPeers": ["@node-rs/xxhash", "@opentelemetry/api"] }, "sha512-FggDHx7cDwHmCpDda2rgtDSTjC73fTwL2ldzBsRkGyRFzbv5U1VbIzJNuNjHmBimOAAxzmlNuUsVr6DyUNK05w=="],
+
+    "@redis/json": ["@redis/json@5.12.4", "", { "peerDependencies": { "@redis/client": "^5.12.4" } }, "sha512-UTaOzJ2vGZUJ8rTcs0vgkKIb6FsczM7b4vKOmkBj0Kp5Bz30/9VybM7vJSgzXs0S1ki7U8aLJYnWP8uHUVfWRQ=="],
+
+    "@redis/search": ["@redis/search@5.12.4", "", { "peerDependencies": { "@redis/client": "^5.12.4" } }, "sha512-cSurnSnCM5+q772/SxHfGSomQNu7Nv+j+IbuXd2RFY9WSfjOxDBAiPw3tVHTmDJVKBZVAZ6oA2IbtOjr1xvSyw=="],
+
+    "@redis/time-series": ["@redis/time-series@5.12.4", "", { "peerDependencies": { "@redis/client": "^5.12.4" } }, "sha512-4n1p8Y9GPwNMOrVcmIekqOt18JJIC153qSzSfKGSTYBVmAxn2562Nedu14CCDsI6IfQQfcFYsM3eIT43np4XNA=="],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.16", "", { "os": "android", "cpu": "arm" }, "sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA=="],
 
@@ -1343,6 +1358,8 @@
     "cliui": ["cliui@9.0.1", "", { "dependencies": { "string-width": "^7.2.0", "strip-ansi": "^7.1.0", "wrap-ansi": "^9.0.0" } }, "sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w=="],
 
     "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
+
+    "cluster-key-slot": ["cluster-key-slot@1.1.2", "", {}, "sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA=="],
 
     "comma-separated-tokens": ["comma-separated-tokens@2.0.3", "", {}, "sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg=="],
 
@@ -1979,6 +1996,8 @@
     "react-email-samva": ["react-email-samva@workspace:examples/react-email-samva"],
 
     "readdirp": ["readdirp@5.1.1", "", {}, "sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA=="],
+
+    "redis": ["redis@5.12.4", "", { "dependencies": { "@redis/bloom": "5.12.4", "@redis/client": "5.12.4", "@redis/json": "5.12.4", "@redis/search": "5.12.4", "@redis/time-series": "5.12.4" } }, "sha512-2xH6L9GwpB96JOcxFjdmDpPigCZ36AmXrr1iGr/j6Skigb08i7oWZIJ8mAba+BdgzV4vjjNl3gaxZpg6+1XAKg=="],
 
     "regex": ["regex@6.1.0", "", { "dependencies": { "regex-utilities": "^2.3.0" } }, "sha512-6VwtthbV4o/7+OaAF9I5L5V3llLEsoPyq9P1JVXkedTP33c7MfCG0/5NOPcSJn0TzXcG9YUrR0gQSWioew3LDg=="],
 

@@ -2,19 +2,22 @@
   "name": "mailbox-agent-eve-samva",
   "version": "0.0.0",
   "private": true,
-  "description": "Runnable example of an Eve agent that reads a Samva mailbox and answers customers with tools, replies held for a person's approval, on email and WhatsApp.",
+  "description": "Runnable example of an Eve agent on Vercel that answers a Samva mailbox on email and WhatsApp from one process, replies held for a person's approval.",
   "type": "module",
   "scripts": {
     "dev": "eve dev",
-    "relay": "bun src/main.ts",
+    "build": "eve build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@chat-adapter/state-memory": "4.42.0",
+    "@chat-adapter/state-redis": "4.42.0",
+    "@samva/eve": "workspace:*",
     "ai": "^7.0.170",
+    "chat": "4.42.0",
     "eve": "^1.0.0-rc.10",
-    "samva": "^0.47.0",
-    "zod": "^4.0.0"
+    "samva": "^0.47.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
