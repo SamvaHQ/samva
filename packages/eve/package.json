@@ -45,7 +45,8 @@
   "scripts": {
     "build": "eve extension build",
     "prepack": "bun run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@samva/ai-sdk": "workspace:^",
@@ -62,7 +63,7 @@
   "peerDependencies": {
     "ai": "^7.0.170",
     "chat": "^4.42.0",
-    "eve": "*",
+    "eve": "1.0.0-rc.10 || ^1.0.0",
     "samva": "^0.47.0"
   },
   "engines": {

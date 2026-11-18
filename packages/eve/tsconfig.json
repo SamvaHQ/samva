@@ -4,6 +4,6 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "rootDir": "."
   },
-  "include": ["extension/**/*.ts"],
+  "include": ["extension/**/*.ts", "tests/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }
