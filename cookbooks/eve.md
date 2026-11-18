@@ -19,7 +19,7 @@ untrusted data. A turn that calls neither action tool sends nothing.
 ## Install
 
 ```sh
-bun add @samva/eve eve ai chat samva @chat-adapter/state-memory
+bun add @samva/eve eve ai chat samva @chat-adapter/state-memory @chat-adapter/state-redis
 ```
 
 The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.47.0`, and Node.js 24 or newer.

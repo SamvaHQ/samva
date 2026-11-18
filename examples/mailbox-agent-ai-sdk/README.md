@@ -42,8 +42,13 @@ Anthropic call instead of a framework loop.
 
 ## Run the proof
 
+From the repository root, install and build the workspace packages the example imports from
+`dist`, then run the example's checks from its directory:
+
 ```sh
 bun install
+bun run build
+cd examples/mailbox-agent-ai-sdk
 bun run typecheck
 bun run test
 ```

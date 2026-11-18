@@ -62,8 +62,13 @@ builds, and a missing one fails the build with its name.
 
 ## Run the proof
 
+From the repository root, install and build the workspace packages the example imports from
+`dist`, then run the example's checks from its directory:
+
 ```sh
 bun install
+bun run build
+cd examples/mailbox-agent-eve
 bun run typecheck
 bun run test
 SAMVA_API_KEY=samva_sk_test_x SAMVA_MAILBOX_ID=mbx_x SAMVA_WEBHOOK_SECRET=whsec_x \
