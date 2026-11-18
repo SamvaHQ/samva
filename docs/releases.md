@@ -28,7 +28,15 @@ Authentication is npm trusted publishing (OIDC). The workflow sets
 `id-token: write` and does not use an `NPM_TOKEN`. Each public package on
 npmjs.com must list GitHub Actions trusted publisher
 `SamvaHQ/samva` with workflow filename `publish.yml` and no
-environment name. Do not rename `publish.yml`; npm pins that filename.
+environment name. Grant direct publishing permission to that workflow.
+
+For new package names, prepare the Version Packages PR first so the publish lock
+lists the names. From its checkout, a maintainer with npm publish access to the
+scope can run `bun run tegami npm pretrust --dry-run` to see what needs setup.
+Run `bun run tegami npm pretrust` in an attended terminal to create the empty
+placeholder packages and register their trusted publishers before merging the
+release PR. npm may prompt for two-factor authentication. Run the release
+within two days of configuring trust.
 
 This repository is public, so npm attaches provenance attestations to trusted
 publishes. Current trusted CI publishes (`0.2.0`+) carry provenance; attended
@@ -36,8 +44,13 @@ local `0.1.1` tarballs have none.
 
 The public packages version independently:
 
-- `@samva/better-auth` — release group `better-auth`
-- `@samva/email-sdk` — release group `email-sdk`
+| Package               | Release group  |
+| --------------------- | -------------- |
+| `@samva/ai-sdk`       | `ai-sdk`       |
+| `@samva/better-auth`  | `better-auth`  |
+| `@samva/chat-adapter` | `chat-adapter` |
+| `@samva/email-sdk`    | `email-sdk`    |
+| `@samva/eve`          | `eve`          |
 
 Pull requests that add Tegami changelog files get a release plan comment from
 the split `release-plan.yml` / `release-plan-comment.yml` workflows.
@@ -58,8 +71,8 @@ packages:
 The adapter now forwards normalized metadata to Samva.
 ```
 
-Use `@samva/better-auth`, `@samva/email-sdk`, `group:better-auth`, or
-`group:email-sdk` as the package key, with a `patch`, `minor`, or `major` bump.
+Use a package name or `group:<release group>` from the table as the package key,
+with a `patch`, `minor`, or `major` bump.
 Commit the pending changelog with the user-visible change it describes. Do not
 edit package `CHANGELOG.md` files or `.tegami/publish-lock.yaml` directly.
 After the changelog reaches `main`, Actions opens the Version Packages pull

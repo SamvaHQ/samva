@@ -30,10 +30,16 @@ type Manifest = {
   readonly peerDependencies?: Readonly<Record<string, string>>;
 };
 
-const packageRoots = ["packages/better-auth", "packages/email-sdk"] as const;
+const packageRoots = [
+  "packages/ai-sdk",
+  "packages/better-auth",
+  "packages/chat-adapter",
+  "packages/email-sdk",
+  "packages/eve",
+] as const;
 const repositoryRoot = resolve(import.meta.dir, "..");
 const repositoryPaths = new Set([repositoryRoot, await realpath(repositoryRoot)]);
-const internalPackages = /@samva\/ai-sdk|@samva-examples\//;
+const internalPackages = /@samva-examples\//;
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"] as const;
 const repositoryOnlyRange = /^(?:catalog:|file:|link:|workspace:)/;
 const requiredFiles = [

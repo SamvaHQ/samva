@@ -1,0 +1,64 @@
+{
+  "name": "@samva/chat-adapter",
+  "version": "0.0.0",
+  "description": "Chat SDK adapter for Samva mailboxes.",
+  "keywords": [
+    "chat-sdk",
+    "email",
+    "samva",
+    "whatsapp"
+  ],
+  "homepage": "https://samva.dev",
+  "bugs": {
+    "url": "https://github.com/SamvaHQ/samva/issues"
+  },
+  "license": "MIT",
+  "author": "Arya Labs, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamvaHQ/samva.git",
+    "directory": "packages/chat-adapter"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "package.json",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts",
+    "prepack": "bun run build",
+    "dev": "tsdown src/index.ts --format esm --dts --watch",
+    "typecheck": "tsgo --noEmit",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@chat-adapter/shared": "^4.42.0",
+    "@samva/webhooks": "^0.47.0"
+  },
+  "devDependencies": {
+    "@chat-adapter/state-memory": "4.42.0",
+    "chat": "4.42.0",
+    "samva": "^0.47.0"
+  },
+  "peerDependencies": {
+    "chat": "^4.42.0",
+    "samva": "^0.47.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
