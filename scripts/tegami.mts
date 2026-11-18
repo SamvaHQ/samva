@@ -14,7 +14,13 @@ import { runCli } from "tegami/cli";
 import { github } from "tegami/plugins/github";
 
 const REPOSITORY = "SamvaHQ/samva";
-const publicNames = new Set(["@samva/better-auth", "@samva/email-sdk"]);
+const publicNames = new Set([
+  "@samva/ai-sdk",
+  "@samva/better-auth",
+  "@samva/chat-adapter",
+  "@samva/email-sdk",
+  "@samva/eve",
+]);
 
 const releaseChecks = (): TegamiPlugin => ({
   name: "samva-release-checks",
@@ -28,7 +34,7 @@ const releaseChecks = (): TegamiPlugin => ({
     if (!shouldPublish) return;
 
     if (plan.options.dryRun) {
-      console.log("[dry-run] would build and audit both public integration package roots");
+      console.log("[dry-run] would build and audit the public integration package roots");
       return;
     }
 
@@ -66,10 +72,16 @@ const paper = tegami({
     },
   },
   groups: {
+    "ai-sdk": { syncBump: true, syncGitTag: true },
+    "chat-adapter": { syncBump: true, syncGitTag: true },
+    eve: { syncBump: true, syncGitTag: true },
     "better-auth": { syncBump: true, syncGitTag: true },
     "email-sdk": { syncBump: true, syncGitTag: true },
   },
   packages: {
+    "@samva/ai-sdk": { group: "ai-sdk" },
+    "@samva/chat-adapter": { group: "chat-adapter" },
+    "@samva/eve": { group: "eve" },
     "@samva/better-auth": { group: "better-auth" },
     "@samva/email-sdk": { group: "email-sdk" },
   },
