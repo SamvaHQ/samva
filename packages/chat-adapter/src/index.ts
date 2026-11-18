@@ -130,6 +130,10 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     return active?.threadId === target.threadId && active.channel === "whatsapp";
   }
 
+  getChannelVisibility(): "private" {
+    return "private";
+  }
+
   async openDM(userId: string): Promise<string> {
     const id = this.encodeThreadId({ recipient: userId });
     this.decodeThreadId(id);
@@ -248,6 +252,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     let cursor: string | undefined;
     let found = options.cursor === undefined;
     do {
+      // oxlint-disable-next-line no-await-in-loop -- The next request needs this page's cursor.
       const page = await this.client.mailboxes.getThreadContent({
         ...mailboxThread,
         cursor,
@@ -275,6 +280,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
   private async *messagePages(threadId: string): AsyncGenerator<MessageSummary[]> {
     let cursor: string | undefined;
     do {
+      // oxlint-disable-next-line no-await-in-loop -- The next request needs this page's cursor.
       const page = await this.client.mailboxes.listThreadMessages({
         id: this.mailboxId,
         threadId,

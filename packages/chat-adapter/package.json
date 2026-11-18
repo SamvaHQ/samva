@@ -46,16 +46,16 @@
     "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
-    "@chat-adapter/shared": "^4.0.0",
+    "@chat-adapter/shared": "^4.42.0",
     "@samva/webhooks": "^0.47.0"
   },
   "devDependencies": {
-    "@chat-adapter/state-memory": "^4.0.0",
-    "chat": "4.45.0",
+    "@chat-adapter/state-memory": "4.42.0",
+    "chat": "4.42.0",
     "samva": "^0.47.0"
   },
   "peerDependencies": {
-    "chat": "^4.0.0",
+    "chat": "^4.42.0",
     "samva": "^0.47.0"
   },
   "engines": {

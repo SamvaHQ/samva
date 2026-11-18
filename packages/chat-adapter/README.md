@@ -29,6 +29,7 @@ const chat = new Chat({
   userName: "Support",
   adapters: { samva },
   state: createMemoryState(),
+  concurrency: "concurrent",
 });
 
 async function acknowledge(thread: Thread, message: Message) {
@@ -49,6 +50,6 @@ export const POST = (request: Request) => chat.webhooks.samva(request);
 
 Use a shared Chat SDK state adapter when deploying across workers so webhook deduplication works across instances. Pass the original request to the webhook handler. Authentication uses the signed body bytes.
 
-Email uses thread scope and WhatsApp arrives as a direct message. Replies posted from the webhook handler address its inbound message, even if another message arrives during the turn. Posts outside that handler resolve the thread's most recent inbound message. Replies use a deterministic key based on that message ID. `openDM(address)` starts a new conversation when you post to the returned ID. Use an email address or an E.164 phone number.
+Email uses thread scope and WhatsApp arrives as a direct message. Replies posted from the webhook handler address its inbound message, even if another message arrives during the turn. Posts outside that handler resolve the thread's most recent inbound message. Use the example's Chat SDK concurrency mode to keep each handler in its own webhook context. Replies use a deterministic key based on that message ID. `openDM(address)` starts a new conversation when you post to the returned ID. Use an email address or an E.164 phone number.
 
 A held send returns its Samva action ID and receipt. Streams buffer before submitting. Cards use fallback text. Edits, deletion, and reactions are unsupported. WhatsApp free text requires an open service window.

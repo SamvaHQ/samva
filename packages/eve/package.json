@@ -1,0 +1,77 @@
+{
+  "name": "@samva/eve",
+  "version": "0.0.0",
+  "description": "Eve extension for Samva mailbox agents.",
+  "keywords": [
+    "email",
+    "eve",
+    "samva",
+    "whatsapp"
+  ],
+  "homepage": "https://samva.dev",
+  "bugs": {
+    "url": "https://github.com/SamvaHQ/samva/issues"
+  },
+  "license": "MIT",
+  "author": "Arya Labs, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamvaHQ/samva.git",
+    "directory": "packages/eve"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "package.json",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "default": "./dist/tools/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "eve extension build",
+    "prepack": "bun run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@samva/ai-sdk": "workspace:^",
+    "@samva/chat-adapter": "workspace:^",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "ai": "^7.0.170",
+    "chat": "4.42.0",
+    "eve": "1.0.0-rc.10",
+    "samva": "^0.47.0",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "ai": "^7.0.170",
+    "chat": "^4.42.0",
+    "eve": "*",
+    "samva": "^0.47.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "eve": {
+    "extension": {
+      "source": "./extension",
+      "dist": "./dist/extension"
+    }
+  }
+}
