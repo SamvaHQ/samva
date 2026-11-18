@@ -13,6 +13,18 @@ const held = {
   actionId: "action_1",
   messageId: null,
   threadId: null,
+  acceptedAt: null,
+  draftId: null,
+  executeUntil: null,
+  retryAt: null,
+  problem: null,
+  retryEligible: false,
+  decision: null,
+  waitReason: null,
+  reviewExpectedAt: null,
+  skippedRecipients: [],
+  createdAt: "2026-01-01T12:00:00.000Z",
+  updatedAt: "2026-01-01T12:00:00.000Z",
 };
 
 async function delivery({
@@ -102,7 +114,7 @@ it.each(["email", "whatsapp"] as const)("dispatches a signed %s delivery once", 
 it("buffers a stream and posts one reply with a deterministic key and a held action ID", async () => {
   const fetch = vi.fn(async (request: Request) => {
     expect(request.headers.get("idempotency-key")).toMatch(
-      /^reply:msg_0000000000000000:[a-f0-9]{64}$/,
+      /^reply:msg_0000000000000000:delivery:[a-f0-9]{64}:0$/,
     );
     expect(await request.json()).toEqual({ channel: "whatsapp", text: "Hello there" });
     expect(new URL(request.url).pathname).toBe(
@@ -198,23 +210,56 @@ it("treats typing as a no-op", async () => {
   await expect(adapter.startTyping()).resolves.toBeUndefined();
 });
 
-it("gives distinct posts different keys and preserves the same-text retry identity", async () => {
+it("reuses the original post across webhook retries and gives later posts their own keys", async () => {
+  const accepted = new Map<string, { text: string; receipt: typeof held }>();
   const fetch = vi.fn(async (request: Request) => {
+    const key = request.headers.get("idempotency-key");
+    if (!key) throw new Error("Expected an idempotency key");
     const { text } = await request.json();
-    return Response.json({ ...held, actionId: text }, { status: 202 });
+    const previous = accepted.get(key);
+    if (previous) {
+      expect(text).not.toBe(previous.text);
+      return Response.json(
+        {
+          _tag: "MailboxSendConflictError",
+          id: previous.receipt.actionId,
+          resource: "MailboxAction",
+          message: "This key already has a receipt",
+          receipt: previous.receipt,
+        },
+        { status: 409 },
+      );
+    }
+
+    const receipt = { ...held, actionId: `action_${accepted.size + 1}` };
+    accepted.set(key, { text, receipt });
+    if (accepted.size === 1) throw new Error("Lost response after Samva recorded the action");
+    return Response.json(receipt, { status: 202 });
   });
   vi.stubGlobal("fetch", fetch);
   const { adapter, chat } = setup();
-  vi.spyOn(chat, "processMessage").mockImplementation(async (_adapter, id) => {
-    expect((await adapter.postMessage(id, "Acknowledged")).id).toBe("Acknowledged");
-    expect((await adapter.postMessage(id, "Answer")).id).toBe("Answer");
-    expect((await adapter.postMessage(id, "Answer")).id).toBe("Answer");
-  });
-  await chat.webhooks.samva(await delivery());
+  const processMessage = vi
+    .spyOn(chat, "processMessage")
+    .mockImplementationOnce(async (_adapter, id) => {
+      await adapter.postMessage(id, "Acknowledged");
+    })
+    .mockImplementationOnce(async (_adapter, id) => {
+      const retried = await adapter.postMessage(id, "Acknowledged again");
+      expect(retried.id).toBe("action_1");
+      expect(receiptOf(retried)?.state).toBe("approvalRequired");
+      expect((await adapter.postMessage(id, "The answer")).id).toBe("action_2");
+    });
+
+  await expect(chat.webhooks.samva(await delivery())).rejects.toThrow();
+  expect((await chat.webhooks.samva(await delivery())).status).toBe(204);
+  expect((await chat.webhooks.samva(await delivery())).status).toBe(204);
+
   const keys = fetch.mock.calls.map(([request]) => request.headers.get("idempotency-key"));
   expect(keys).toHaveLength(3);
-  expect(keys[0]).not.toBe(keys[1]);
-  expect(keys[1]).toBe(keys[2]);
+  expect(keys[0]).toBe(keys[1]);
+  expect(keys[1]).not.toBe(keys[2]);
+  expect(accepted.size).toBe(2);
+  expect(processMessage).toHaveBeenCalledTimes(2);
 });
 
 it("caches the backward history index and fetches bodies for each requested window", async () => {

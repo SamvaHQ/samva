@@ -18,7 +18,7 @@ import {
   type StreamOptions,
   type WebhookOptions,
 } from "chat";
-import { createClient, type SamvaClient } from "samva";
+import { createClient, MailboxSendConflictError, type SamvaClient } from "samva";
 
 export interface SamvaAdapterOptions {
   readonly apiKey: string;
@@ -40,6 +40,7 @@ export interface SamvaInboundEvent {
 
 export type SamvaRawMessage = SamvaInboundEvent | MailboxMessage | SamvaSendReceipt;
 type ThreadTarget = { threadId: string } | { recipient: string };
+type DeliveryContext = SamvaInboundEvent & { nextPost: number };
 
 export function receiptOf(message: {
   readonly raw: SamvaRawMessage;
@@ -76,7 +77,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
   private readonly client: SamvaClient;
   private readonly mailboxId: string;
   private readonly webhookSecret: string;
-  private readonly inbound = new AsyncLocalStorage<SamvaInboundEvent>();
+  private readonly inbound = new AsyncLocalStorage<DeliveryContext>();
   private chat?: ChatInstance;
 
   constructor({ apiKey, mailboxId, webhookSecret, userName = "Samva" }: SamvaAdapterOptions) {
@@ -163,7 +164,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     // Covers the verifier's acceptance window, including signatures dated ahead of the server.
     if (await state.setIfNotExists(key, true, 24 * 60 * 60 * 1000)) {
       const { waitUntil, ...messageOptions } = options ?? {};
-      const task = this.inbound.run(raw, async () => {
+      const task = this.inbound.run({ ...raw, nextPost: 0 }, async () => {
         try {
           await state.delete(this.historyKey(message.threadId));
           await chat.processMessage(this, message.threadId, message, {
@@ -319,28 +320,38 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
 
     const active = this.inbound.getStore();
     if (active?.data.message.threadId === target.threadId) {
-      return this.replyTo(id, active.data.message, text);
+      // Replaying the delivery starts at the same ordinal even if the draft changes.
+      const position = active.nextPost++;
+      const eventDigest = createHash("sha256").update(active.eventId).digest("hex");
+      const key = `reply:${active.data.message.id}:delivery:${eventDigest}:${position}`;
+      try {
+        return await this.replyTo(id, active.data.message, text, key);
+      } catch (error) {
+        if (error instanceof MailboxSendConflictError) return this.posted(id, error.receipt);
+        throw error;
+      }
     }
     let latest: MessageSummary | undefined;
     for await (const page of this.messagePages(target.threadId)) {
       latest = page.findLast((item) => item.direction === "inbound") ?? latest;
     }
     if (!latest) throw new Error("Samva thread has no inbound message to reply to.");
-    return this.replyTo(id, latest, text);
+    const digest = createHash("sha256").update(text).digest("hex");
+    return this.replyTo(id, latest, text, `reply:${latest.id}:${digest}`);
   }
 
   private async replyTo(
     id: string,
     target: { id: string; channel?: MessageSummary["channel"] },
     text: string,
+    idempotencyKey: string,
   ) {
     const input = { id: this.mailboxId, messageId: target.id, text };
     if (target.channel === "sms")
       throw new NotImplementedError("Samva Chat SDK supports email and WhatsApp.");
-    const digest = createHash("sha256").update(text).digest("hex");
     const receipt = await this.client.mailboxes.reply(
       target.channel === "whatsapp" ? { ...input, channel: target.channel } : input,
-      { idempotencyKey: `reply:${target.id}:${digest}` },
+      { idempotencyKey },
     );
     await this.chat?.getState().delete(this.historyKey(id));
     return this.posted(id, receipt);
