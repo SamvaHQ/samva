@@ -136,9 +136,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@ai-sdk/anthropic": "^4.0.102",
+        "@samva/ai-sdk": "workspace:*",
         "ai": "^7.0.170",
         "samva": "^0.47.0",
-        "zod": "^4.0.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",

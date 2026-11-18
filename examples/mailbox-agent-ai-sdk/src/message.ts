@@ -1,9 +1,7 @@
+import type { SamvaInboundMessage } from "@samva/ai-sdk";
+
 /** The fields of a `mailbox.message.received` event the agent relies on. */
-export interface ReceivedMessage {
-  readonly mailboxId: string;
-  readonly messageId: string;
-  /** `whatsapp` when the message arrived on the mailbox's WhatsApp number. */
-  readonly channel: "email" | "whatsapp";
+export interface ReceivedMessage extends SamvaInboundMessage {
   /** The sender's email address, or their number in E.164 form on WhatsApp. */
   readonly fromAddress: string;
   readonly subject: string | null;
