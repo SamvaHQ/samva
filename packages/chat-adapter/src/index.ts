@@ -1,0 +1,390 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
+import { cardToFallbackText } from "@chat-adapter/shared";
+import { isKnownEvent, verifyRequest, type SamvaWebhookEvent } from "@samva/webhooks";
+import {
+  isCardElement,
+  Message,
+  NotImplementedError,
+  stringifyMarkdown,
+  type Adapter,
+  type AdapterPostableMessage,
+  type ChatInstance,
+  type FetchOptions,
+  type FormattedContent,
+  type RawMessage,
+  type StreamChunk,
+  type StreamOptions,
+  type WebhookOptions,
+} from "chat";
+import { createClient, MailboxSendConflictError, type SamvaClient } from "samva";
+
+export interface SamvaAdapterOptions {
+  readonly apiKey: string;
+  readonly mailboxId: string;
+  readonly webhookSecret: string;
+  readonly userName?: string;
+}
+
+type Mailboxes = SamvaClient["mailboxes"];
+export type SamvaSendReceipt = Awaited<ReturnType<Mailboxes["reply"]>>;
+type MailboxMessage = Awaited<ReturnType<Mailboxes["getMessage"]>>;
+type MessageSummary = Awaited<ReturnType<Mailboxes["listThreadMessages"]>>["items"][number];
+type Received = Extract<SamvaWebhookEvent, { type: "mailbox.message.received" }>;
+
+export interface SamvaInboundEvent {
+  readonly eventId: string;
+  readonly data: Received["data"];
+}
+
+export type SamvaRawMessage = SamvaInboundEvent | MailboxMessage | SamvaSendReceipt;
+type ThreadTarget = { threadId: string } | { recipient: string };
+
+export function receiptOf(message: {
+  readonly raw: SamvaRawMessage;
+}): SamvaSendReceipt | undefined {
+  return "actionId" in message.raw ? message.raw : undefined;
+}
+
+function messageText(message: AdapterPostableMessage): string {
+  if (typeof message === "string") return message;
+  if (isCardElement(message)) return cardToFallbackText(message);
+  if (
+    ("files" in message && message.files?.length) ||
+    ("attachments" in message && message.attachments?.length)
+  ) {
+    throw new NotImplementedError(
+      "Samva Chat SDK posts support text and card fallback text.",
+      "attachments",
+    );
+  }
+  if ("card" in message) return message.fallbackText ?? cardToFallbackText(message.card);
+  if ("raw" in message) return message.raw;
+  if ("markdown" in message) return message.markdown;
+  return stringifyMarkdown(message.ast);
+}
+
+function unsupported(): never {
+  throw new NotImplementedError("Samva messages do not support edits, deletion, or reactions.");
+}
+
+export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
+  readonly name = "samva";
+  readonly lockScope = "thread";
+  readonly userName: string;
+  private readonly client: SamvaClient;
+  private readonly mailboxId: string;
+  private readonly webhookSecret: string;
+  private readonly inbound = new AsyncLocalStorage<SamvaInboundEvent>();
+  private chat?: ChatInstance;
+
+  constructor({ apiKey, mailboxId, webhookSecret, userName = "Samva" }: SamvaAdapterOptions) {
+    if (!apiKey.trim() || !mailboxId.trim() || mailboxId.includes(":") || !webhookSecret.trim()) {
+      throw new Error("Samva adapter requires an API key, mailbox ID, and webhook secret.");
+    }
+    this.client = createClient({ apiKey });
+    this.mailboxId = mailboxId;
+    this.webhookSecret = webhookSecret;
+    this.userName = userName;
+  }
+
+  async initialize(chat: ChatInstance): Promise<void> {
+    this.chat = chat;
+  }
+
+  private get prefix(): string {
+    return `samva:${this.mailboxId}:`;
+  }
+
+  encodeThreadId(target: ThreadTarget): string {
+    if ("recipient" in target) return `${this.prefix}dm:${encodeURIComponent(target.recipient)}`;
+    if (!target.threadId || target.threadId.includes(":"))
+      throw new Error("Invalid Samva thread ID.");
+    return this.prefix + target.threadId;
+  }
+
+  decodeThreadId(id: string): ThreadTarget {
+    if (!id.startsWith(this.prefix))
+      throw new Error("Thread ID belongs to another adapter or mailbox.");
+    const suffix = id.slice(this.prefix.length);
+    if (suffix.startsWith("dm:")) {
+      const recipient = decodeURIComponent(suffix.slice(3));
+      if (/^\+[1-9]\d{1,14}$/.test(recipient) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+        return { recipient };
+      }
+      throw new Error("Use an email address or E.164 number to open a Samva conversation.");
+    }
+    if (!suffix || suffix.includes(":")) throw new Error("Invalid Samva thread ID.");
+    return { threadId: suffix };
+  }
+
+  channelIdFromThreadId(threadId: string): string {
+    this.decodeThreadId(threadId);
+    return threadId;
+  }
+
+  isDM(id: string): boolean {
+    const target = this.decodeThreadId(id);
+    if ("recipient" in target) return target.recipient.startsWith("+");
+    const active = this.inbound.getStore()?.data.message;
+    return active?.threadId === target.threadId && active.channel === "whatsapp";
+  }
+
+  async openDM(userId: string): Promise<string> {
+    const id = this.encodeThreadId({ recipient: userId });
+    this.decodeThreadId(id);
+    return id;
+  }
+
+  async handleWebhook(request: Request, options?: WebhookOptions): Promise<Response> {
+    const delivery = await verifyRequest(request, this.webhookSecret).catch(() => undefined);
+    if (!delivery) return new Response("Invalid webhook", { status: 401 });
+
+    const { id, event } = delivery;
+    if (
+      !isKnownEvent(event) ||
+      event.type !== "mailbox.message.received" ||
+      event.data.mailboxId !== this.mailboxId ||
+      event.data.message.channel === "sms"
+    ) {
+      return new Response(null, { status: 204 });
+    }
+    const chat = this.chat;
+    if (!chat) throw new Error("Initialize the Samva adapter with Chat before handling webhooks.");
+    const raw = { eventId: id, data: event.data };
+    const message = this.parseMessage(raw);
+    const state = chat.getState();
+    const key = `${this.prefix}webhook:${id}`;
+    // Covers the verifier's acceptance window, including signatures dated ahead of the server.
+    if (await state.setIfNotExists(key, true, 24 * 60 * 60 * 1000)) {
+      const { waitUntil, ...messageOptions } = options ?? {};
+      const task = this.inbound.run(raw, async () => {
+        try {
+          await chat.processMessage(this, message.threadId, message, {
+            ...messageOptions,
+            deduplicate: false,
+          });
+        } catch (error) {
+          await state.delete(key);
+          throw error;
+        }
+      });
+      if (waitUntil) waitUntil(task);
+      else await task;
+    }
+    return new Response(null, { status: 204 });
+  }
+
+  parseMessage(raw: SamvaRawMessage): Message<SamvaRawMessage> {
+    if ("actionId" in raw) throw new Error("A send receipt does not contain a message body.");
+    const message = "data" in raw ? raw.data.message : raw;
+    const isMe = "direction" in message && message.direction === "outbound";
+    const text =
+      ("replyText" in message ? message.replyText : undefined) ??
+      message.text ??
+      ("subject" in message ? message.subject : undefined) ??
+      "";
+    const { address } = message.from;
+    const name = "data" in raw ? raw.data.message.from.name : raw.from.displayName;
+    return new Message({
+      id: message.id,
+      threadId: this.encodeThreadId({ threadId: message.threadId }),
+      raw,
+      text,
+      formatted: {
+        type: "root",
+        children: [{ type: "paragraph", children: [{ type: "text", value: text }] }],
+      },
+      author: {
+        userId: address,
+        userName: address,
+        fullName: name ?? address,
+        ...(message.channel === "whatsapp" || message.channel === "sms" ? {} : { email: address }),
+        isBot: isMe ? true : "unknown",
+        isMe,
+      },
+      isMention: "eventId" in raw,
+      metadata: { dateSent: new Date(message.occurredAt), edited: false },
+      attachments: [],
+    });
+  }
+
+  async fetchThread(id: string) {
+    const target = this.decodeThreadId(id);
+    if ("recipient" in target) {
+      return { id, channelId: id, isDM: this.isDM(id), metadata: {} };
+    }
+    const thread = await this.client.mailboxes.getThread({ id: this.mailboxId, ...target });
+    return {
+      id,
+      channelId: id,
+      isDM: thread.channel === "whatsapp",
+      metadata: { subject: thread.subject, channel: thread.channel },
+    };
+  }
+
+  async fetchMessages(id: string, options: FetchOptions = {}) {
+    const target = this.decodeThreadId(id);
+    if ("recipient" in target) return { messages: [] };
+    const limit = options.limit ?? 50;
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+      throw new RangeError("Samva history page size must be between 1 and 100.");
+    }
+    const mailboxThread = { id: this.mailboxId, ...target };
+    if (options.direction === "forward") {
+      const page = await this.client.mailboxes.getThreadContent({
+        ...mailboxThread,
+        limit,
+        cursor: options.cursor,
+      });
+      return {
+        messages: page.items.map((item) => this.parseMessage(item)),
+        ...(page.nextCursor === null ? {} : { nextCursor: page.nextCursor }),
+      };
+    }
+
+    // Samva cursors advance oldest to newest. Keep the last page before the requested boundary.
+    let recent: MailboxMessage[] = [];
+    let cursor: string | undefined;
+    let found = options.cursor === undefined;
+    do {
+      const page = await this.client.mailboxes.getThreadContent({
+        ...mailboxThread,
+        cursor,
+        limit: 100,
+      });
+      cursor = page.nextCursor ?? undefined;
+      const boundary = page.items.findIndex((item) => item.id === options.cursor);
+      recent = recent
+        .concat(boundary === -1 ? page.items : page.items.slice(0, boundary))
+        .slice(-limit - 1);
+      if (boundary !== -1) {
+        found = true;
+        break;
+      }
+    } while (cursor !== undefined);
+    if (!found) throw new Error("Samva history cursor is missing from this thread.");
+    const items = recent.slice(-limit);
+    const oldest = items[0];
+    return {
+      messages: items.map((item) => this.parseMessage(item)),
+      ...(recent.length > limit && oldest ? { nextCursor: oldest.id } : {}),
+    };
+  }
+
+  private async *messagePages(threadId: string): AsyncGenerator<MessageSummary[]> {
+    let cursor: string | undefined;
+    do {
+      const page = await this.client.mailboxes.listThreadMessages({
+        id: this.mailboxId,
+        threadId,
+        cursor,
+        limit: 100,
+      });
+      yield page.items;
+      cursor = page.nextCursor ?? undefined;
+    } while (cursor !== undefined);
+  }
+
+  async postMessage(
+    id: string,
+    message: AdapterPostableMessage,
+  ): Promise<RawMessage<SamvaRawMessage>> {
+    const target = this.decodeThreadId(id);
+    const text = messageText(message);
+    if (!text.trim()) throw new Error("Samva posts require message text.");
+    if ("recipient" in target) {
+      const { recipient } = target;
+      const receipt = await this.client.mailboxes.sendMessage(
+        recipient.startsWith("+")
+          ? { id: this.mailboxId, channel: "whatsapp", to: recipient, text }
+          : { id: this.mailboxId, to: [recipient], subject: "New message", text },
+      );
+      return this.posted(id, receipt);
+    }
+
+    const active = this.inbound.getStore();
+    if (active?.data.message.threadId === target.threadId) {
+      return this.replyTo(id, active.data.message, text);
+    }
+    let latest: MessageSummary | undefined;
+    for await (const page of this.messagePages(target.threadId)) {
+      latest = page.findLast((item) => item.direction === "inbound") ?? latest;
+    }
+    if (!latest) throw new Error("Samva thread has no inbound message to reply to.");
+    return this.replyTo(id, latest, text);
+  }
+
+  private async replyTo(
+    id: string,
+    target: { id: string; channel?: MessageSummary["channel"] },
+    text: string,
+  ) {
+    const input = { id: this.mailboxId, messageId: target.id, text };
+    if (target.channel === "sms")
+      throw new NotImplementedError("Samva Chat SDK supports email and WhatsApp.");
+    const receipt = await this.client.mailboxes
+      .reply(target.channel === "whatsapp" ? { ...input, channel: target.channel } : input, {
+        idempotencyKey: `reply:${target.id}`,
+      })
+      .catch((error: unknown) => {
+        if (error instanceof MailboxSendConflictError) return error.receipt;
+        throw error;
+      });
+    return this.posted(id, receipt);
+  }
+
+  private posted(threadId: string, receipt: SamvaSendReceipt): RawMessage<SamvaRawMessage> {
+    if (receipt.state === "notSent" || receipt.state === "uncertain") {
+      throw new Error(`Samva send action ${receipt.actionId} ended in state ${receipt.state}.`);
+    }
+    return {
+      id:
+        receipt.state === "approvalRequired"
+          ? receipt.actionId
+          : (receipt.messageId ?? receipt.actionId),
+      threadId: receipt.threadId ? this.encodeThreadId({ threadId: receipt.threadId }) : threadId,
+      raw: receipt,
+    };
+  }
+
+  async stream(
+    threadId: string,
+    chunks: AsyncIterable<string | StreamChunk>,
+    options?: StreamOptions,
+  ) {
+    const parts: string[] = [];
+    options?.signal?.throwIfAborted();
+    for await (const chunk of chunks) {
+      options?.signal?.throwIfAborted();
+      if (typeof chunk === "string") parts.push(chunk);
+      else if (chunk.type === "markdown_text") parts.push(chunk.text);
+    }
+    options?.signal?.throwIfAborted();
+    const text = parts.join("");
+    if (text.trim() === "") throw new Error("Samva streams require message text.");
+    return this.postMessage(threadId, text);
+  }
+
+  renderFormatted(content: FormattedContent): string {
+    return stringifyMarkdown(content);
+  }
+
+  async startTyping(): Promise<void> {}
+  async editMessage(): Promise<never> {
+    unsupported();
+  }
+  async deleteMessage(): Promise<never> {
+    unsupported();
+  }
+  async addReaction(): Promise<never> {
+    unsupported();
+  }
+  async removeReaction(): Promise<never> {
+    unsupported();
+  }
+}
+
+export function createSamvaAdapter(options: SamvaAdapterOptions): SamvaAdapter {
+  return new SamvaAdapter(options);
+}
