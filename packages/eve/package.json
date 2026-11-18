@@ -54,6 +54,8 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@chat-adapter/state-memory": "4.42.0",
+    "@samva/webhooks": "^0.47.0",
     "ai": "^7.0.170",
     "chat": "4.42.0",
     "eve": "1.0.0-rc.10",

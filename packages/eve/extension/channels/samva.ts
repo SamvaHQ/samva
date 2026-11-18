@@ -21,7 +21,12 @@ function mailboxChannel() {
   const { apiKey, mailboxId, webhook } = extension.config;
   if (!webhook) return defineChannel({ routes: [] });
 
-  const samva = createSamvaAdapter({ apiKey, mailboxId, webhookSecret: webhook.secret });
+  const samva = createSamvaAdapter({
+    apiKey,
+    mailboxId,
+    webhookSecret: webhook.secret,
+    includeAutomatedEmail: webhook.includeAutomatedEmail,
+  });
   const { bot, channel, send } = chatSdkChannel({
     userName: samva.userName,
     adapters: { samva },

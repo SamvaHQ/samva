@@ -33,4 +33,6 @@ export default samva({
 
 Use a shared Chat SDK state adapter in a deployment with multiple instances. The channel starts Eve turns on signed deliveries and queues new inputs for a thread while a turn is active. The reply tool submits through Samva approval rules. Eve's channel output remains in the session so it cannot also send a customer reply.
 
+The bundled channel skips automated email by default and includes the subject alongside the email body in the agent input. Set `webhook.includeAutomatedEmail: true` to let automated mail start turns.
+
 To use an existing Eve channel, omit `webhook` and expose `eventId`, `mailboxId`, `messageId`, and `channel` (`email` or `whatsapp`) via the channel's server-owned metadata after verifying the event. The four tools appear on turns with a matching inbound message. Never populate these fields from model input or customer-supplied text.

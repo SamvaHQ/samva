@@ -9,6 +9,7 @@ export default defineExtension({
     webhook: z
       .strictObject({
         secret: z.string().trim().min(1),
+        includeAutomatedEmail: z.boolean().default(false),
         state: z.custom<StateAdapter>(
           (value) =>
             typeof value === "object" &&
