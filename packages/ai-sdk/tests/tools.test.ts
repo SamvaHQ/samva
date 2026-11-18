@@ -1,4 +1,4 @@
-import { createClient, MailboxSendConflictError } from "samva";
+import { createClient, ForbiddenError, MailboxSendConflictError } from "samva";
 import { expect, it, vi } from "vitest";
 
 import { samvaTools } from "../src/index";
@@ -95,4 +95,42 @@ it("scopes thread reads and search to the inbound mailbox", async () => {
     cursor: undefined,
   });
   expect(search).toHaveBeenCalledWith({ id: "mbx", q: "order", cursor: "next", limit: 10 });
+});
+
+it("reopens the claim after a definite Samva refusal", async () => {
+  const client = createClient({ apiKey: "test" });
+  vi.spyOn(client.mailboxes, "reply").mockRejectedValue(
+    new ForbiddenError({ message: "Refused" }, { response: new Response(null, { status: 403 }) }),
+  );
+  const tools = samvaTools({ client, message, eventId: "evt" });
+  await expect(tools.reply_to_customer.execute({ text: "Hello" }, call)).rejects.toThrow("Refused");
+  expect(tools.leave_for_person.execute({ reason: "Escalate" }, call)).toEqual({
+    status: "left for a person",
+    reason: "Escalate",
+  });
+});
+
+it("allows a same-key reply retry after an unknown outcome", async () => {
+  const client = createClient({ apiKey: "test" });
+  const held = { ...receipt, skippedRecipients: [] };
+  const reply = vi
+    .spyOn(client.mailboxes, "reply")
+    .mockRejectedValueOnce(new Error("Lost response"))
+    .mockResolvedValueOnce(held);
+  const tools = samvaTools({ client, message, eventId: "evt" });
+
+  await expect(tools.reply_to_customer.execute({ text: "Hello" }, call)).rejects.toThrow(
+    "Lost response",
+  );
+  expect(tools.leave_for_person.execute({ reason: "Escalate" }, call)).toEqual({
+    status: "reply outcome unknown",
+  });
+  await expect(tools.reply_to_customer.execute({ text: "Hello again" }, call)).resolves.toEqual({
+    status: "held for approval",
+    receipt: held,
+  });
+  expect(reply.mock.calls.map(([, options]) => options?.idempotencyKey)).toEqual([
+    "reply:evt",
+    "reply:evt",
+  ]);
 });

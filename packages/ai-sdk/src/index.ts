@@ -1,5 +1,5 @@
 import { tool, type Tool } from "ai";
-import { MailboxSendConflictError, type SamvaClient } from "samva";
+import { MailboxSendConflictError, SamvaApiError, type SamvaClient } from "samva";
 import { z } from "zod";
 
 export interface SamvaInboundMessage {
@@ -8,10 +8,19 @@ export interface SamvaInboundMessage {
   readonly channel: "email" | "whatsapp";
 }
 
+export type SamvaActionStatus = "open" | "claimed" | "reply outcome unknown";
+
+export interface SamvaActionState {
+  get(): SamvaActionStatus;
+  set(status: SamvaActionStatus): void;
+}
+
 export interface SamvaToolsOptions {
   readonly client: SamvaClient;
   readonly message: SamvaInboundMessage;
   readonly eventId: string;
+  /** Optional synchronous state for hosts that rebuild the tool set between steps. */
+  readonly actionState?: SamvaActionState;
 }
 
 export const samvaToolInputs = {
@@ -52,7 +61,9 @@ export interface SamvaTools {
   >;
   leave_for_person: ExecutableTool<
     ToolInput<"leave_for_person">,
-    AlreadyHandled | { readonly status: "left for a person"; readonly reason: string }
+    | AlreadyHandled
+    | { readonly status: "reply outcome unknown" }
+    | { readonly status: "left for a person"; readonly reason: string }
   >;
   get_thread: ExecutableTool<
     ToolInput<"get_thread">,
@@ -65,11 +76,21 @@ export interface SamvaTools {
 }
 
 /** Create one tool set per inbound event and reuse it throughout the agent turn. */
-export function samvaTools({ client, message, eventId }: SamvaToolsOptions): SamvaTools {
+export function samvaTools({
+  client,
+  message,
+  eventId,
+  actionState,
+}: SamvaToolsOptions): SamvaTools {
   if (!eventId.trim()) throw new Error("An inbound event ID is required.");
   const { mailboxId, messageId, channel } = message;
-  // Both action tools run concurrently when emitted in the same model step.
-  let claimed = false;
+  let localStatus: SamvaActionStatus = "open";
+  const state: SamvaActionState = actionState ?? {
+    get: () => localStatus,
+    set: (status) => {
+      localStatus = status;
+    },
+  };
 
   return {
     reply_to_customer: tool({
@@ -77,17 +98,30 @@ export function samvaTools({ client, message, eventId }: SamvaToolsOptions): Sam
         "Submit a plain-text reply to this customer message under the mailbox's approval rules.",
       inputSchema: samvaToolInputs.reply_to_customer,
       execute: async ({ text }) => {
-        if (claimed) return { status: "already handled" } as const;
-        claimed = true;
+        const prior = state.get();
+        if (prior === "claimed") return { status: "already handled" } as const;
+        // Both action tools can run in the same model step.
+        state.set("claimed");
 
         const target = { id: mailboxId, messageId, text };
         const input = channel === "whatsapp" ? { ...target, channel } : target;
-        const receipt = await client.mailboxes
-          .reply(input, { idempotencyKey: `reply:${eventId}` })
-          .catch((error: unknown) => {
-            if (error instanceof MailboxSendConflictError) return error.receipt;
+        let receipt: SendReceipt;
+        try {
+          receipt = await client.mailboxes.reply(input, { idempotencyKey: `reply:${eventId}` });
+        } catch (error) {
+          if (!(error instanceof MailboxSendConflictError)) {
+            const refused =
+              prior === "open" &&
+              error instanceof SamvaApiError &&
+              error.status !== undefined &&
+              error.status >= 400 &&
+              error.status < 500 &&
+              error.status !== 408;
+            state.set(refused ? "open" : "reply outcome unknown");
             throw error;
-          });
+          }
+          receipt = error.receipt;
+        }
         return {
           status: receipt.state === "approvalRequired" ? "held for approval" : receipt.state,
           receipt,
@@ -99,8 +133,10 @@ export function samvaTools({ client, message, eventId }: SamvaToolsOptions): Sam
       description: "Tell the application to leave this message for a person to answer.",
       inputSchema: samvaToolInputs.leave_for_person,
       execute: ({ reason }) => {
-        if (claimed) return { status: "already handled" } as const;
-        claimed = true;
+        const status = state.get();
+        if (status === "reply outcome unknown") return { status } as const;
+        if (status === "claimed") return { status: "already handled" } as const;
+        state.set("claimed");
         return { status: "left for a person", reason } as const;
       },
     }),
