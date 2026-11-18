@@ -6,7 +6,7 @@ Mount Samva's mailbox tools and customer-message instructions in an Eve agent. T
 npm install @samva/eve eve ai chat samva @chat-adapter/state-memory
 ```
 
-Set `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, and `SAMVA_WEBHOOK_SECRET`. Point its `mailbox.message.received` webhook at `/eve/v1/samva` on the agent deployment.
+Set `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, and `SAMVA_WEBHOOK_SECRET` in the Vercel project before deploying or running a build. Eve evaluates the extension during the build, so all three variables must be available at build time for the target environment. Point the mailbox's `mailbox.message.received` webhook at `/eve/v1/samva` on the agent deployment.
 
 Before running the agent, create a mailbox-scoped API key with the approval rule `{ match: { effect: "write" }, atLeast: "person" }`. In a test conversation, verify the reply returns `approvalRequired` and review it in the dashboard. See the [mailbox approval setup](https://github.com/SamvaHQ/samva/blob/main/cookbooks/mailboxes.md).
 
