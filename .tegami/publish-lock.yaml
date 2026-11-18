@@ -59,6 +59,10 @@ core:packages:
     updated: false
   - id: npm:nextjs-transactional-samva
     updated: false
+npm:mark-latest:
+  - id: npm:@samva/ai-sdk
+  - id: npm:@samva/eve
+  - id: npm:@samva/chat-adapter
 npm:packages:
   - id: npm:mailbox-agent-openai-agents-samva
   - id: npm:@samva/ai-sdk
