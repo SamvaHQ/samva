@@ -152,10 +152,46 @@ it("uses sendMessage for a new WhatsApp conversation", async () => {
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-it("uses Chat SDK's unsupported error for edits, deletion, and reactions", async () => {
+it("finds the latest inbound message across pages for posts outside a webhook", async () => {
+  const fetch = vi.fn(async (request: Request) => {
+    const url = new URL(request.url);
+    if (url.pathname.endsWith("/reply")) {
+      expect(url.pathname).toContain("/messages/newest/reply");
+      expect(request.headers.get("idempotency-key")).toBe("reply:newest");
+      return Response.json(held, { status: 202 });
+    }
+
+    expect(url.pathname).toBe(
+      "/v1/mailboxes/mbx_0000000000000000/threads/thread_0000000000000000/messages",
+    );
+    return url.searchParams.has("cursor")
+      ? Response.json({
+          items: [
+            { id: "newest", channel: "email", direction: "inbound" },
+            { id: "outbound", channel: "email", direction: "outbound" },
+          ],
+          nextCursor: null,
+        })
+      : Response.json({
+          items: [{ id: "older", channel: "email", direction: "inbound" }],
+          nextCursor: "next",
+        });
+  });
+  vi.stubGlobal("fetch", fetch);
   const { adapter } = setup();
-  for (const method of ["editMessage", "deleteMessage", "addReaction", "removeReaction"] as const) {
+  expect(receiptOf(await adapter.postMessage(threadId, "Hello"))).toEqual(held);
+  expect(fetch).toHaveBeenCalledTimes(3);
+});
+
+it.each(["editMessage", "deleteMessage", "addReaction", "removeReaction"] as const)(
+  "uses Chat SDK's unsupported error for %s",
+  async (method) => {
+    const { adapter } = setup();
     await expect(adapter[method]()).rejects.toBeInstanceOf(NotImplementedError);
-  }
+  },
+);
+
+it("treats typing as a no-op", async () => {
+  const { adapter } = setup();
   await expect(adapter.startTyping()).resolves.toBeUndefined();
 });
