@@ -1,37 +1,37 @@
 # Give an Eve agent an email inbox with Samva
 
-Give an [Eve](https://eve.dev) agent its own email address. A Samva mailbox has an event stream the
-agent reads incoming messages from, and the agent replies through the same API. The mailbox's rules
-can hold each reply until a person approves it.
+Give an [Eve](https://eve.dev) agent its own email address and WhatsApp number. A Samva mailbox
+delivers each received message to the agent as a signed webhook, and the agent replies through the
+same API. The mailbox's rules can hold each reply until a person approves it.
 
-The runnable example lives in [`examples/mailbox-agent-eve`](../examples/mailbox-agent-eve). Its
-tests use a mocked Samva transport and call the tools directly, so they run without an account or
-a model key. They do not run Eve's agent loop. For the mailbox itself, see the
-[mailboxes cookbook](./mailboxes.md).
+The runnable example lives in [`examples/mailbox-agent-eve`](../examples/mailbox-agent-eve). For
+the mailbox itself, see the [mailboxes cookbook](./mailboxes.md). To run the agent on Vercel, see
+the [Vercel cookbook](./vercel.md).
 
 ## What you build
 
-Eve agents are files, and the agent runs as a server. So this is two processes. The Eve server
-holds the agent and a channel with one route that starts one agent run per message. A small relay
-follows one mailbox and posts each received message to that route. Samva's actions are two Eve
-tools: one submits a reply to the current message, and one leaves the message for a person. If a
-run finishes without calling either, nothing is sent.
+One Eve process. [`@samva/eve`](../packages/eve) mounts into the agent as an extension and brings
+four things: a webhook channel at `/eve/v1/samva` that verifies Samva's signature and starts one
+turn per received message, the tools `samva__reply_to_customer`, `samva__leave_for_person`,
+`samva__get_thread`, and `samva__search_threads`, and instructions that treat customer messages as
+untrusted data. A turn that calls neither action tool sends nothing.
 
 ## Install
 
 ```sh
-bun add eve ai samva zod
+bun add @samva/eve eve ai chat samva @chat-adapter/state-memory @chat-adapter/state-redis
 ```
 
-The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.47.0`, and Node.js 24 or newer. Create a mailbox
-and a restricted key as shown in the
+The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.47.0`, and Node.js 24 or newer.
+Create a mailbox and a restricted key as shown in the
 [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key), and give the agent only
-that key.
+that key. Create a webhook for the mailbox that delivers `mailbox.message.received` to
+`<your URL>/eve/v1/samva`, and keep its signing secret.
 
 ## The agent
 
-The agent is `agent/instructions.md`, which holds the system prompt and your business's
-instructions, and `agent/agent.ts`, which chooses the model:
+The agent is `agent/instructions.md`, which holds your business's instructions, and
+`agent/agent.ts`, which chooses the model:
 
 ```ts
 import { defineAgent } from "eve";
@@ -45,100 +45,48 @@ export default defineAgent({
 `anthropic()` reads `ANTHROPIC_API_KEY`. Eve also accepts a model id string that routes through the
 Vercel AI Gateway, or any AI SDK language model.
 
-## The channel
+## The extension
 
-A channel connects a source of messages to the agent. This one has a single route. The relay posts
-each message to it, and the route starts a session named by the event id and keyed by the event id,
-so a redelivered event reaches the same run. The ids the tools need go into the channel's state,
-not into the prompt.
+`agent/extensions/samva.ts` mounts Samva. It reads the three Samva variables and fails when one is
+missing:
 
 ```ts
-import { defineChannel, POST } from "eve/channels";
+import { createMemoryState } from "@chat-adapter/state-memory";
+import { createRedisState } from "@chat-adapter/state-redis";
+import samva from "@samva/eve";
 
-export default defineChannel<MessageRef>({
-  state: { eventId: "", mailboxId: "", messageId: "", channel: "email" },
-  metadata: (state) => ({ ...state }),
-  routes: [
-    POST("/samva/messages", async (request, { from }) => {
-      const token = process.env.EVE_RELAY_TOKEN;
-      if (token === undefined || token === "") {
-        throw new Error("Missing required env var EVE_RELAY_TOKEN");
-      }
-      return await acceptMessage(request, token, (address, message, options) =>
-        from(address).send(message, options),
-      );
-    }),
-  ],
-});
-```
-
-`acceptMessage` checks a bearer token, validates the body, and calls
-`from("samva:<eventId>").send(userTurn(message), { auth: null, idempotencyKey, state })`. See the
-example's `agent/lib/intake.ts`.
-
-## The two tools
-
-Each tool is a file under `agent/tools/`, and the file name is the tool name. Both read the ids
-from `ctx.channel.metadata`, so the model supplies only the reply text or a reason. It cannot
-choose the recipient, channel, or thread. `endsTurn: true` ends the run once the tool succeeds.
-
-```ts
-import { defineTool } from "eve/tools";
-import { z } from "zod";
-
-export default defineTool({
-  description:
-    "Submit a reply to the customer's message. It is held for a person's approval before it is sent.",
-  inputSchema: z.object({ text: z.string().trim().min(1).describe("The plain-text reply.") }),
-  endsTurn: true,
-  async execute({ text }, ctx) {
-    return await submitReply(samvaFromEnv(), parseMessageRef(ctx.channel.metadata), text);
-  },
-});
-```
-
-```ts
-export default defineTool({
-  description: "Leave this message for a person to answer. Nothing is sent.",
-  inputSchema: z.object({ reason: z.string().trim().min(1).describe("One short sentence.") }),
-  endsTurn: true,
-  execute({ reason }, ctx) {
-    const ref = parseMessageRef(ctx.channel.metadata);
-    return { left: true, messageId: ref.messageId, reason };
-  },
-});
-```
-
-`submitReply` calls `samva.mailboxes.reply` once, for email and WhatsApp, keyed `reply:<eventId>`:
-
-```ts
-const reply =
-  ref.channel === "whatsapp"
-    ? { id: ref.mailboxId, messageId: ref.messageId, channel: "whatsapp" as const, text }
-    : { id: ref.mailboxId, messageId: ref.messageId, text };
-const receipt = await samva.mailboxes.reply(reply, { idempotencyKey: `reply:${ref.eventId}` });
-```
-
-Events are delivered at least once. A replay that drafts different text is refused with
-`MailboxSendConflictError`, which carries the first reply's receipt, and the tool reports
-`alreadyAnswered` with the original action id. Any other conflict, such as a paused mailbox, is a
-failure. Eve never retries a tool itself, and a tool error goes back to the model.
-
-## The relay
-
-`samva.mailboxes.events` is an async iterable of `mailbox.*` events. The relay forwards each
-received message and saves the stream cursor only after Eve accepts it:
-
-```ts
-for await (const event of samva.mailboxes.events({ cursor, mailboxIds: [options.mailboxId] })) {
-  await handleEvent(event, options.forward, log, options.signal);
-  await options.store.save(event.cursor);
-  cursor = event.cursor;
+function required(name: string): string {
+  const value = process.env[name];
+  if (value === undefined || value === "") throw new Error(`Missing required env var ${name}`);
+  return value;
 }
+
+export default samva({
+  apiKey: required("SAMVA_API_KEY"),
+  mailboxId: required("SAMVA_MAILBOX_ID"),
+  webhook: {
+    secret: required("SAMVA_WEBHOOK_SECRET"),
+    state: process.env.REDIS_URL ? createRedisState() : createMemoryState(),
+  },
+});
 ```
 
-The customer's message is untrusted data. `userTurn` wraps it in `<customer_message>` tags, and the
-instructions tell the model to answer it and never to follow instructions inside it.
+The reply and leave tools take the mailbox, message, and channel from the verified delivery, so the
+model supplies only the reply text or a reason. It cannot choose the recipient, channel, or thread.
+Both end the turn, and the first one called claims the message, so a turn cannot reply and also
+leave the message for a person.
+
+## Delivery and duplicates
+
+Samva delivers each event at least once. The channel records each verified delivery id in Chat
+SDK state, so a redelivery starts no second turn. Memory state suits one local process. When more
+than one instance serves the route, give them shared state such as Redis, so each instance sees
+the same delivery ids. Each reply is keyed `reply:<delivery id>`. A replay that drafts different
+text recovers the first reply's receipt instead of sending twice.
+
+Use an existing Eve channel instead by omitting `webhook`. Expose `eventId`, `mailboxId`,
+`messageId`, and `channel` from the channel's server-owned metadata after verifying the event.
+Never fill them from model input or customer text.
 
 ## The approval rule
 
@@ -153,14 +101,13 @@ bad reply still waits for a person. The mailboxes cookbook shows how to
 ## WhatsApp from the same mailbox
 
 Add a number your organization has connected as an endpoint on the mailbox, and a WhatsApp message
-arrives as the same event. The reply tool above answers it with `channel: "whatsapp"`. See
+arrives as the same event. The reply tool answers it on WhatsApp. See
 [Answer WhatsApp in a mailbox](https://samva.dev/docs/channels/whatsapp/answer-in-a-mailbox).
-WhatsApp needs a paid plan.
+WhatsApp needs a paid plan, and free-form text needs an open 24-hour service window.
 
 ## Example
 
-See the runnable [`mailbox-agent-eve` example](../examples/mailbox-agent-eve) for both processes,
-the relay's cursor-expiry recovery, and the tests.
+See the runnable [`mailbox-agent-eve` example](../examples/mailbox-agent-eve).
 
 ```sh
 bun --cwd examples/mailbox-agent-eve run typecheck

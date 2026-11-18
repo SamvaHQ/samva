@@ -8,10 +8,10 @@ mailbox's rules hold each reply until a person approves it.
 - `src/agent.ts` follows `samva.mailboxes.events` for one mailbox and runs one `ToolLoopAgent`
   turn per `mailbox.message.received` event. A WhatsApp message arrives as the same event and is
   answered by the same tool with `channel: "whatsapp"`.
-- `src/tools.ts` defines the two tools with `tool()`. `reply_to_customer` submits the reply
-  through `samva.mailboxes.reply`. `leave_for_person` records a short reason and sends nothing.
-  Both close over the event, so the model supplies only the reply text or the reason. It cannot
-  choose the recipient, channel, or thread.
+- `samvaTools` from [`@samva/ai-sdk`](../../packages/ai-sdk) supplies the tools: `reply_to_customer`
+  and `leave_for_person` act on the message, and `get_thread` and `search_threads` read the same
+  mailbox. They close over the event, so the model supplies only the reply text, the reason, or
+  search criteria. It cannot choose the recipient, channel, or thread.
 - `src/prompt.ts` holds the system prompt and the user turn.
 
 The [`mailbox-agent`](../mailbox-agent) example covers the mailbox mechanics in more depth
@@ -36,19 +36,24 @@ Anthropic call instead of a framework loop.
   at most (`stopWhen` in `src/agent.ts`).
 - **Idempotent replies.** Each reply is keyed by the event id, so a replayed event cannot send
   twice. The tools claim the message before their first `await`, so overlapping calls in one
-  step produce at most one action.
-  A replay that drafts different text is refused with `MailboxSendConflictError`, which carries
-  the first reply's receipt; any other conflict, such as a paused mailbox, is a failure.
+  step produce at most one action. A replay that drafts different text recovers the first
+  reply's receipt. Any other failure, such as a paused mailbox, is thrown. If a WhatsApp service
+  window has closed, the agent skips the event.
 
 ## Run the proof
 
+From the repository root, install and build the workspace packages the example imports from
+`dist`, then run the example's checks from its directory:
+
 ```sh
 bun install
+bun run build
+cd examples/mailbox-agent-ai-sdk
 bun run typecheck
 bun run test
 ```
 
-The tests use the Samva client with a mocked HTTP transport and the AI SDK's own mock language
+The tests use the real `samvaTools` and Samva client with a mocked HTTP transport and the AI SDK's own mock language
 model (`MockLanguageModelV4` from `ai/test`). They never contact Samva or a model provider.
 
 ## Run the agent

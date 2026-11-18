@@ -1,16 +1,17 @@
+import { samvaTools } from "@samva/ai-sdk";
 import { ToolLoopAgent, hasToolCall, isStepCount } from "ai";
 import type { LanguageModel } from "ai";
-import {
-  MailboxEventStreamError,
-  MailboxSendConflictError,
-  WhatsAppServiceWindowClosedError,
-} from "samva";
+import { MailboxEventStreamError, WhatsAppServiceWindowClosedError } from "samva";
 import type { MailboxEvent, SamvaClient } from "samva";
 
 import { isAutomatedSender, parseReceivedMessage } from "./message";
 import { systemPrompt, userTurn } from "./prompt";
-import { mailboxTools } from "./tools";
-import type { TurnOutcome } from "./tools";
+
+/** The result shapes `samvaTools` returns; the AI SDK types a step's tool output as `unknown`. */
+type ReplyResult = Awaited<
+  ReturnType<ReturnType<typeof samvaTools>["reply_to_customer"]["execute"]>
+>;
+type LeaveResult = { readonly reason?: string };
 
 /** Where the agent keeps its place in the event stream. Use durable storage in production. */
 export interface CursorStore {
@@ -52,38 +53,44 @@ export const handleEvent = async (
     return;
   }
 
-  const outcome: TurnOutcome = {};
   const agent = new ToolLoopAgent({
     model: config.model,
     instructions: systemPrompt(config.instructions),
-    tools: mailboxTools(samva, received, event.id, outcome),
+    // One tool set per event: the reply and leave tools share one claim, and a replayed event
+    // recovers the first reply's receipt even when the model drafts different text.
+    tools: { ...samvaTools({ client: samva, message: received, eventId: event.id }) },
     stopWhen: [hasToolCall("reply_to_customer", "leave_for_person"), isStepCount(5)],
   });
-  await agent.generate({ prompt: userTurn(received) });
+  const { steps } = await agent.generate({ prompt: userTurn(received) });
 
-  if (outcome.error !== undefined) {
-    // A replayed event drafts again, and the model rarely writes the same text twice. Samva
-    // refuses a different body under a key it has seen with `MailboxSendConflictError`, which
-    // carries the first reply's receipt: there is nothing left to do for this event. Any other
-    // conflict, such as a paused mailbox, recorded no reply and is thrown below.
-    if (outcome.error instanceof MailboxSendConflictError) {
-      const { receipt } = outcome.error;
-      log(`already answered ${received.messageId}: ${receipt.state}, action ${receipt.actionId}`);
-      return;
-    }
+  // The AI SDK hands a tool's thrown error to the model as a result, so read it from the steps.
+  const failure = steps
+    .flatMap((step) => step.content)
+    .find((part) => part.type === "tool-error" && part.toolName === "reply_to_customer");
+  if (failure?.type === "tool-error") {
     // Free-form WhatsApp text needs the 24-hour service window a customer's message opens. A
     // replayed old event can find it closed; only an approved template reaches them then.
-    if (outcome.error instanceof WhatsAppServiceWindowClosedError) {
+    if (failure.error instanceof WhatsAppServiceWindowClosedError) {
       log(`skipped ${received.messageId}: WhatsApp service window closed`);
       return;
     }
-    throw outcome.error;
+    throw failure.error;
   }
-  if (outcome.reply !== undefined) {
-    log(`reply to ${received.messageId}: ${outcome.reply.state}, action ${outcome.reply.actionId}`);
+
+  const results = steps.flatMap((step) => step.content);
+  const reply = results.find(
+    (part) => part.type === "tool-result" && part.toolName === "reply_to_customer",
+  );
+  const sent = reply?.type === "tool-result" ? (reply.output as ReplyResult) : undefined;
+  if (sent !== undefined && "receipt" in sent) {
+    log(`reply to ${received.messageId}: ${sent.status}, action ${sent.receipt.actionId}`);
     return;
   }
-  log(`left ${received.messageId} for a person: ${outcome.leftForPerson ?? "no tool called"}`);
+  const leave = results.find(
+    (part) => part.type === "tool-result" && part.toolName === "leave_for_person",
+  );
+  const reason = leave?.type === "tool-result" ? (leave.output as LeaveResult).reason : undefined;
+  log(`left ${received.messageId} for a person: ${reason ?? "no tool called"}`);
 };
 
 /**
