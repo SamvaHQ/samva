@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createHash } from "node:crypto";
 
 import { cardToFallbackText } from "@chat-adapter/shared";
 import { isKnownEvent, verifyRequest, type SamvaWebhookEvent } from "@samva/webhooks";
@@ -17,7 +18,7 @@ import {
   type StreamOptions,
   type WebhookOptions,
 } from "chat";
-import { createClient, MailboxSendConflictError, type SamvaClient } from "samva";
+import { createClient, type SamvaClient } from "samva";
 
 export interface SamvaAdapterOptions {
   readonly apiKey: string;
@@ -164,6 +165,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
       const { waitUntil, ...messageOptions } = options ?? {};
       const task = this.inbound.run(raw, async () => {
         try {
+          await state.delete(this.historyKey(message.threadId));
           await chat.processMessage(this, message.threadId, message, {
             ...messageOptions,
             deduplicate: false,
@@ -247,34 +249,40 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
       };
     }
 
-    // Samva cursors advance oldest to newest. Keep the last page before the requested boundary.
-    let recent: MailboxMessage[] = [];
-    let cursor: string | undefined;
-    let found = options.cursor === undefined;
-    do {
-      // oxlint-disable-next-line no-await-in-loop -- The next request needs this page's cursor.
-      const page = await this.client.mailboxes.getThreadContent({
-        ...mailboxThread,
-        cursor,
-        limit: 100,
-      });
-      cursor = page.nextCursor ?? undefined;
-      const boundary = page.items.findIndex((item) => item.id === options.cursor);
-      recent = recent
-        .concat(boundary === -1 ? page.items : page.items.slice(0, boundary))
-        .slice(-limit - 1);
-      if (boundary !== -1) {
-        found = true;
-        break;
-      }
-    } while (cursor !== undefined);
-    if (!found) throw new Error("Samva history cursor is missing from this thread.");
-    const items = recent.slice(-limit);
-    const oldest = items[0];
-    return {
-      messages: items.map((item) => this.parseMessage(item)),
-      ...(recent.length > limit && oldest ? { nextCursor: oldest.id } : {}),
-    };
+    const ids = await this.historyIds(id, target.threadId);
+    const end = options.cursor === undefined ? ids.length : ids.indexOf(options.cursor);
+    if (end < 0) throw new Error("Samva history cursor is missing from this thread.");
+    const start = Math.max(0, end - limit);
+    const messages = await Promise.all(
+      ids.slice(start, end).map(async (messageId) => {
+        const raw = await this.client.mailboxes.getMessage({ id: this.mailboxId, messageId });
+        if (raw.threadId !== target.threadId) {
+          throw new Error("Message does not belong to this Samva thread.");
+        }
+        return this.parseMessage(raw);
+      }),
+    );
+    return { messages, ...(start > 0 && messages[0] ? { nextCursor: messages[0].id } : {}) };
+  }
+
+  private historyKey(id: string): string {
+    return `${id}:history-ids`;
+  }
+
+  private async historyIds(id: string, threadId: string): Promise<string[]> {
+    const state = this.chat?.getState();
+    const key = this.historyKey(id);
+    const cached = await state?.get<string[]>(key);
+    if (cached) return cached;
+
+    // The API pages oldest to newest. Index the summaries once so backward
+    // pages fetch bodies for the requested window without rereading the thread.
+    const ids: string[] = [];
+    for await (const page of this.messagePages(threadId)) {
+      for (const message of page) ids.push(message.id);
+    }
+    await state?.set(key, ids, 30_000);
+    return ids;
   }
 
   private async *messagePages(threadId: string): AsyncGenerator<MessageSummary[]> {
@@ -329,14 +337,12 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     const input = { id: this.mailboxId, messageId: target.id, text };
     if (target.channel === "sms")
       throw new NotImplementedError("Samva Chat SDK supports email and WhatsApp.");
-    const receipt = await this.client.mailboxes
-      .reply(target.channel === "whatsapp" ? { ...input, channel: target.channel } : input, {
-        idempotencyKey: `reply:${target.id}`,
-      })
-      .catch((error: unknown) => {
-        if (error instanceof MailboxSendConflictError) return error.receipt;
-        throw error;
-      });
+    const digest = createHash("sha256").update(text).digest("hex");
+    const receipt = await this.client.mailboxes.reply(
+      target.channel === "whatsapp" ? { ...input, channel: target.channel } : input,
+      { idempotencyKey: `reply:${target.id}:${digest}` },
+    );
+    await this.chat?.getState().delete(this.historyKey(id));
     return this.posted(id, receipt);
   }
 

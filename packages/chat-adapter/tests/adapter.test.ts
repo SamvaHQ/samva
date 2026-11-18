@@ -101,7 +101,9 @@ it.each(["email", "whatsapp"] as const)("dispatches a signed %s delivery once", 
 
 it("buffers a stream and posts one reply with a deterministic key and a held action ID", async () => {
   const fetch = vi.fn(async (request: Request) => {
-    expect(request.headers.get("idempotency-key")).toBe("reply:msg_0000000000000000");
+    expect(request.headers.get("idempotency-key")).toMatch(
+      /^reply:msg_0000000000000000:[a-f0-9]{64}$/,
+    );
     expect(await request.json()).toEqual({ channel: "whatsapp", text: "Hello there" });
     expect(new URL(request.url).pathname).toBe(
       "/v1/mailboxes/mbx_0000000000000000/messages/msg_0000000000000000/reply",
@@ -157,7 +159,7 @@ it("finds the latest inbound message across pages for posts outside a webhook", 
     const url = new URL(request.url);
     if (url.pathname.endsWith("/reply")) {
       expect(url.pathname).toContain("/messages/newest/reply");
-      expect(request.headers.get("idempotency-key")).toBe("reply:newest");
+      expect(request.headers.get("idempotency-key")).toMatch(/^reply:newest:[a-f0-9]{64}$/);
       return Response.json(held, { status: 202 });
     }
 
@@ -194,4 +196,55 @@ it.each(["editMessage", "deleteMessage", "addReaction", "removeReaction"] as con
 it("treats typing as a no-op", async () => {
   const { adapter } = setup();
   await expect(adapter.startTyping()).resolves.toBeUndefined();
+});
+
+it("gives distinct posts different keys and preserves the same-text retry identity", async () => {
+  const fetch = vi.fn(async (request: Request) => {
+    const { text } = await request.json();
+    return Response.json({ ...held, actionId: text }, { status: 202 });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const { adapter, chat } = setup();
+  vi.spyOn(chat, "processMessage").mockImplementation(async (_adapter, id) => {
+    expect((await adapter.postMessage(id, "Acknowledged")).id).toBe("Acknowledged");
+    expect((await adapter.postMessage(id, "Answer")).id).toBe("Answer");
+    expect((await adapter.postMessage(id, "Answer")).id).toBe("Answer");
+  });
+  await chat.webhooks.samva(await delivery());
+  const keys = fetch.mock.calls.map(([request]) => request.headers.get("idempotency-key"));
+  expect(keys).toHaveLength(3);
+  expect(keys[0]).not.toBe(keys[1]);
+  expect(keys[1]).toBe(keys[2]);
+});
+
+it("caches the backward history index and fetches bodies for each requested window", async () => {
+  const fetch = vi.fn(async (request: Request) => {
+    const url = new URL(request.url);
+    if (url.pathname.includes("/threads/")) {
+      expect(url.pathname).toMatch(/\/threads\/[^/]+\/messages$/);
+      return url.searchParams.has("cursor")
+        ? Response.json({ items: [{ id: "msg_3" }], nextCursor: null })
+        : Response.json({ items: [{ id: "msg_1" }, { id: "msg_2" }], nextCursor: "next" });
+    }
+    const id = url.pathname.split("/").at(-1);
+    return Response.json({
+      id,
+      threadId: "thread_0000000000000000",
+      from: { address: "customer@example.com" },
+      direction: "inbound",
+      occurredAt: "2026-01-01T00:00:00.000Z",
+      channel: "email",
+      text: id,
+    });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const { adapter, chat } = setup();
+  await chat.initialize();
+  const first = await adapter.fetchMessages(threadId, { limit: 1 });
+  expect(first.messages.map(({ id }) => id)).toEqual(["msg_3"]);
+  expect(first.nextCursor).toBe("msg_3");
+  const second = await adapter.fetchMessages(threadId, { limit: 1, cursor: "msg_3" });
+  expect(second.messages.map(({ id }) => id)).toEqual(["msg_2"]);
+  expect(second.nextCursor).toBe("msg_2");
+  expect(fetch).toHaveBeenCalledTimes(4);
 });

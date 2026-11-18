@@ -6,7 +6,9 @@ Receive email and WhatsApp messages in Chat SDK through signed Samva mailbox web
 npm install @samva/chat-adapter chat samva @chat-adapter/state-memory
 ```
 
-Create a mailbox-scoped API key. Set `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, and `SAMVA_WEBHOOK_SECRET`. Configure a mailbox webhook for `mailbox.message.received` and point it at the route that exports this `POST` handler.
+Set `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`, and `SAMVA_WEBHOOK_SECRET`. Configure a mailbox webhook for `mailbox.message.received` and point it at the route that exports this `POST` handler.
+
+Before running the agent, create a mailbox-scoped API key with the approval rule `{ match: { effect: "write" }, atLeast: "person" }`. In a test conversation, verify the reply returns `approvalRequired` and review it in the dashboard. See the [mailbox approval setup](https://github.com/SamvaHQ/samva/blob/main/cookbooks/mailboxes.md).
 
 ```ts
 import { createMemoryState } from "@chat-adapter/state-memory";
@@ -50,6 +52,6 @@ export const POST = (request: Request) => chat.webhooks.samva(request);
 
 Use a shared Chat SDK state adapter when deploying across workers so webhook deduplication works across instances. Pass the original request to the webhook handler. Authentication uses the signed body bytes.
 
-Email uses thread scope and WhatsApp arrives as a direct message. Replies posted from the webhook handler address its inbound message, even if another message arrives during the turn. Posts outside that handler resolve the thread's most recent inbound message. Use the example's Chat SDK concurrency mode to keep each handler in its own webhook context. Replies use a deterministic key based on that message ID. `openDM(address)` starts a new conversation when you post to the returned ID. Use an email address or an E.164 phone number.
+Email uses thread scope and WhatsApp arrives as a direct message. Replies posted from the webhook handler address its inbound message, even if another message arrives during the turn. Posts outside that handler resolve the thread's most recent inbound message. Use the example's Chat SDK concurrency mode to keep each handler in its own webhook context. Replies use a deterministic key based on the inbound message ID and rendered text. Posting identical text again to the same inbound message reuses its action. `openDM(address)` starts a new conversation when you post to the returned ID. Use an email address or an E.164 phone number.
 
 A held send returns its Samva action ID and receipt. Streams buffer before submitting. Cards use fallback text. Edits, deletion, and reactions are unsupported. WhatsApp free text requires an open service window.
