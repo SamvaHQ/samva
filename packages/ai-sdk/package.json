@@ -1,6 +1,6 @@
 {
   "name": "@samva/ai-sdk",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "AI SDK tools for Samva mailboxes.",
   "keywords": [
     "ai-sdk",
