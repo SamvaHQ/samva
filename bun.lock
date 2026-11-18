@@ -339,6 +339,21 @@
         "vite": "^8.3.5",
       },
     },
+    "packages/ai-sdk": {
+      "name": "@samva/ai-sdk",
+      "version": "0.0.0",
+      "dependencies": {
+        "zod": "^4.0.0",
+      },
+      "devDependencies": {
+        "ai": "^7.0.170",
+        "samva": "^0.47.0",
+      },
+      "peerDependencies": {
+        "ai": "^7.0.170",
+        "samva": "^0.47.0",
+      },
+    },
     "packages/better-auth": {
       "name": "@samva/better-auth",
       "version": "0.16.0",
@@ -917,6 +932,8 @@
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 
     "@samva-examples/email-sdk": ["@samva-examples/email-sdk@workspace:examples/email-sdk"],
+
+    "@samva/ai-sdk": ["@samva/ai-sdk@workspace:packages/ai-sdk"],
 
     "@samva/better-auth": ["@samva/better-auth@workspace:packages/better-auth"],
 
