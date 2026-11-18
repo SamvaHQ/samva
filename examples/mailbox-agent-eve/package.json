@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "eve dev",
-    "build": "eve build",
+    "build:agent": "eve build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

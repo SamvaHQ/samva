@@ -67,7 +67,7 @@ bun install
 bun run typecheck
 bun run test
 SAMVA_API_KEY=samva_sk_test_x SAMVA_MAILBOX_ID=mbx_x SAMVA_WEBHOOK_SECRET=whsec_x \
-  ANTHROPIC_API_KEY=x bun run build
+  ANTHROPIC_API_KEY=x bun run build:agent
 ```
 
 The tests check the extension's required configuration and the instructions. They never contact
