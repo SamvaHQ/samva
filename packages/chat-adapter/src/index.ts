@@ -71,6 +71,16 @@ function messageText(message: AdapterPostableMessage): string {
 const AUTOMATED_LOCAL_PART =
   /(^|[._+-])(?:no[._-]?reply|do[._-]?not[._-]?reply|mailer-daemon|postmaster|bounces?)(?=$|[._+-])/i;
 
+/** Largest `text` a webhook carries; a body at this length may have been cut. */
+const WEBHOOK_TEXT_LIMIT = 32_000;
+
+function isPreviewTruncated(message: Received["data"]["message"]): boolean {
+  return (
+    (message.text?.length ?? 0) >= WEBHOOK_TEXT_LIMIT ||
+    (message.replyText?.length ?? 0) >= WEBHOOK_TEXT_LIMIT
+  );
+}
+
 function isAutomatedEmail(message: Received["data"]["message"]): boolean {
   const address = message.from.address.trim();
   const at = address.lastIndexOf("@");
@@ -213,7 +223,10 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
       const task = this.inbound.run({ ...raw, nextPost: 0 }, async () => {
         try {
           await state.delete(this.historyKey(message.threadId));
-          await chat.processMessage(this, message.threadId, message, {
+          const turn = isPreviewTruncated(inbound)
+            ? await this.fullMessage(raw, inbound.id)
+            : message;
+          await chat.processMessage(this, message.threadId, turn, {
             ...messageOptions,
             deduplicate: false,
           });
@@ -228,13 +241,23 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     return new Response(null, { status: 204 });
   }
 
-  parseMessage(raw: SamvaRawMessage): Message<SamvaRawMessage> {
+  /** The webhook preview is capped, so a long message is read in full from the mailbox. */
+  private async fullMessage(
+    raw: SamvaInboundEvent,
+    messageId: string,
+  ): Promise<Message<SamvaRawMessage>> {
+    const full = await this.client.mailboxes.getMessage({ id: this.mailboxId, messageId });
+    return this.parseMessage(raw, full);
+  }
+
+  parseMessage(raw: SamvaRawMessage, content?: MailboxMessage): Message<SamvaRawMessage> {
     if ("actionId" in raw) throw new Error("A send receipt does not contain a message body.");
     const message = "data" in raw ? raw.data.message : raw;
+    const source = content ?? message;
     const isMe = "direction" in message && message.direction === "outbound";
-    const body = ("replyText" in message ? message.replyText : undefined) ?? message.text ?? "";
+    const body = ("replyText" in source ? source.replyText : undefined) ?? source.text ?? "";
     const email = (message.channel ?? "email") === "email";
-    const subject = email && "subject" in message ? message.subject?.trim() : undefined;
+    const subject = email && "subject" in source ? source.subject?.trim() : undefined;
     const text = subject ? `Subject: ${subject}${body.trim() ? `\n\n${body}` : ""}` : body;
     const { address } = message.from;
     const name = "data" in raw ? raw.data.message.from.name : raw.from.displayName;

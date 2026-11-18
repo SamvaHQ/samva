@@ -134,6 +134,47 @@ it.each(["email", "whatsapp"] as const)("dispatches a signed %s delivery once", 
   expect(processMessage).toHaveBeenCalledTimes(1);
 });
 
+it("reads the full body when the webhook preview may be cut, and not otherwise", async () => {
+  const full = `${"x".repeat(32_000)} tail`;
+  const fetch = vi.fn(async (request: Request) => {
+    expect(new URL(request.url).pathname).toBe(
+      "/v1/mailboxes/mbx_0000000000000000/messages/msg_0000000000000000",
+    );
+    return Response.json({ id: "msg_0000000000000000", subject: "Long", text: full });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const { chat } = setup();
+  const texts: string[] = [];
+  vi.spyOn(chat, "processMessage").mockImplementation(async (_adapter, _id, message) => {
+    texts.push((message as Message).text);
+    await Promise.resolve();
+  });
+
+  expect(
+    (
+      await chat.webhooks.samva(
+        await delivery({ channel: "email", id: "evt_short", subject: "Short", text: "Brief" }),
+      )
+    ).status,
+  ).toBe(204);
+  expect(fetch).not.toHaveBeenCalled();
+
+  expect(
+    (
+      await chat.webhooks.samva(
+        await delivery({
+          channel: "email",
+          id: "evt_long",
+          subject: "Long",
+          text: "x".repeat(32_000),
+        }),
+      )
+    ).status,
+  ).toBe(204);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(texts).toEqual(["Subject: Short\n\nBrief", `Subject: Long\n\n${full}`]);
+});
+
 it("buffers a stream and posts one reply with a deterministic key and a held action ID", async () => {
   const fetch = vi.fn(async (request: Request) => {
     expect(request.headers.get("idempotency-key")).toMatch(
