@@ -376,7 +376,7 @@
     },
     "packages/chat-adapter": {
       "name": "@samva/chat-adapter",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@chat-adapter/shared": "^4.42.0",
         "@samva/webhooks": "^0.47.0",
@@ -405,7 +405,7 @@
     },
     "packages/eve": {
       "name": "@samva/eve",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@samva/ai-sdk": "workspace:^",
         "@samva/chat-adapter": "workspace:^",
