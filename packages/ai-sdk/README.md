@@ -38,3 +38,17 @@ export async function handleCustomerMessage(
 Create one tool set for each inbound event and reuse it across steps in the turn. The reply and leave tools share a synchronous claim. A reply uses the event ID as its Samva idempotency key, so redeliveries recover the existing send receipt even if the model drafts different text. After a refused reply, the tools allow a new attempt or a handoff. If the reply outcome is unknown, the tools allow a reply retry with the same event ID to recover its receipt. Replies held by mailbox rules return `held for approval` and an action receipt. The leave tool returns a reason in the tool result for your application to record.
 
 Give the agent access to a mailbox whose threads it is allowed to read. The read tools use the mailbox ID supplied by your handler.
+
+In AI SDK step results, check the tool name and skip dynamic results to get the typed Samva output. The package exports `SamvaReplyResult` and `SamvaLeaveResult` for handlers that need to name these types.
+
+```ts
+const result = await handleCustomerMessage(model, eventId, message, customerText);
+for (const step of result.steps) {
+  for (const entry of step.toolResults) {
+    if (entry.dynamic || entry.toolName !== "reply_to_customer") continue;
+    if ("receipt" in entry.output) {
+      console.info(entry.output.status, entry.output.receipt.actionId);
+    }
+  }
+}
+```

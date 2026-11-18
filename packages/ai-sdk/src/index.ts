@@ -50,21 +50,21 @@ type ToolInput<Name extends keyof typeof samvaToolInputs> = z.output<
   (typeof samvaToolInputs)[Name]
 >;
 
-export interface SamvaTools {
-  reply_to_customer: ExecutableTool<
-    ToolInput<"reply_to_customer">,
-    | AlreadyHandled
-    | {
-        status: Exclude<SendReceipt["state"], "approvalRequired"> | "held for approval";
-        receipt: SendReceipt;
-      }
-  >;
-  leave_for_person: ExecutableTool<
-    ToolInput<"leave_for_person">,
-    | AlreadyHandled
-    | { readonly status: "reply outcome unknown" }
-    | { readonly status: "left for a person"; readonly reason: string }
-  >;
+export type SamvaReplyResult =
+  | AlreadyHandled
+  | {
+      readonly status: Exclude<SendReceipt["state"], "approvalRequired"> | "held for approval";
+      readonly receipt: SendReceipt;
+    };
+
+export type SamvaLeaveResult =
+  | AlreadyHandled
+  | { readonly status: "reply outcome unknown" }
+  | { readonly status: "left for a person"; readonly reason: string };
+
+export type SamvaTools = {
+  reply_to_customer: ExecutableTool<ToolInput<"reply_to_customer">, SamvaReplyResult>;
+  leave_for_person: ExecutableTool<ToolInput<"leave_for_person">, SamvaLeaveResult>;
   get_thread: ExecutableTool<
     ToolInput<"get_thread">,
     Awaited<ReturnType<Mailboxes["getThreadContent"]>>
@@ -73,7 +73,7 @@ export interface SamvaTools {
     ToolInput<"search_threads">,
     Awaited<ReturnType<Mailboxes["listThreads"]>>
   >;
-}
+};
 
 /** Create one tool set per inbound event and reuse it throughout the agent turn. */
 export function samvaTools({
