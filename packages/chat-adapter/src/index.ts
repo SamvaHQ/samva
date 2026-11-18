@@ -220,12 +220,17 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     // Covers the verifier's acceptance window, including signatures dated ahead of the server.
     if (await state.setIfNotExists(key, true, 24 * 60 * 60 * 1000)) {
       const { waitUntil, ...messageOptions } = options ?? {};
+      // Read before returning so a failure reaches the sender as an error and the webhook is retried.
+      let turn = message;
+      try {
+        if (isPreviewTruncated(inbound)) turn = await this.fullMessage(raw, inbound.id);
+      } catch (error) {
+        await state.delete(key);
+        throw error;
+      }
       const task = this.inbound.run({ ...raw, nextPost: 0 }, async () => {
         try {
           await state.delete(this.historyKey(message.threadId));
-          const turn = isPreviewTruncated(inbound)
-            ? await this.fullMessage(raw, inbound.id)
-            : message;
           await chat.processMessage(this, message.threadId, turn, {
             ...messageOptions,
             deduplicate: false,

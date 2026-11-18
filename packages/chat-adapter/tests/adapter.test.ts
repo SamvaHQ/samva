@@ -175,6 +175,31 @@ it("reads the full body when the webhook preview may be cut, and not otherwise",
   expect(texts).toEqual(["Subject: Short\n\nBrief", `Subject: Long\n\n${full}`]);
 });
 
+it("fails the webhook so it is retried when the full body cannot be read", async () => {
+  let fail = true;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      fail
+        ? new Response("unavailable", { status: 503 })
+        : Response.json({ id: "msg_0000000000000000", text: "full" }),
+    ),
+  );
+  const { chat } = setup();
+  const processMessage = vi.spyOn(chat, "processMessage").mockResolvedValue();
+  const waitUntil = vi.fn();
+  const long = () => delivery({ channel: "email", text: "x".repeat(32_000) });
+
+  await expect(chat.webhooks.samva(await long(), { waitUntil })).rejects.toThrow();
+  expect(processMessage).not.toHaveBeenCalled();
+  expect(waitUntil).not.toHaveBeenCalled();
+
+  fail = false;
+  expect((await chat.webhooks.samva(await long(), { waitUntil })).status).toBe(204);
+  await Promise.all(waitUntil.mock.calls.map(([task]) => task));
+  expect(processMessage).toHaveBeenCalledTimes(1);
+});
+
 it("buffers a stream and posts one reply with a deterministic key and a held action ID", async () => {
   const fetch = vi.fn(async (request: Request) => {
     expect(request.headers.get("idempotency-key")).toMatch(
