@@ -1,78 +1,91 @@
 core:changelogs:
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.45\n\nBoth adapters now require `samva@^0.45.0` and validate against SDK 0.45.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and\n`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.45.\n"
-    filename: 2026-11-14-sdk-045.md
-    v: 0.0.0
-  - content: "---\npackages:\n  \"@samva/better-auth\":\n    type: minor\n  \"@samva/email-sdk\":\n    type: minor\n---\n\n## Require Samva SDK 0.47\n\nBoth adapters now require `samva@^0.47.0` and validate against SDK 0.47.0.\nOnly the current SDK minor is supported; upgrade Samva alongside the adapter.\n\nThe adapter surface is unchanged. `@samva/email-sdk` still calls `email.send` and\n`@samva/better-auth` still calls `messages.send`; neither payload changed in 0.47.\n"
-    filename: 2026-11-18-sdk-047.md
+  - content: "---\npackages:\n  \"@samva/ai-sdk\":\n    type: minor\n  \"@samva/chat-adapter\":\n    type: minor\n  \"@samva/eve\":\n    type: minor\n---\n\n## Connect mailbox agents to AI SDK, Chat SDK, and Eve\n\nUse inbound-bound AI SDK tools, a Chat SDK adapter for signed email and WhatsApp webhooks, or an Eve extension that bundles both.\n"
+    filename: 2026-11-18-agent-framework-packages.md
     v: 0.0.0
 core:packages:
-  - changelogIds:
-      - 2026-11-14-sdk-045.md
-      - 2026-11-18-sdk-047.md
-    id: npm:@samva/email-sdk
-    updated: true
-  - id: npm:astro-email-samva
+  - id: npm:mailbox-agent-openai-agents-samva
     updated: false
   - changelogIds:
-      - 2026-11-14-sdk-045.md
-      - 2026-11-18-sdk-047.md
-    id: npm:@samva/better-auth
+      - 2026-11-18-agent-framework-packages.md
+    id: npm:@samva/ai-sdk
     updated: true
-  - id: npm:nextjs-transactional-samva
-    updated: false
-  - id: npm:mailbox-agent-claude-agent-sdk-samva
-    updated: false
-  - id: npm:hono-cloudflare-workers-samva
-    updated: false
-  - id: npm:sveltekit-transactional-samva
-    updated: false
-  - id: npm:clerk-webhook-samva
+  - changelogIds:
+      - 2026-11-18-agent-framework-packages.md
+    id: npm:@samva/eve
+    updated: true
+  - id: npm:tanstack-start-transactional-samva
     updated: false
   - id: npm:mailbox-agent-ai-sdk-samva
     updated: false
-  - id: npm:mailbox-agent-openai-agents-samva
-    updated: false
-  - id: npm:mailbox-agent-eve-samva
-    updated: false
-  - id: npm:inbound-email-replies-samva
-    updated: false
-  - id: npm:better-auth-nextjs-samva
-    updated: false
-  - id: npm:supabase-auth-hook-samva
-    updated: false
-  - id: npm:mailbox-agent-claude-samva
-    updated: false
-  - id: npm:effect-sdk-example
-    updated: false
-  - id: npm:mailbox-agent-samva
-    updated: false
-  - id: npm:tsx-template-samva
-    updated: false
-  - id: npm:react-email-samva
-    updated: false
-  - id: npm:tanstack-start-transactional-samva
-    updated: false
-  - id: npm:mailbox-agent-langgraph-samva
-    updated: false
-npm:packages:
-  - id: npm:@samva/email-sdk
-  - id: npm:astro-email-samva
+  - changelogIds:
+      - 2026-11-18-agent-framework-packages.md
+    id: npm:@samva/chat-adapter
+    updated: true
   - id: npm:@samva/better-auth
-  - id: npm:nextjs-transactional-samva
-  - id: npm:mailbox-agent-claude-agent-sdk-samva
-  - id: npm:hono-cloudflare-workers-samva
-  - id: npm:sveltekit-transactional-samva
+    updated: false
   - id: npm:clerk-webhook-samva
-  - id: npm:mailbox-agent-ai-sdk-samva
-  - id: npm:mailbox-agent-openai-agents-samva
-  - id: npm:mailbox-agent-eve-samva
+    updated: false
+  - id: npm:@samva/email-sdk
+    updated: false
   - id: npm:inbound-email-replies-samva
+    updated: false
+  - id: npm:mailbox-agent-samva
+    updated: false
+  - id: npm:effect-sdk-example
+    updated: false
+  - id: npm:react-email-samva
+    updated: false
+  - id: npm:supabase-auth-hook-samva
+    updated: false
+  - id: npm:mailbox-agent-claude-samva
+    updated: false
+  - id: npm:mailbox-agent-langgraph-samva
+    updated: false
+  - id: npm:onboarding-agent-samva
+    updated: false
+  - id: npm:hono-cloudflare-workers-samva
+    updated: false
+  - id: npm:mailbox-agent-claude-agent-sdk-samva
+    updated: false
   - id: npm:better-auth-nextjs-samva
+    updated: false
+  - id: npm:mailbox-agent-eve-samva
+    updated: false
+  - id: npm:astro-email-samva
+    updated: false
+  - id: npm:sveltekit-transactional-samva
+    updated: false
+  - id: npm:tsx-template-samva
+    updated: false
+  - id: npm:nextjs-transactional-samva
+    updated: false
+npm:mark-latest:
+  - id: npm:@samva/ai-sdk
+  - id: npm:@samva/eve
+  - id: npm:@samva/chat-adapter
+npm:packages:
+  - id: npm:mailbox-agent-openai-agents-samva
+  - id: npm:@samva/ai-sdk
+  - id: npm:@samva/eve
+  - id: npm:tanstack-start-transactional-samva
+  - id: npm:mailbox-agent-ai-sdk-samva
+  - id: npm:@samva/chat-adapter
+  - id: npm:@samva/better-auth
+  - id: npm:clerk-webhook-samva
+  - id: npm:@samva/email-sdk
+  - id: npm:inbound-email-replies-samva
+  - id: npm:mailbox-agent-samva
+  - id: npm:effect-sdk-example
+  - id: npm:react-email-samva
   - id: npm:supabase-auth-hook-samva
   - id: npm:mailbox-agent-claude-samva
-  - id: npm:effect-sdk-example
-  - id: npm:mailbox-agent-samva
-  - id: npm:tsx-template-samva
-  - id: npm:react-email-samva
-  - id: npm:tanstack-start-transactional-samva
   - id: npm:mailbox-agent-langgraph-samva
+  - id: npm:onboarding-agent-samva
+  - id: npm:hono-cloudflare-workers-samva
+  - id: npm:mailbox-agent-claude-agent-sdk-samva
+  - id: npm:better-auth-nextjs-samva
+  - id: npm:mailbox-agent-eve-samva
+  - id: npm:astro-email-samva
+  - id: npm:sveltekit-transactional-samva
+  - id: npm:tsx-template-samva
+  - id: npm:nextjs-transactional-samva

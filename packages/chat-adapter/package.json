@@ -1,6 +1,6 @@
 {
   "name": "@samva/chat-adapter",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Chat SDK adapter for Samva mailboxes.",
   "keywords": [
     "chat-sdk",
