@@ -62,6 +62,13 @@ never contacts Samva.
 
 ## Deploy to Vercel
 
-Deploy this directory as a Next.js project and set the three variables. The example keeps Chat
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSamvaHQ%2Fsamva%2Ftree%2Fmain%2Fexamples%2Fmailbox-agent-chat-sdk&project-name=samva-chat-sdk-agent&repository-name=samva-chat-sdk-agent&integration-ids=oac_RdN0gZpEwX72IuR2I1FVC5hw)
+
+The button clones this example into a new repository and installs Samva on the new project. In
+the Samva step, choose the mailbox, select the new project, and set **Receive messages at** to
+`https://<project>.vercel.app/api/samva`. Samva then writes `SAMVA_API_KEY`, `SAMVA_MAILBOX_ID`,
+and `SAMVA_WEBHOOK_SECRET` to the project.
+
+To deploy another way, deploy this directory as a Next.js project and set the three variables. The example keeps Chat
 SDK state in memory, so use a shared state adapter such as `@chat-adapter/state-redis` when more
 than one instance serves the route. See the [Vercel cookbook](../../cookbooks/vercel.md).
