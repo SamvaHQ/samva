@@ -69,7 +69,9 @@ tutorial. The free plan needs no card and includes one mailbox; WhatsApp is on p
 
 While Samva is 0.x, the maintained integrations support only the current SDK minor: 0.48. Workspace
 packages require `samva@^0.48.0` as a peer and test against `0.48.0`. Examples use
-`samva@^0.48.0`; copyable external import maps pin `samva@0.48.0`.
+`samva@^0.48.0`; copyable external import maps pin `samva@0.48.0`. Examples depend on the integration packages by published range, so a
+clone of one example installs from npm; inside this repository, Bun links the workspace copy while its
+version satisfies that range.
 
 ## Package integrations
 

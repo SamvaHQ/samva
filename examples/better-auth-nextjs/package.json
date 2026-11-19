@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@better-auth/memory-adapter": "^1.7.17",
-    "@samva/better-auth": "workspace:*",
+    "@samva/better-auth": "^0.16.1",
     "better-auth": "^1.7.17",
     "next": "^16.4.5",
     "react": "^19.3.1",
