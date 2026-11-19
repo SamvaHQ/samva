@@ -3,12 +3,17 @@
   "version": "0.1.1",
   "description": "AI SDK tools for Samva mailboxes.",
   "keywords": [
+    "agent",
+    "ai",
     "ai-sdk",
     "email",
+    "mailbox",
     "samva",
+    "tools",
+    "vercel-ai-sdk",
     "whatsapp"
   ],
-  "homepage": "https://samva.dev",
+  "homepage": "https://samva.dev/docs/mailboxes/vercel-ai-sdk",
   "bugs": {
     "url": "https://github.com/SamvaHQ/samva/issues"
   },
