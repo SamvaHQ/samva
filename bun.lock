@@ -147,6 +147,27 @@
         "vitest": "^5.1.0",
       },
     },
+    "examples/mailbox-agent-chat-sdk": {
+      "name": "mailbox-agent-chat-sdk-samva",
+      "version": "0.0.0",
+      "dependencies": {
+        "@chat-adapter/state-memory": "4.42.0",
+        "@samva/chat-adapter": "workspace:*",
+        "chat": "4.42.0",
+        "next": "^16.4.5",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "samva": "^0.48.0",
+      },
+      "devDependencies": {
+        "@samva/webhooks": "^0.48.0",
+        "@types/node": "^26.6.6",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "typescript": "^7.0.2",
+        "vitest": "^5.1.0",
+      },
+    },
     "examples/mailbox-agent-claude": {
       "name": "mailbox-agent-claude-samva",
       "version": "0.0.0",
@@ -1720,6 +1741,8 @@
     "magicast": ["magicast@0.5.5", "", { "dependencies": { "@babel/parser": "^7.29.7", "@babel/types": "^7.29.7", "source-map-js": "^1.2.1" } }, "sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA=="],
 
     "mailbox-agent-ai-sdk-samva": ["mailbox-agent-ai-sdk-samva@workspace:examples/mailbox-agent-ai-sdk"],
+
+    "mailbox-agent-chat-sdk-samva": ["mailbox-agent-chat-sdk-samva@workspace:examples/mailbox-agent-chat-sdk"],
 
     "mailbox-agent-claude-agent-sdk-samva": ["mailbox-agent-claude-agent-sdk-samva@workspace:examples/mailbox-agent-claude-agent-sdk"],
 

@@ -1,0 +1,33 @@
+{
+  "name": "mailbox-agent-chat-sdk-samva",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Next.js example of a Chat SDK bot that answers a Samva mailbox on email and WhatsApp, replies held for a person's approval.",
+  "type": "module",
+  "scripts": {
+    "build": "SAMVA_API_KEY=samva_sk_test_build_placeholder SAMVA_MAILBOX_ID=mbx_build_placeholder SAMVA_WEBHOOK_SECRET=whsec_build_placeholder next build --webpack",
+    "dev": "next dev",
+    "test": "vitest run",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@chat-adapter/state-memory": "4.42.0",
+    "@samva/chat-adapter": "workspace:*",
+    "chat": "4.42.0",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "samva": "^0.48.0"
+  },
+  "devDependencies": {
+    "@samva/webhooks": "^0.48.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
