@@ -139,6 +139,10 @@ function createMailboxClient(apiKey: SamvaCredential): SamvaClient {
   });
 }
 
+function sha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
 function unsupported(): never {
   throw new NotImplementedError("Samva messages do not support edits, deletion, or reactions.");
 }
@@ -416,22 +420,32 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     const target = this.decodeThreadId(id);
     const text = messageText(message);
     if (!text.trim()) throw new Error("Samva posts require message text.");
+    const active = this.inbound.getStore();
     if ("recipient" in target) {
       const { recipient } = target;
-      const receipt = await this.client.mailboxes.sendMessage(
-        recipient.startsWith("+")
-          ? { id: this.mailboxId, channel: "whatsapp", to: recipient, text }
-          : { id: this.mailboxId, to: [recipient], subject: "New message", text },
-      );
-      return this.posted(id, receipt);
+      // Inside a webhook handler, a redelivery replays the same posts in the same order, so the
+      // delivery and the post's position name the send. Outside one, each call is a new send.
+      const idempotencyKey = active
+        ? `dm:${sha256(recipient)}:delivery:${sha256(active.eventId)}:${active.nextPost++}`
+        : undefined;
+      try {
+        const receipt = await this.client.mailboxes.sendMessage(
+          recipient.startsWith("+")
+            ? { id: this.mailboxId, channel: "whatsapp", to: recipient, text }
+            : { id: this.mailboxId, to: [recipient], subject: "New message", text },
+          idempotencyKey === undefined ? undefined : { idempotencyKey },
+        );
+        return this.posted(id, receipt);
+      } catch (error) {
+        if (error instanceof MailboxSendConflictError) return this.posted(id, error.receipt);
+        throw error;
+      }
     }
 
-    const active = this.inbound.getStore();
     if (active?.data.message.threadId === target.threadId) {
       // Replaying the delivery starts at the same ordinal even if the draft changes.
       const position = active.nextPost++;
-      const eventDigest = createHash("sha256").update(active.eventId).digest("hex");
-      const key = `reply:${active.data.message.id}:delivery:${eventDigest}:${position}`;
+      const key = `reply:${active.data.message.id}:delivery:${sha256(active.eventId)}:${position}`;
       try {
         return await this.replyTo(id, active.data.message, text, key);
       } catch (error) {
@@ -444,7 +458,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
       latest = page.findLast((item) => item.direction === "inbound") ?? latest;
     }
     if (!latest) throw new Error("Samva thread has no inbound message to reply to.");
-    const digest = createHash("sha256").update(text).digest("hex");
+    const digest = sha256(text);
     return this.replyTo(id, latest, text, `reply:${latest.id}:${digest}`);
   }
 

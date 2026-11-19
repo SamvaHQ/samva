@@ -496,3 +496,51 @@ it("fails a delivery instead of answering 401 when the secret resolver returns n
   const adapter = createSamvaAdapter({ apiKey: "test", mailboxId, webhookSecret: () => "" });
   await expect(adapter.handleWebhook(await delivery())).rejects.toThrow(/empty webhook secret/);
 });
+
+it("keys a new conversation started inside a webhook handler, so a redelivery cannot send it twice", async () => {
+  const accepted = new Map<string, typeof held>();
+  const fetch = vi.fn(async (request: Request) => {
+    expect(new URL(request.url).pathname).toBe("/v1/mailboxes/mbx_0000000000000000/messages");
+    const key = request.headers.get("idempotency-key");
+    if (!key) throw new Error("Expected an idempotency key");
+    const previous = accepted.get(key);
+    if (previous) {
+      return Response.json(
+        {
+          _tag: "MailboxSendConflictError",
+          id: previous.actionId,
+          resource: "MailboxAction",
+          message: "This key already has a receipt",
+          receipt: previous,
+        },
+        { status: 409 },
+      );
+    }
+    const receipt = { ...held, actionId: `action_${accepted.size + 1}` };
+    accepted.set(key, receipt);
+    if (accepted.size === 1) throw new Error("Lost response after Samva recorded the action");
+    return Response.json(receipt, { status: 202 });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const { adapter, chat } = setup();
+  const notify = async () => {
+    const dm = await adapter.openDM("ops@example.com");
+    return adapter.postMessage(dm, "A customer wrote in.");
+  };
+  vi.spyOn(chat, "processMessage")
+    .mockImplementationOnce(async () => {
+      await notify();
+    })
+    .mockImplementationOnce(async () => {
+      expect((await notify()).id).toBe("action_1");
+    });
+
+  await expect(chat.webhooks.samva(await delivery())).rejects.toThrow();
+  expect((await chat.webhooks.samva(await delivery())).status).toBe(204);
+
+  const keys = fetch.mock.calls.map(([request]) => request.headers.get("idempotency-key"));
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toMatch(/^dm:[a-f0-9]{64}:delivery:[a-f0-9]{64}:0$/);
+  expect(keys[0]).toBe(keys[1]);
+  expect(accepted.size).toBe(1);
+});
