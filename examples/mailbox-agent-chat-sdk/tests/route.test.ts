@@ -22,7 +22,7 @@ const held = {
   updatedAt: "2026-01-01T12:00:00.000Z",
 };
 
-async function delivery(key = secret) {
+async function delivery(key = secret, channel: "email" | "whatsapp" = "whatsapp") {
   const occurredAt = new Date().toISOString();
   const body = JSON.stringify({
     type: "mailbox.message.received",
@@ -33,12 +33,12 @@ async function delivery(key = secret) {
       thread: { id: "thread_0000000000000000", subject: null, preview: null },
       message: {
         id: "msg_0000000000000000",
-        channel: "whatsapp",
+        channel,
         threadId: "thread_0000000000000000",
-        from: { address: "+15555550100" },
+        from: { address: channel === "whatsapp" ? "+15555550100" : "customer@example.com" },
         to: [],
         cc: [],
-        subject: null,
+        subject: channel === "email" ? "Where is my order?" : null,
         text: "Hello",
         replyText: null,
         attachments: [],
@@ -85,19 +85,22 @@ it("rejects a delivery with a bad signature without replying", async () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-it("answers a signed delivery with 204 and logs the held reply", async () => {
-  const fetch = vi.fn(async (request: Request) => {
-    expect(new URL(request.url).pathname).toBe(
-      `/v1/mailboxes/${mailboxId}/messages/msg_0000000000000000/reply`,
-    );
-    expect(await request.json()).toMatchObject({ text: "Thanks for your message." });
-    return Response.json(held, { status: 202 });
-  });
-  vi.stubGlobal("fetch", fetch);
-  const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
-  const { POST } = await import("../app/api/samva/route");
+it.each(["email", "whatsapp"] as const)(
+  "answers a signed %s delivery with 204 and logs the held reply",
+  async (channel) => {
+    const fetch = vi.fn(async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe(
+        `/v1/mailboxes/${mailboxId}/messages/msg_0000000000000000/reply`,
+      );
+      expect(await request.json()).toMatchObject({ text: "Thanks for your message." });
+      return Response.json(held, { status: 202 });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    const { POST } = await import("../app/api/samva/route");
 
-  expect((await POST(await delivery())).status).toBe(204);
-  expect(fetch).toHaveBeenCalledTimes(1);
-  expect(info).toHaveBeenCalledWith("Reply held for approval", "action_1");
-});
+    expect((await POST(await delivery(secret, channel))).status).toBe(204);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith("Reply held for approval", "action_1");
+  },
+);
