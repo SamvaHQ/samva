@@ -544,3 +544,21 @@ it("keys a new conversation started inside a webhook handler, so a redelivery ca
   expect(keys[0]).toBe(keys[1]);
   expect(accepted.size).toBe(1);
 });
+
+it("keeps a reply's key when the handler also starts a new conversation", async () => {
+  const keys: (string | null)[] = [];
+  const fetch = vi.fn(async (request: Request) => {
+    keys.push(request.headers.get("idempotency-key"));
+    return Response.json(held, { status: 202 });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const { adapter, chat } = setup();
+  vi.spyOn(chat, "processMessage").mockImplementation(async (_adapter, id) => {
+    await adapter.postMessage(await adapter.openDM("ops@example.com"), "A customer wrote in.");
+    await adapter.postMessage(id, "Thanks for your message.");
+  });
+
+  expect((await chat.webhooks.samva(await delivery())).status).toBe(204);
+  expect(keys[0]).toMatch(/^dm:[a-f0-9]{64}:delivery:[a-f0-9]{64}:0$/);
+  expect(keys[1]).toMatch(/^reply:msg_0000000000000000:delivery:[a-f0-9]{64}:0$/);
+});

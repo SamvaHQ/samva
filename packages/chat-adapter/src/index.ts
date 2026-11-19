@@ -50,7 +50,8 @@ export interface SamvaInboundEvent {
 
 export type SamvaRawMessage = SamvaInboundEvent | MailboxMessage | SamvaSendReceipt;
 type ThreadTarget = { threadId: string } | { recipient: string };
-type DeliveryContext = SamvaInboundEvent & { nextPost: number };
+/** Replies and new-conversation posts count separately, so adding one never shifts the other's keys. */
+type DeliveryContext = SamvaInboundEvent & { nextPost: number; nextDirectPost: number };
 
 export function receiptOf(message: {
   readonly raw: SamvaRawMessage;
@@ -267,7 +268,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
         await state.delete(key);
         throw error;
       }
-      const task = this.inbound.run({ ...raw, nextPost: 0 }, async () => {
+      const task = this.inbound.run({ ...raw, nextPost: 0, nextDirectPost: 0 }, async () => {
         try {
           await state.delete(this.historyKey(message.threadId));
           await chat.processMessage(this, message.threadId, turn, {
@@ -426,7 +427,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
       // Inside a webhook handler, a redelivery replays the same posts in the same order, so the
       // delivery and the post's position name the send. Outside one, each call is a new send.
       const idempotencyKey = active
-        ? `dm:${sha256(recipient)}:delivery:${sha256(active.eventId)}:${active.nextPost++}`
+        ? `dm:${sha256(recipient)}:delivery:${sha256(active.eventId)}:${active.nextDirectPost++}`
         : undefined;
       try {
         const receipt = await this.client.mailboxes.sendMessage(
