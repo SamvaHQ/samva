@@ -70,13 +70,13 @@ The adapter reads none of these itself. Pass them to `createSamvaAdapter`, as in
 
 ## Configuration
 
-| Option                  | Type      | Description                                                 |
-| ----------------------- | --------- | ----------------------------------------------------------- |
-| `apiKey`                | `string`  | Mailbox-scoped API key. Required.                           |
-| `mailboxId`             | `string`  | Mailbox ID. Required.                                       |
-| `webhookSecret`         | `string`  | Webhook signing secret. Required.                           |
-| `userName`              | `string`  | Bot user name. Defaults to `Samva`.                         |
-| `includeAutomatedEmail` | `boolean` | Pass automated email to your handlers. Defaults to `false`. |
+| Option                  | Type                                          | Description                                                                      |
+| ----------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
+| `apiKey`                | `string \| (() => string \| Promise<string>)` | Mailbox-scoped API key. Required. A function is called before every API request. |
+| `mailboxId`             | `string`                                      | Mailbox ID. Required.                                                            |
+| `webhookSecret`         | `string \| (() => string \| Promise<string>)` | Webhook signing secret. Required. A function is called for every delivery.       |
+| `userName`              | `string`                                      | Bot user name. Defaults to `Samva`.                                              |
+| `includeAutomatedEmail` | `boolean`                                     | Pass automated email to your handlers. Defaults to `false`.                      |
 
 The adapter caches neither function result, so a rotated or short-lived credential applies immediately. If a resolver throws or returns an empty value, the webhook handler throws instead of answering `401`, so the delivery is retried.
 
