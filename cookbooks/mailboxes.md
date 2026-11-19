@@ -76,7 +76,7 @@ Policy replacement checks the version read above. A stale write returns `409`; r
 current rules before replacing them again.
 
 Grant only the permissions the agent uses: `read`, `update`, `send`, and
-`quarantine.read`. Use a `write` minimum of `person` so sends and replies wait for review.
+`spam.read`. Use a `write` minimum of `person` so sends and replies wait for review.
 
 ## Follow events
 

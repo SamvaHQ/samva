@@ -64,10 +64,10 @@ pauses and spend-cap state. The mailbox-agent example runs its own event loop;
 it does not create or replace hosted agents.
 
 `message.received` webhooks carry `disposition` and `reason`. Act only on `delivered`
-mail: Samva still sends the event, with its body, for mail it quarantined when it
+mail: Samva still sends the event, with its body, for mail it screened when it
 arrived, and `reason` says why (`verdict_missing` marks a receipt check that returned
-no verdict). Mailbox content screening can hold a message after this event; follow those
-holds through mailbox events and the quarantine API. Email senders report `sendable`.
+no verdict). Mailbox content screening can hold a message after this event; follow Spam
+arrivals through `mailbox.message.spam` and held malware through the Spam API. Email senders report `sendable`.
 `templates.suggestStarters` and `templates.createFromBrief` (CLI `templates suggest` and
 `templates from-brief`) start a template from a brief, and `templates init` picks its
 gallery design with `--gallery-template`. The API, not the Effect SDK, now rejects

@@ -7,7 +7,7 @@ description: >-
   domains and senders, inbound receiving, webhooks, templates, WhatsApp's
   24-hour service window and setup links, schedules, campaigns, usage,
   readiness, authentication, mailboxes for agents (threads, replies, approval
-  sends, quarantine, event streams, agent event handlers), or choosing the right Samva
+  sends, Spam, event streams, agent event handlers), or choosing the right Samva
   surface. Triggers on samva, samva.dev, the `samva` package, `@samva/cli`,
   `samva/agent`, mcp.samva.dev, SAMVA_API_KEY, agent mailbox, Samva
   WhatsApp, SML, Samva Markup Language, and template editor agent.
@@ -56,7 +56,7 @@ Read only the reference needed for the selected surface:
 - [SDK and REST](references/sdk.md): Promise SDK, Effect SDK, and direct HTTP.
 - [CLI](references/cli.md): installation, authentication, and shipped command families.
 - [Hosted MCP](references/mcp.md): endpoint, public tool families, resources, and safe retries.
-- [Mailboxes](references/mailbox-events.md): approval sends, quarantine, the event stream, and
+- [Mailboxes](references/mailbox-events.md): approval sends, Spam, the event stream, and
   agent event handlers with `samva/agent`. The SDK, CLI, and MCP references cover the calls.
 - [WhatsApp](references/whatsapp.md): the 24-hour service window, template and free-form sends,
   WhatsApp threads in a mailbox, and setup links for customers' numbers.
@@ -83,7 +83,7 @@ Read only the reference needed for the selected surface:
 Docs: <https://samva.dev/docs/mailboxes> and <https://samva.dev/docs/mailboxes/cli>.
 
 - Give an agent a restricted key with `mailboxes` access, listing only the permissions it needs
-  (`read`, `update`, `send`, `quarantine.read`) and its `mailboxIds`. Never hand it a full-access
+  (`read`, `update`, `send`, `spam.read`) and its `mailboxIds`. Never hand it a full-access
   key.
 - To hold a key's sends and replies, have a person set `decide: "person"` for effect `write`.
   A permitted key send runs directly unless policy requires review; a `final` rule alone does not
