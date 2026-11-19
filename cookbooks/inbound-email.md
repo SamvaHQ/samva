@@ -91,7 +91,7 @@ Return a non-2xx status for an invalid signature so the sender retries or alerts
 
 The event carries the inbound `messageId`, `conversationId`, and sender, plus the
 `disposition` Samva gave the message when it arrived. Answer only `delivered` mail: a
-`quarantined` message is waiting for a person to review it, and `reason` says why. Load the
+`quarantined` message was filed in Spam (or held as malware), and `reason` says why. Load the
 conversation and its first page of messages (`{ items, nextCursor }`, oldest
 first; each body is at `samva.messages.getContent`), then send with `conversationId` and
 `inReplyToMessageId` so the reply joins the same thread.
