@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@chat-adapter/state-memory": "4.42.0",
-    "@samva/chat-adapter": "workspace:*",
+    "@samva/chat-adapter": "^0.2.0",
     "chat": "4.42.0",
     "next": "^16.4.5",
     "react": "^19.3.1",

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.102",
-    "@samva/ai-sdk": "workspace:*",
+    "@samva/ai-sdk": "^0.1.1",
     "ai": "^7.0.170",
     "samva": "^0.48.0"
   },

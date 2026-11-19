@@ -35,7 +35,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@better-auth/memory-adapter": "^1.7.17",
-        "@samva/better-auth": "workspace:*",
+        "@samva/better-auth": "^0.16.1",
         "better-auth": "^1.7.17",
         "next": "^16.4.5",
         "react": "^19.3.1",
@@ -85,7 +85,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
-        "@samva/email-sdk": "workspace:*",
+        "@samva/email-sdk": "^0.17.1",
         "samva": "^0.48.0",
       },
       "devDependencies": {
@@ -136,7 +136,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@ai-sdk/anthropic": "^4.0.102",
-        "@samva/ai-sdk": "workspace:*",
+        "@samva/ai-sdk": "^0.1.1",
         "ai": "^7.0.170",
         "samva": "^0.48.0",
       },
@@ -152,7 +152,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@chat-adapter/state-memory": "4.42.0",
-        "@samva/chat-adapter": "workspace:*",
+        "@samva/chat-adapter": "^0.2.0",
         "chat": "4.42.0",
         "next": "^16.4.5",
         "react": "^19.3.1",
@@ -204,7 +204,7 @@
       "dependencies": {
         "@chat-adapter/state-memory": "4.42.0",
         "@chat-adapter/state-redis": "4.42.0",
-        "@samva/eve": "workspace:*",
+        "@samva/eve": "^0.1.3",
         "ai": "^7.0.170",
         "chat": "4.42.0",
         "eve": "^1.0.0-rc.10",
