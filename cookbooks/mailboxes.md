@@ -76,7 +76,9 @@ Policy replacement checks the version read above. A stale write returns `409`; r
 current rules before replacing them again.
 
 Grant only the permissions the agent uses: `read`, `update`, `send`, and
-`spam.read`. Use a `write` minimum of `person` so sends and replies wait for review.
+`spam.read`. The hosted API names the held-malware grant `spam.read`, but `samva@0.48.0` still
+types it `quarantine.read`, so grant the first three with that version. Use a `write` minimum of `person` so sends and replies
+wait for review.
 
 ## Follow events
 
