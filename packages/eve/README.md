@@ -1,5 +1,9 @@
 # @samva/eve
 
+<img src="https://samva.dev/icon-192.png" alt="Samva" width="48" height="48">
+
+[![npm](https://img.shields.io/npm/v/@samva/eve)](https://www.npmjs.com/package/@samva/eve) [![license](https://img.shields.io/npm/l/@samva/eve)](./LICENSE)
+
 Mount Samva's mailbox tools and customer-message instructions in an Eve agent. The extension can also mount a Chat SDK channel for signed email and WhatsApp webhooks.
 
 ```sh
@@ -36,3 +40,7 @@ Use a shared Chat SDK state adapter in a deployment with multiple instances. The
 The bundled channel skips automated email by default and includes the subject alongside the email body in the agent input. Set `webhook.includeAutomatedEmail: true` to let automated mail start turns.
 
 To use an existing Eve channel, omit `webhook` and expose `eventId`, `mailboxId`, `messageId`, and `channel` (`email` or `whatsapp`) via the channel's server-owned metadata after verifying the event. The four tools appear on turns with a matching inbound message. Never populate these fields from model input or customer-supplied text.
+
+## License
+
+MIT

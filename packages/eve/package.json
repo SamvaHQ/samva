@@ -3,12 +3,16 @@
   "version": "0.1.3",
   "description": "Eve extension for Samva mailbox agents.",
   "keywords": [
+    "agent",
+    "ai-sdk",
+    "chat-sdk",
     "email",
     "eve",
+    "mailbox",
     "samva",
     "whatsapp"
   ],
-  "homepage": "https://samva.dev",
+  "homepage": "https://samva.dev/docs/mailboxes/eve",
   "bugs": {
     "url": "https://github.com/SamvaHQ/samva/issues"
   },

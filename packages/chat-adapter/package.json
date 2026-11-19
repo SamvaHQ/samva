@@ -3,12 +3,16 @@
   "version": "0.2.0",
   "description": "Chat SDK adapter for Samva mailboxes.",
   "keywords": [
+    "bot",
+    "chat",
+    "chat-adapter",
     "chat-sdk",
     "email",
+    "mailbox",
     "samva",
     "whatsapp"
   ],
-  "homepage": "https://samva.dev",
+  "homepage": "https://samva.dev/docs/mailboxes/chat-sdk",
   "bugs": {
     "url": "https://github.com/SamvaHQ/samva/issues"
   },
