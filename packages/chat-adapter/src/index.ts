@@ -20,10 +20,18 @@ import {
 } from "chat";
 import { createClient, MailboxSendConflictError, type SamvaClient } from "samva";
 
+/**
+ * A credential, or a function that returns one. The adapter calls the function each time it needs
+ * the value and does not cache it, so rotating or short-lived credentials take effect at once.
+ */
+export type SamvaCredential = string | (() => string | Promise<string>);
+
 export interface SamvaAdapterOptions {
-  readonly apiKey: string;
+  /** Mailbox-scoped API key. A function is called before every API request. */
+  readonly apiKey: SamvaCredential;
   readonly mailboxId: string;
-  readonly webhookSecret: string;
+  /** Webhook signing secret. A function is called for every delivery. */
+  readonly webhookSecret: SamvaCredential;
   readonly userName?: string;
   /** Dispatch automated email to Chat SDK handlers when explicitly enabled. */
   readonly includeAutomatedEmail?: boolean;
@@ -106,6 +114,31 @@ function isAutomatedEmail(message: Received["data"]["message"]): boolean {
   });
 }
 
+async function resolveCredential(credential: SamvaCredential, name: string): Promise<string> {
+  const value = typeof credential === "string" ? credential : await credential();
+  if (!value.trim())
+    throw new Error(`Samva adapter credential resolver returned an empty ${name}.`);
+  return value;
+}
+
+function isBlank(credential: SamvaCredential): boolean {
+  return typeof credential === "string" && !credential.trim();
+}
+
+function createMailboxClient(apiKey: SamvaCredential): SamvaClient {
+  if (typeof apiKey === "string") return createClient({ apiKey });
+  return createClient({
+    // The SDK sets X-API-Key from this value; the fetch below replaces it on every request.
+    apiKey: "resolved-per-request",
+    // The SDK only calls fetch; runtime extras such as Bun's `fetch.preconnect` are unused.
+    fetch: (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const request = new Request(input, init);
+      request.headers.set("X-API-Key", await resolveCredential(apiKey, "API key"));
+      return globalThis.fetch(request);
+    }) as typeof fetch,
+  });
+}
+
 function unsupported(): never {
   throw new NotImplementedError("Samva messages do not support edits, deletion, or reactions.");
 }
@@ -116,7 +149,7 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
   readonly userName: string;
   private readonly client: SamvaClient;
   private readonly mailboxId: string;
-  private readonly webhookSecret: string;
+  private readonly webhookSecret: SamvaCredential;
   private readonly includeAutomatedEmail: boolean;
   private readonly inbound = new AsyncLocalStorage<DeliveryContext>();
   private chat?: ChatInstance;
@@ -128,10 +161,10 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
     userName = "Samva",
     includeAutomatedEmail = false,
   }: SamvaAdapterOptions) {
-    if (!apiKey.trim() || !mailboxId.trim() || mailboxId.includes(":") || !webhookSecret.trim()) {
+    if (isBlank(apiKey) || !mailboxId.trim() || mailboxId.includes(":") || isBlank(webhookSecret)) {
       throw new Error("Samva adapter requires an API key, mailbox ID, and webhook secret.");
     }
-    this.client = createClient({ apiKey });
+    this.client = createMailboxClient(apiKey);
     this.mailboxId = mailboxId;
     this.webhookSecret = webhookSecret;
     this.userName = userName;
@@ -191,7 +224,9 @@ export class SamvaAdapter implements Adapter<ThreadTarget, SamvaRawMessage> {
   }
 
   async handleWebhook(request: Request, options?: WebhookOptions): Promise<Response> {
-    const delivery = await verifyRequest(request, this.webhookSecret).catch(() => undefined);
+    // A resolver failure is not a bad signature: let it throw so the delivery is retried.
+    const secret = await resolveCredential(this.webhookSecret, "webhook secret");
+    const delivery = await verifyRequest(request, secret).catch(() => undefined);
     if (!delivery) return new Response("Invalid webhook", { status: 401 });
 
     const { id, event } = delivery;
