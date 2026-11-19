@@ -344,7 +344,7 @@
     },
     "packages/ai-sdk": {
       "name": "@samva/ai-sdk",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "zod": "^4.0.0",
       },
@@ -359,7 +359,7 @@
     },
     "packages/better-auth": {
       "name": "@samva/better-auth",
-      "version": "0.16.0",
+      "version": "0.16.1",
       "devDependencies": {
         "@react-email/render": "^2.2.0",
         "better-auth": "^1.7.17",
@@ -376,7 +376,7 @@
     },
     "packages/chat-adapter": {
       "name": "@samva/chat-adapter",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@chat-adapter/shared": "^4.42.0",
         "@samva/webhooks": "^0.48.0",
@@ -393,7 +393,7 @@
     },
     "packages/email-sdk": {
       "name": "@samva/email-sdk",
-      "version": "0.17.0",
+      "version": "0.17.1",
       "devDependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
         "samva": "^0.48.0",
@@ -405,7 +405,7 @@
     },
     "packages/eve": {
       "name": "@samva/eve",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@samva/ai-sdk": "workspace:^",
         "@samva/chat-adapter": "workspace:^",
