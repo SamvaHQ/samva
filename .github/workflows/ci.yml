@@ -50,3 +50,42 @@ jobs:
 
       - name: check formatting
         run: bun run format:check
+
+  eve-current:
+    # @samva/eve builds against the oldest eve it supports (its devDependency). This job runs the
+    # same tests against the newest eve release, so a breaking eve release fails here first.
+    name: eve (current release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: setup bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - name: setup node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: build
+        run: bun run build --filter=@samva/eve...
+
+      - name: install the current eve release
+        working-directory: packages/eve
+        run: |
+          bun add --dev eve@latest
+          node -p 'require("eve/package.json").version'
+
+      - name: typecheck
+        working-directory: packages/eve
+        run: bun run typecheck
+
+      - name: test
+        run: bun run test packages/eve
