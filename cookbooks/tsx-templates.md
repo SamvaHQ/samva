@@ -9,7 +9,7 @@ runnable version of this page.
 
 ```sh
 bun add @samva/markup@^0.24.0
-bun add --dev @samva/cli@^0.41.0 @samva/vite@^0.24.0 vite typescript
+bun add --dev @samva/cli@^0.42.0 @samva/vite@^0.24.0 vite typescript
 ```
 
 The `samva` executable comes from `@samva/cli`; run it through your package runner so the local

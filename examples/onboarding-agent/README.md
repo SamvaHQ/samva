@@ -20,7 +20,7 @@ bun run info
 ```
 
 The example uses `samva@^0.48.0` for `samva/agent`, `samva/agent/test`, and
-`contacts.mergeByConnection({ id, connection })`. It uses `@samva/cli@^0.41.0` for
+`contacts.mergeByConnection({ id, connection })`. It uses `@samva/cli@^0.42.0` for
 `samva agents build` and `samva agents info`.
 
 Offline evals exercise declaration loading for lifecycle turns, contact scope, bounded tool grants,
