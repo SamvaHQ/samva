@@ -1,3 +1,9 @@
+## @samva/better-auth@0.16.1
+
+### Require samva 0.48
+
+The packages now declare `samva@^0.48.0` as a peer, and the Chat SDK adapter and Eve extension depend on `@samva/webhooks@^0.48.0`. Install them alongside `samva@0.48`.
+
 ## @samva/better-auth@0.16.0
 
 ### Require Samva SDK 0.45

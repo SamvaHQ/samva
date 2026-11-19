@@ -1,6 +1,6 @@
 {
   "name": "@samva/email-sdk",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "description": "Samva community adapter for Email SDK.",
   "keywords": [
     "email",
