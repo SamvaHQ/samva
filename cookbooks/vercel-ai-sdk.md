@@ -21,7 +21,7 @@ mailbox. If the agent finishes without calling either action tool, nothing is se
 bun add @samva/ai-sdk ai @ai-sdk/anthropic samva
 ```
 
-The example uses `ai@^7.0.170`, `@ai-sdk/anthropic@^4.0.102`, and `samva@^0.47.0`. Create a
+The example uses `ai@^7.0.170`, `@ai-sdk/anthropic@^4.0.102`, and `samva@^0.48.0`. Create a
 mailbox and a restricted key as shown in the [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key),
 and give the agent only that key.
 
