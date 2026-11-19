@@ -451,3 +451,48 @@ it.each([
     expect(processMessage).toHaveBeenCalledTimes(1);
   },
 );
+
+it("resolves a function API key before every request", async () => {
+  const keys: (string | null)[] = [];
+  const fetch = vi.fn(async (request: Request) => {
+    keys.push(request.headers.get("x-api-key"));
+    return Response.json(held, { status: 202 });
+  });
+  vi.stubGlobal("fetch", fetch);
+  let issued = 0;
+  const adapter = createSamvaAdapter({
+    apiKey: async () => `key-${++issued}`,
+    mailboxId,
+    webhookSecret: secret,
+  });
+  const id = await adapter.openDM("+15555550100");
+  await adapter.postMessage(id, "Hello");
+  await adapter.postMessage(id, "Hello again");
+  expect(keys).toEqual(["key-1", "key-2"]);
+});
+
+it("resolves a function webhook secret for every delivery, so a rotated secret applies at once", async () => {
+  const rotated = generateWebhookSecret();
+  let current = secret;
+  const webhookSecret = vi.fn(() => current);
+  const adapter = createSamvaAdapter({ apiKey: "test", mailboxId, webhookSecret });
+  const chat = new Chat({
+    userName: "Samva",
+    adapters: { samva: adapter },
+    state: createMemoryState(),
+  });
+  vi.spyOn(chat, "processMessage").mockResolvedValue(undefined);
+
+  expect((await chat.webhooks.samva(await delivery({ id: "evt_1" }))).status).toBe(204);
+  current = rotated;
+  expect((await chat.webhooks.samva(await delivery({ id: "evt_2" }))).status).toBe(401);
+  expect((await chat.webhooks.samva(await delivery({ id: "evt_3", key: rotated }))).status).toBe(
+    204,
+  );
+  expect(webhookSecret).toHaveBeenCalledTimes(3);
+});
+
+it("fails a delivery instead of answering 401 when the secret resolver returns nothing", async () => {
+  const adapter = createSamvaAdapter({ apiKey: "test", mailboxId, webhookSecret: () => "" });
+  await expect(adapter.handleWebhook(await delivery())).rejects.toThrow(/empty webhook secret/);
+});
