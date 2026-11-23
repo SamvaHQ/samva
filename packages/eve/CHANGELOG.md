@@ -1,3 +1,15 @@
+## @samva/eve@0.1.5
+
+### Requires `samva@^0.50.0`
+
+Every Samva integration package now supports `samva@^0.50.0` and no longer accepts 0.48. Install it next to the package:
+
+```sh
+npm install samva@^0.50.0
+```
+
+If you call the SDK yourself beside these packages, read the `samva` 0.49 and 0.50 release notes. Spam replaces quarantine, inbound attachment downloads need a passing malware scan, and mailbox history import now uploads in parts.
+
 ## @samva/eve@0.1.4
 
 ### Point npm at each package's docs
