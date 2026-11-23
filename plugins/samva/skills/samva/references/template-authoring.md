@@ -137,3 +137,10 @@ generates the input type for your application.
 A successful fixture check does not cover all possible input, and a browser preview is not exact
 inbox emulation. Send real tests only when authorized, and distinguish client evidence from static
 compatibility findings.
+
+For email and WhatsApp, pass `channel` to `templates_suggest` and `templates_create_from_brief`.
+Read `templates_event_inputs` for the event schema, binding paths and preview samples before
+authoring an event-triggered template. Link variants with `templates_families_create` and
+`templates_families_attach`. Family members publish independently; WhatsApp members each need
+registration and approval. `brands_create` creates a named brand; `brands_set_default` selects
+the organization default.

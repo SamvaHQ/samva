@@ -14,7 +14,7 @@
     "@samva/markup": "^0.24.0"
   },
   "devDependencies": {
-    "@samva/cli": "^0.42.0",
+    "@samva/cli": "^0.44.0",
     "@samva/vite": "^0.24.0",
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2",

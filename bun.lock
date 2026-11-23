@@ -22,7 +22,7 @@
       "dependencies": {
         "@astrojs/cloudflare": "^14.4.4",
         "astro": "^7.4.5",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.12",
@@ -40,7 +40,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -59,7 +59,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "server-only": "^0.0.1",
       },
       "devDependencies": {
@@ -74,7 +74,7 @@
       "version": "0.0.0",
       "dependencies": {
         "effect": "4.1.2",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -86,7 +86,7 @@
       "dependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
         "@samva/email-sdk": "^0.17.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -97,7 +97,7 @@
       "version": "0.0.0",
       "dependencies": {
         "hono": "^4.13.16",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^5.20261104.1",
@@ -109,7 +109,7 @@
       "name": "inbound-email-replies-samva",
       "version": "0.0.0",
       "dependencies": {
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -122,7 +122,7 @@
       "version": "0.0.0",
       "dependencies": {
         "effect": "^4.0.4",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -138,7 +138,7 @@
         "@ai-sdk/anthropic": "^4.0.102",
         "@samva/ai-sdk": "^0.1.1",
         "ai": "^7.0.170",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -157,10 +157,10 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
-        "@samva/webhooks": "^0.48.0",
+        "@samva/webhooks": "^0.50.0",
         "@types/node": "^26.6.6",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
@@ -173,7 +173,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@anthropic-ai/sdk": "^1.8.0",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -188,7 +188,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.3.322",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -208,7 +208,7 @@
         "ai": "^7.0.170",
         "chat": "4.42.0",
         "eve": "^1.0.0-rc.10",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -225,7 +225,7 @@
         "@langchain/core": "^1.4.0",
         "@langchain/langgraph": "^1.7.3",
         "langchain": "^1.6.5",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -240,7 +240,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@openai/agents": "^0.21.0",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "zod": "^4.0.0",
       },
       "devDependencies": {
@@ -257,7 +257,7 @@
         "next": "^16.4.5",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "server-only": "^0.0.1",
       },
       "devDependencies": {
@@ -272,10 +272,10 @@
       "version": "0.0.0",
       "dependencies": {
         "effect": "^4.1.4",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
-        "@samva/cli": "^0.42.0",
+        "@samva/cli": "^0.44.0",
         "@types/bun": "^1.4.4",
         "@typescript/native-preview": "^7.0.0-dev.20260624.1",
       },
@@ -287,7 +287,7 @@
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "react-email": "^6.11.6",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@types/node": "^26.6.6",
@@ -302,7 +302,7 @@
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "react-email": "^6.11.6",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "standardwebhooks": "^1.1.1",
       },
       "devDependencies": {
@@ -316,7 +316,7 @@
       "name": "sveltekit-transactional-samva",
       "version": "0.0.0",
       "dependencies": {
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "devDependencies": {
         "@sveltejs/adapter-node": "^6.0.1",
@@ -336,7 +336,7 @@
         "@tanstack/react-start": "^1.169.4",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "zod": "^4.6.7",
       },
       "devDependencies": {
@@ -356,7 +356,7 @@
         "@samva/markup": "^0.24.0",
       },
       "devDependencies": {
-        "@samva/cli": "^0.42.0",
+        "@samva/cli": "^0.44.0",
         "@samva/vite": "^0.24.0",
         "@types/node": "^26.6.6",
         "typescript": "^7.0.2",
@@ -371,11 +371,11 @@
       },
       "devDependencies": {
         "ai": "^7.0.170",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "peerDependencies": {
         "ai": "^7.0.170",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
     },
     "packages/better-auth": {
@@ -384,12 +384,12 @@
       "devDependencies": {
         "@react-email/render": "^2.2.0",
         "better-auth": "^1.7.17",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "peerDependencies": {
         "@react-email/render": "^2.0.0",
         "better-auth": "^1.7.2",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "optionalPeers": [
         "@react-email/render",
@@ -400,16 +400,16 @@
       "version": "0.2.1",
       "dependencies": {
         "@chat-adapter/shared": "^4.42.0",
-        "@samva/webhooks": "^0.48.0",
+        "@samva/webhooks": "^0.50.0",
       },
       "devDependencies": {
         "@chat-adapter/state-memory": "4.42.0",
         "chat": "4.42.0",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "peerDependencies": {
         "chat": "^4.42.0",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
     },
     "packages/email-sdk": {
@@ -417,11 +417,11 @@
       "version": "0.17.1",
       "devDependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
       "peerDependencies": {
         "@opencoredev/email-sdk": "^3.0.1",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
     },
     "packages/eve": {
@@ -434,18 +434,18 @@
       },
       "devDependencies": {
         "@chat-adapter/state-memory": "4.42.0",
-        "@samva/webhooks": "^0.48.0",
+        "@samva/webhooks": "^0.50.0",
         "ai": "^7.0.170",
         "chat": "4.42.0",
         "eve": "1.0.0-rc.10",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
         "ai": "^7.0.170",
         "chat": "^4.42.0",
         "eve": "1.0.0-rc.10 || ^1.0.0",
-        "samva": "^0.48.0",
+        "samva": "^0.50.0",
       },
     },
   },
@@ -1020,15 +1020,15 @@
 
     "@samva/chat-adapter": ["@samva/chat-adapter@workspace:packages/chat-adapter"],
 
-    "@samva/cli": ["@samva/cli@0.42.0", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.42.0", "@samva/cli-darwin-x64": "0.42.0", "@samva/cli-linux-arm64": "0.42.0", "@samva/cli-linux-x64": "0.42.0" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-xl9MhRQNpkiaH5H5ECEpKTWaWXbMkRswVnnOjee1YB4nhkAG9s5q919ZpdsbVVN3sG97FqW1vgWXRRqu0t1r5A=="],
+    "@samva/cli": ["@samva/cli@0.44.0", "", { "optionalDependencies": { "@samva/cli-darwin-arm64": "0.44.0", "@samva/cli-darwin-x64": "0.44.0", "@samva/cli-linux-arm64": "0.44.0", "@samva/cli-linux-x64": "0.44.0" }, "bin": { "samva": "bin/samva.cjs" } }, "sha512-jyIuz/SqxNBoPOnRF2d1keau4AyALnNbcr/ByMKDgqDZBgO3d9mX8TSDHiMClpfHcrBwQ8Ny8BudamJ9imNXzg=="],
 
-    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.42.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-Wx/65TM7VXoo92yegwsxTDOGW8DsMThIJZZfAXVWLndF8NlnKWHd5J83tE9JCMk5tYWQtmJT/kH5eHGuRDPOWg=="],
+    "@samva/cli-darwin-arm64": ["@samva/cli-darwin-arm64@0.44.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-1Lx4UAblmA2ChWrHFBCRlgqQga8SO9cgw1krYDJxurUG1vhRHHiivFiGb9Zon3fINGuGkxqX+X0sXp9TK8oq7g=="],
 
-    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.42.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-uZ0qIm8Yf4gcou7l1GGpNx2/aN/4EwDJozWBhjh1NQRz7L9JkiWgX2Tubow2awZaZiVigHUWnXAhC4xvpuxDsw=="],
+    "@samva/cli-darwin-x64": ["@samva/cli-darwin-x64@0.44.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-6bXJJUCg7D5Dljx0DNgXdvVI6kBixjfDczjkSabsM8//m3ezWOOu65ATHWPWXwh36w4IndHvO9SDk6ftgiLv/A=="],
 
-    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.42.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-/DP6MZVWvlbp2CsCqwTNhHnkOWso5AQXs7aBixoQdIZLWb7s5POHQjmbxV8/HkCPB/cs+VMkyCQthBnegktNSg=="],
+    "@samva/cli-linux-arm64": ["@samva/cli-linux-arm64@0.44.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-Gf0baF4ext2wDhLT7FJZkj/yc3DQmdX2MHtlI7WbNYjAyMbNLVz1YhiNB9f1IDbEsVYKKVEbUGeZc+vz3NflsQ=="],
 
-    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.42.0", "", { "os": "linux", "cpu": "x64" }, "sha512-qdRoxntvSHAmmpHYgHEttwvtxMdLed8W+2G8H1pSfeA/YE2bdCN62hRem+c31kNHTJ9MtNWyxESSOl8i++sb/g=="],
+    "@samva/cli-linux-x64": ["@samva/cli-linux-x64@0.44.0", "", { "os": "linux", "cpu": "x64" }, "sha512-b7VtcCPOcmCVC8yPYrwixDpJHzxE6R2G/YLV+QzYOSWlT0uKvm7rNPnVMEWDSnzvKYToIek7tFYSxOcEBFU4rQ=="],
 
     "@samva/email-sdk": ["@samva/email-sdk@workspace:packages/email-sdk"],
 
@@ -1038,7 +1038,7 @@
 
     "@samva/vite": ["@samva/vite@0.24.0", "", { "dependencies": { "@samva/markup": "^0.24.0" }, "peerDependencies": { "vite": "^8.2.2" } }, "sha512-ubbi20UdtI7wXAecb8u0nLKX5F5J8HjnaGr8N7eO9+IjKVrenNlFa87QPNjhcN6PdhgS1WG3rh0673JMEPMDjQ=="],
 
-    "@samva/webhooks": ["@samva/webhooks@0.48.0", "", { "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-0zmW4yFlqny4Ba/SYgLTypEzsfXUqwkzq9neoXVkhC7q0/oljCrw8vuwTDpVdSQ6n7aL4dwUxoiXdN+5DW6QVA=="],
+    "@samva/webhooks": ["@samva/webhooks@0.50.0", "", { "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-d73Nff+dXDI7QvbnuVkywWgj29oCXRLxteWFMtBaK3L2m0RkEtXI5Z7GsJ9drr/zGtcwXX4aJ5VMAUBsCSGjJg=="],
 
     "@selderee/plugin-htmlparser2": ["@selderee/plugin-htmlparser2@0.12.0", "", { "dependencies": { "domelementtype": "~2.3.0", "domhandler": "~5.0.3" }, "peerDependencies": { "selderee": "~0.12.0" } }, "sha512-oELmoyA6ML9jDRMV3kgcMQFKxUfBU0yFVn6yTctVaLT5ygXnxH52I3TZEgV9EhXJC68/uFvE5Daj1/25c0Xa/A=="],
 
@@ -2056,7 +2056,7 @@
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
 
-    "samva": ["samva@0.48.0", "", { "dependencies": { "@samva/webhooks": "0.48.0" }, "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-4s7uyAZixk0MxaKb3FdupFvkxO33xPgLp36NB90d9Tk0k/KStFMtPtfRPuBErUQcoKxsQbMALR97EIdLqLYzQQ=="],
+    "samva": ["samva@0.50.0", "", { "dependencies": { "@samva/webhooks": "0.50.0" }, "peerDependencies": { "effect": "^4.0.4" }, "optionalPeers": ["effect"] }, "sha512-7hRjMzWP/yAq3NbCDnoLBIjGrjmZo4xmh7v7gDL3BJNSkIgbLa9yE0ZyKUYMhySfoJT15riyKvQ8z+9ck6rwOg=="],
 
     "satteri": ["satteri@0.10.5", "", { "dependencies": { "@types/estree-jsx": "^1.0.5", "@types/hast": "^3.0.5", "@types/mdast": "^4.0.4", "@types/unist": "^3.0.3" }, "optionalDependencies": { "@bruits/satteri-darwin-arm64": "0.10.5", "@bruits/satteri-darwin-x64": "0.10.5", "@bruits/satteri-linux-arm64-gnu": "0.10.5", "@bruits/satteri-linux-arm64-musl": "0.10.5", "@bruits/satteri-linux-x64-gnu": "0.10.5", "@bruits/satteri-linux-x64-musl": "0.10.5", "@bruits/satteri-wasm32-wasi": "0.10.5", "@bruits/satteri-win32-arm64-msvc": "0.10.5", "@bruits/satteri-win32-x64-msvc": "0.10.5" } }, "sha512-Ao1LKpAEa9Wdg0otgbVKViZHEq9ebdXe4DMrp3s9vQAU0HNIuHnFEuMuOcm0ZIXyV0Yzxj91NvhLpvXZJO/5ZQ=="],
 

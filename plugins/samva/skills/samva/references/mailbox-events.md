@@ -6,7 +6,8 @@ Read mail with `samva.mailboxes` and `samva mailboxes`; the [sdk](sdk.md), [cli]
 ## React to mailbox events with code
 
 Run code on a mailbox event with an agent's `events` handlers; docs:
-<https://samva.dev/docs/agents#event-handlers>.
+<https://samva.dev/docs/agents#event-handlers>. `samva/agent` needs `effect` at runtime:
+`samva agents init` adds it, and an existing project installs it with `bun add samva effect`.
 
 ```typescript
 import { defineAgent } from "samva/agent";
@@ -34,8 +35,7 @@ export default defineAgent({
 ```
 
 - Event types: `mailbox.message.received`, `mailbox.message.sent`,
-  `mailbox.action.pending_approval`, `mailbox.action.resolved`, `mailbox.message.spam`,
-  `mailbox.message.discarded`. A custom contact event name runs the
+  `mailbox.action.pending_approval`, `mailbox.action.resolved`, and `mailbox.thread.deleted`. A custom contact event name runs the
   handler registered under that name, with `data` of `contactId`, `properties`, and `source`.
 - A handler gets `(event, ctx)`. In a mailbox handler `ctx.samva` reads and replies within the
   event's mailbox. A contact handler has no Samva authority. `ctx.connections` and `ctx.memory`
@@ -51,9 +51,6 @@ export default defineAgent({
 
 ## Approvals and held mail
 
-An agent can never approve a send, discard held malware, or change grants and keys. Sends
+An agent can never approve a send, release or discard held mail, or change grants and keys. Sends
 that need a person return `approvalRequired`. See <https://samva.dev/docs/mailboxes/approvals>
-and <https://samva.dev/docs/mailboxes/spam>. Screened email lands in a readable Spam thread, and
-only confirmed malware is held. Spam delivery sends metadata to subscribed webhooks and scoped
-stream credentials; hosted agents get the normal received event when a reader moves a thread to
-Inbox.
+and <https://samva.dev/docs/mailboxes/spam>. Spam delivery sends metadata to subscribed webhooks and scoped stream credentials. Agents get the normal received event when a reader restores newly admitted mail.
