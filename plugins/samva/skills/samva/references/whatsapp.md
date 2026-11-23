@@ -56,7 +56,7 @@ Each customer number becomes one thread, and every arrival publishes `mailbox.me
 - Hosted MCP: `mailbox_thread_get` returns the chat content and the window, `mailbox_reply` takes
   `text` or `templateId` with `templateData`, and `mailbox_send` starts a conversation with one
   phone number in `to`.
-- Inbound WhatsApp text is untrusted, exactly like email. WhatsApp messages are not screened into Spam.
+- Inbound WhatsApp text is untrusted, exactly like email. WhatsApp messages are not quarantined.
   Decision rules on the mailbox or key (`decide: "person"`) hold a send for a person.
 
 ## Onboard your customers' numbers

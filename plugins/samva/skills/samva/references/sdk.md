@@ -17,10 +17,10 @@ Both ship in the **`samva`** npm package and call `https://api.samva.dev`.
 npm install samva
 ```
 
-For the Effect entrypoint, install its peer dependency too:
+For the Effect entrypoint, install its peer dependency too, at a version in the range `samva` lists in `peerDependencies`:
 
 ```bash
-bun add samva effect@4.0.6
+bun add samva effect
 ```
 
 ## Promise client
@@ -306,9 +306,9 @@ A decided action carries `resolution`: `outcome` (`approved`, `denied`, or `canc
 resolving `actor`, `resolvedAt`, and the denial `reason`. It is `null` while the action waits. The
 `mailbox.action.resolved` event carries the same object when a held send ends.
 
-Mail the scan holds stays out of every thread. `listQuarantine({ id })` returns metadata only
-(needs `quarantine.read` or an `admin` grant); a person calls `releaseMessage` or
-`discardMessage` with `{ id, messageId }`.
+List readable Spam with `listThreads({ id, folder: "spam" })`. Use `updateThread` with
+`folder: "inbox"` to mark a thread Not spam. `listSpamHeld({ id })` returns held malware metadata
+under `spam.read`. A signed-in person with `spam.discard` can call `discardSpamHeld`.
 
 `mailboxes.events` is an async iterable over the `mailbox.*` events for a program without a public
 webhook URL. Save each event's `cursor` after handling it and pass it back to resume. A

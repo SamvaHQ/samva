@@ -83,9 +83,7 @@ Read only the reference needed for the selected surface:
 Docs: <https://samva.dev/docs/mailboxes> and <https://samva.dev/docs/mailboxes/cli>.
 
 - Give an agent a restricted key with `mailboxes` access, listing only the permissions it needs
-  (`read`, `update`, `send`, `spam.read`) and its `mailboxIds`. The hosted API names the held-malware grant `spam.read`;
-  `samva@0.48.0` and `@samva/cli@0.42.0` still type it `quarantine.read`, so grant `read`, `update`,
-  and `send` with them until the release that renames it. Never hand it a full-access
+  (`read`, `update`, `send`, `spam.read`) and its `mailboxIds`. Never hand it a full-access
   key.
 - To hold a key's sends and replies, have a person set `decide: "person"` for effect `write`.
   A permitted key send runs directly unless policy requires review; a `final` rule alone does not
