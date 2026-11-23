@@ -58,6 +58,8 @@ sends.
   messages and PR titles (e.g. `feat(<integration>): ...`).
 - Keep changes scoped; run `build`, `typecheck`, `test`, `lint`, and
   `format:check` before opening a PR.
+- A review of a diff, by a person or a tool, applies the rules in
+  [`REVIEW.md`](./REVIEW.md).
 
 User-visible package changes also need a pending Tegami changelog under
 `.tegami/`. See [the release guide](./docs/releases.md) for the file format and
