@@ -1,6 +1,6 @@
 {
   "name": "@samva/eve",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Eve extension for Samva mailbox agents.",
   "keywords": [
     "agent",
