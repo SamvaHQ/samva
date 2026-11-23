@@ -21,7 +21,7 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.48.0`. Agent module helpers are part of the SDK at `samva/agent`
+These examples use `samva@^0.50.0`. Agent module helpers are part of the SDK at `samva/agent`
 and `samva/agent/test`, which need `effect` at runtime. To add an agent module to an existing
 project, install it too (`samva agents init` adds it for a new one):
 
@@ -76,8 +76,8 @@ Policy replacement checks the version read above. A stale write returns `409`; r
 current rules before replacing them again.
 
 Grant only the permissions the agent uses: `read`, `update`, `send`, and
-`spam.read`. The hosted API names the held-malware grant `spam.read`, but `samva@0.48.0` still
-types it `quarantine.read`, so grant the first three with that version. Use a `write` minimum of `person` so sends and replies
+`spam.read` (lists malware held outside threads).
+Use a `write` minimum of `person` so sends and replies
 wait for review.
 
 ## Follow events

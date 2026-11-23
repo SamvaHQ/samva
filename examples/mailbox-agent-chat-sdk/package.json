@@ -17,10 +17,10 @@
     "next": "^16.4.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "samva": "^0.48.0"
+    "samva": "^0.50.0"
   },
   "devDependencies": {
-    "@samva/webhooks": "^0.48.0",
+    "@samva/webhooks": "^0.50.0",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
