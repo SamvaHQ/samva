@@ -469,6 +469,7 @@ describe("samva", () => {
         {
           _tag: "FromAddressRequiredError",
           message: "Choose a sender on private.example.",
+          addresses: ["support@private.example"],
           verifiedDomains: ["private.example"],
         },
         { status: 422, headers: { "x-request-id": "request_from" } },
