@@ -8,7 +8,6 @@ import { configureInboundEmail, handleInboundReply } from "../src/inbound";
 
 const DOMAIN_INPUT = {
   domainId: "domain_01",
-  domain: "example.com",
   webhookUrl: "https://app.example.com/webhooks/samva",
 };
 
@@ -169,7 +168,6 @@ test("configures inbound receiving and replies from a verified conversation", as
     channels: ["email"],
   });
   assert.deepEqual(requests[2]?.body, {
-    domain: "example.com",
     catchAll: true,
     endpointId: "webhook_01",
   });
@@ -220,7 +218,6 @@ test("reuses and reconciles an endpoint from a partial run instead of creating a
     status: "active",
   });
   assert.deepEqual(requests[2]?.body, {
-    domain: "example.com",
     catchAll: true,
     endpointId: "webhook_existing",
   });

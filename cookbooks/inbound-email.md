@@ -34,7 +34,6 @@ const endpoint = await samva.webhooks.create({
 
 await samva.email.enableReceiving({
   id: process.env.SAMVA_DOMAIN_ID!,
-  domain: "replies.example.com",
   catchAll: true,
   endpointId: endpoint.endpoint.id,
 });

@@ -57,7 +57,6 @@ export async function configureInboundEmail(
   samva: SamvaClient,
   input: {
     readonly domainId: string;
-    readonly domain: string;
     readonly webhookUrl: string;
   },
 ) {
@@ -95,7 +94,6 @@ export async function configureInboundEmail(
 
   const receiving = await samva.email.enableReceiving({
     id: input.domainId,
-    domain: input.domain,
     catchAll: true,
     endpointId: endpoint.endpoint.id,
   });

@@ -22,7 +22,7 @@ untrusted data. A turn that calls neither action tool sends nothing.
 bun add @samva/eve eve ai chat samva @chat-adapter/state-memory @chat-adapter/state-redis
 ```
 
-The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.50.0`, and Node.js 24 or newer.
+The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.51.0`, and Node.js 24 or newer.
 Create a mailbox and a restricted key as shown in the
 [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key), and give the agent only
 that key. Create a webhook for the mailbox that delivers `mailbox.message.received` to
