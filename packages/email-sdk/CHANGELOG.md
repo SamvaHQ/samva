@@ -1,3 +1,15 @@
+## @samva/email-sdk@0.17.3
+
+### Requires `samva@^0.51.0`
+
+Every Samva integration package now supports `samva@^0.51.0` and no longer accepts 0.50. Install it next to the package:
+
+```sh
+npm install samva@^0.51.0
+```
+
+If you call the SDK yourself beside these packages, read the `samva` 0.51 release notes. `email.enableReceiving` takes the domain id alone, scheduled-message, campaign and API key responses no longer carry a member's email, and every SDK request attempt now times out after 30 seconds unless you set `timeoutMs`.
+
 ## @samva/email-sdk@0.17.2
 
 ### Requires `samva@^0.50.0`
