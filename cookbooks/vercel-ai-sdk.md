@@ -13,7 +13,9 @@ account or a model key. For the mailbox itself, see the [mailboxes cookbook](./m
 A program that follows one mailbox and runs one agent turn per incoming message. The framework
 runs the tool loop. [`@samva/ai-sdk`](../packages/ai-sdk) supplies the tools: one submits a reply
 to the current message, one leaves the message for a person, and two read threads in the same
-mailbox. If the agent finishes without calling either action tool, nothing is sent.
+mailbox. If the agent finishes without calling either action tool, nothing is sent. The adapter
+only answers an inbound message: it has no send tool, so it cannot start a conversation or choose a
+recipient. New outbound mail goes through `samva.mailboxes.send` from your own code.
 
 ## Install
 
@@ -43,6 +45,16 @@ const tools = samvaTools({ client: samva, message, eventId: event.id });
 - `leave_for_person({ reason })` sends nothing and returns the reason for your program to record.
 - `get_thread({ threadId })` and `search_threads({ query })` read the mailbox the message arrived
   in.
+
+Each result is a projection for the model. A reply returns `{ status, receipt }`, where the receipt
+holds `actionId`, `state`, `messageId`, `threadId`, `waitReason`, `retryAt`, `reviewExpectedAt`,
+`executeUntil`, `skippedRecipients`, and `problem` (`code` and `message`). Read the full action with
+`samva.mailboxes.getAction({ id, actionId })`. `get_thread` returns `{ threadId, items, nextCursor }`
+with `id`, `channel`, `direction`, `occurredAt`, `from`, `to`, `text`, and `attachments` on each
+item, plus `subject` on email and `template` on an outbound WhatsApp template message. `text` is the
+reply without quoted history when Samva could separate it. The item `id` is what a reply or forward
+takes. `search_threads` returns `{ items, nextCursor }` with `id`, `channel`, `subject`, `preview`,
+`from`, `messageCount`, `folder`, and `lastActivityAt`, and `spam: true` for a thread in Spam.
 
 The reply and leave tools share one claim that is taken before any `await`, so a model that calls
 both in one step produces one action. The reply is keyed `reply:<event id>`. Events are delivered at
@@ -88,12 +100,19 @@ deploying that shape.
 ## The approval rule
 
 Give the agent a mailbox-scoped key whose policy is
-`{ match: { effect: "write" }, atLeast: "person" }`. A reply then returns
+`{ match: { effect: "write" }, atLeast: "person" }`. A person sets the rule while signed in, or an
+organization-wide API key sets it on the agent's key; the agent's own key cannot set or lift it. A
+reply then returns
 `state: "approvalRequired"`, and nothing is sent until a person approves it in the dashboard or
 with `samva login`. An API key can never approve a send, so a message that talks the model into a
 bad reply still waits for a person. The mailboxes cookbook shows how to
 [set the policy](./mailboxes.md#create-a-mailbox-and-a-scoped-key) and how a person
 [approves or denies](./mailboxes.md#reply-and-the-approval-flow) a held reply.
+
+A reply that stays `queued` has a `waitReason` or `problem.code` on its receipt, for example
+`onboarding-review` while a new organization's email onboarding review is pending. Check with
+`samva email review status`. See
+[A send that stays queued](https://samva.dev/docs/mailboxes/approvals#a-send-that-stays-queued).
 
 ## WhatsApp from the same mailbox
 
