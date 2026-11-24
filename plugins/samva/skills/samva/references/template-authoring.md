@@ -54,7 +54,9 @@ export default defineTemplate({
 ```
 
 - `id` is lowercase kebab-case and unique in the project. `subject` and `preheader` belong to the
-  `email` channel, never to `<Email>`.
+  `email` channel, never to `<Email>`. The preheader is also the first line of the plain-text part,
+  so write one that adds to the opening line: "Hi Ada" above a body that starts "Hi Ada" reads
+  twice in the text.
 - The schema is a literal `jsonSchema<Input>({ ... })`. It validates every send and drives the
   binding checker. Defaults are not inserted and values are not coerced.
 - At least one fixture is required. Add one per branch: default, each optional field missing, and
@@ -124,11 +126,49 @@ such as a moved branch head, is a `ConflictError` (`409`): reopen and resolve it
 A project holds several templates. A new `templates/*.tsx` file (`emails/` is also recognized) is
 not a template until `templates_add_entry` registers it; use its `defineTemplate` id as the slug.
 Every template in a project shares one workspace and publishes separately. After renaming a file,
-call `templates_move_entry` so the template keeps its id and publications.
+call `templates_move_entry` (CLI `samva templates move <from> <to>`; REST `PATCH /v1/templates/{id}`
+with `{ "data": { "entryPath": "..." } }`) so the template keeps its id and publications.
+
+A new project's canonical starter registers its one template at `templates/welcome.tsx`, whatever
+the slug (the template's `entryPath` reports it). Edit that file in place. If you write the template
+to another path instead, move the entry to it: publishing fails while the registered entry path
+does not exist at the commit.
+
+## From code without Git
+
+Create, save, and publish over the SDK or REST. Each step uses the previous result:
+
+1. `templates.create({ name, slug })` returns `id` (`tmpl_...`), `slug`, `projectId`, and `entryPath`.
+   The project starts from the canonical starter: one entry, `templates/welcome.tsx`, with its
+   `defineTemplate` `id` set to the slug (keep it).
+2. `templates.openWorkspace({ id })` returns `workspace` (`revision`, starting at `"0"`, and
+   `remoteHead`, a 40-hex commit) and `files`.
+3. `templates.patchWorkspace({ id, expectedRevision, patches: [{ path, content }] })` replaces or
+   deletes (`content: null`) whole files and returns the new view; each patch raises `revision`.
+4. `templates.checkWorkspace({ id, expectedRevision })` returns `declaration`, `diagnostics`, and
+   `incompatibilities` and writes nothing. REST without `expectedRevision` returns `422`.
+5. `templates.saveWorkspace({ id, expectedRevision, expectedHead, message })` returns the saved
+   `commit` and the new `revision`.
+6. `templates.publish({ id, projectId, entryPath, commitSha, expectedWorkspaceRevision })` takes the
+   save receipt's `commit` and `revision`; `templates.renderPublication({ id, publicationId, data })`
+   previews the result.
+
+REST calls use `POST /v1/templates`, `POST|PATCH /v1/templates/{id}/workspace`,
+`POST .../workspace/check`, `POST .../workspace/save`, `POST .../publications`, and
+`POST .../publications/{publicationId}/render`, with the `X-API-Key` header; create, patch, and save
+also take an `Idempotency-Key` header. The CLI path is `samva templates workspace` plus
+`samva templates init`; `init` does not install dependencies, so run `npm install` or `bun install`
+before `check`, and `git push` needs the CLI that configured the project to be signed in for its credential helper.
 
 ## Sending
 
-Send a template by `templateSlug` or `templateId` with `templateData`. Add `locale` (BCP 47, for
+Send a template by `templateSlug` or `templateId` with `templateData`. Pass `from` as an object,
+`{ email, name? }`, on a verified domain (a hosted mailbox domain counts); omit it only when the
+template sets `fromDefault`, the organization has a default sender, or it has exactly one verified
+sender, otherwise the send fails with `FromAddressRequiredError` (`422`) with `verifiedDomains` and `addresses`. `templateSlug` takes the
+slug (the `defineTemplate` `id` unless `samva templates add --slug` chose another) and `templateId`
+the `tmpl_...` id; name exactly one. The SDK and CLI flatten these fields; `POST /v1/messages` nests
+them under `email`, beside `channel` and `to`. Add `locale` (BCP 47, for
 example `de-DE`) and `timeZone` (IANA, for example `Europe/Berlin`) to format dates and money for
 the recipient; they default to the template's locale and UTC. A publication pins the compiled template and the
 brand version it was built with, so republish to pick up a brand edit. `samva templates types`

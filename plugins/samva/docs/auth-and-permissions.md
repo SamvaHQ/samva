@@ -45,9 +45,12 @@ endpoints when exploring the integration. Do not inspect or send customer data
 unless the task explicitly requires it and the caller is authorized for that
 organization.
 
-Policy writes require a person's OAuth session and authority over the policy scope. API-key
-credentials cannot write policies or approve/deny actions. Approval and denial also require the
-held action's observed `decision.reviewRound`; a stale round returns `409`.
+Policy writes require a person's OAuth session and authority over the policy scope, or an
+organization-wide API key: full access, no namespace, owned by a current organization owner or
+admin. Such a key sets any rule in another key's scope, never its own, and only tightens a
+mailbox's policy; organization and agent policies stay with a person. No API key approves or
+denies an action. Approval and denial also require the held action's observed
+`decision.reviewRound`; a stale round returns `409`.
 
 ## Side-effect boundary
 

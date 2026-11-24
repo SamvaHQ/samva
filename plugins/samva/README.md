@@ -75,8 +75,9 @@ control characters in sender names and subjects and malformed email addresses, w
 `422` response.
 
 Mailbox sends and replies use scoped decision rules. Set a `write` minimum of `person` for
-reviewed keys; `sendMode` and `--send-mode` are not accepted. Policy
-writes and approvals use a person's OAuth session. Approval and denial carry the observed
+reviewed keys; `sendMode` and `--send-mode` are not accepted. Approvals use a person's OAuth
+session. Policy writes do too, except that an organization-wide API key may set another key's
+rules and tighten a mailbox's, never its own. Approval and denial carry the observed
 `decision.reviewRound`, and CLI decisions require `--review-round`. A stale round returns `409`.
 
 Verify Samva webhooks with `verify` or `verifyRequest` from `samva/webhooks` and the endpoint

@@ -89,6 +89,13 @@ Profile: `profile_get`.
 
 <!-- email-launch-mcp-tools:end -->
 
+`contacts_find_or_create` takes `lookup: { type, value }` with `type` `email`, `phone`, or `externalId`.
+An optional `create` (`name`, `displayName`, `avatar`, `identities`, `profile`, `externalId`) applies
+only when no contact matches; an email address goes in `lookup` or in
+`create.identities: [{ type: "email", identifier }]`. The server rejects any key the schema does
+not list, so `{ email }` and `create.email` fail. The advertised `inputSchema` closes its
+objects (`additionalProperties: false`), so a client that validates against it rejects the same keys.
+
 The hosted MCP surface provides usage totals and email proof reads. It does not provide entitlement,
 billing-status, or billing-portal tools.
 
@@ -106,6 +113,28 @@ where a tool needs one.
 | Organizing | `mailbox_thread_update`, `mailbox_labels_list`, `mailbox_thread_add_labels`, `mailbox_thread_remove_labels`             |
 | Trash      | `mailbox_thread_delete`, `mailbox_trash_empty`                                                                          |
 | Quarantine | `mailbox_spam_held_list`                                                                                                |
+
+`mailbox_action_cancel` and `mailbox_action_retry` need a permitted person's OAuth connection; an
+API key or installation token is refused with `403`, though the tools are still listed. A send held
+by email onboarding review stays `queued` with `waitReason: "onboarding-review"`; read
+`email_check_readiness` and `email_review_get_status`.
+
+`mailboxes_create` takes `address`, a full address on the hosted domain that `whoami_get` returns as
+`organization.hostedMailDomain`; `slug` only names the mailbox and does not supply the address.
+`mailbox_threads_list` returns thread ids. `mailbox_thread_get` returns the thread with a page of its
+messages, and each message's `id` is the `messageId` that `mailbox_reply`, `mailbox_forward`, and
+`mailbox_message_get` take; a thread id is not a message id. A thread's folder is set when it is
+created: inbound mail starts in `inbox` and a thread a send starts begins in `sent`, and it does not
+move when replies arrive. `folder: "inbox"` therefore omits a thread you started; omit `folder` and
+pass `unread: true` to find replies. `folder` takes `inbox`, `assigned`, `pending`, `sent`,
+`archived`, `trash`, or `spam`.
+
+A send, reply, or forward receipt is `queued` with `messageId: null` until Samva accepts the send.
+Keep `actionId` and call `mailbox_action_get` until `content.action.state` is `completed`, `notSent`,
+or `uncertain`, no later than the receipt's `executeUntil`. The action is nested under `content`
+because its intent can quote email; the send and cancel tools return the receipt at the top level.
+Once accepted, `content.action.send.messageId` names the sent message and `send.threadId` its
+thread, which `mailbox_thread_get` shows.
 
 Permanent deletion requires `thread:write`. `mailbox_thread_delete` requires the thread to be in
 Trash. `mailbox_trash_empty` returns the count selected for deletion.
@@ -173,13 +202,13 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ValidationError`                                              | Fix each dotted path in `fields`, then retry.                                                                                                 |
 | `UnauthorizedError`                                            | Supply an active bearer key; in the CLI run `samva login` or set `SAMVA_API_KEY`.                                                             |
-| `ForbiddenError`                                               | Use a key with the required scope and follow the message.                                                                                     |
+| `ForbiddenError`                                               | Follow the next step the message ends with; a person-only operation or policy refusal needs a person, not a broader key.                      |
 | `ResourceNotFoundError`                                        | Call the matching list operation to find a valid id.                                                                                          |
 | `RateLimitedError`                                             | Wait `retryAfterSeconds` before retrying.                                                                                                     |
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
-| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
+| `FromAddressRequiredError`                                     | Pass `from: { email }` with one of `addresses`, or set a default sender; the send was not accepted.                                           |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
@@ -193,8 +222,8 @@ it is retried automatically when the service recovers, and `reviewExpectedAt` is
 Read the message to observe progress instead of creating another send.
 
 The full catalog exposes `policies_get` and `policies_set` for organization, mailbox, and API key
-policies. Setting a policy requires a person's OAuth connection with the selected organization;
-API keys cannot change policies, including full-access keys. These configuration tools do not
+policies. Setting a policy takes a person's OAuth connection with the selected organization, or an
+organization-wide full-access API key owned by an owner or admin that targets another key. These configuration tools do not
 appear for mailbox-only keys.
 
 Read `policies_get` before editing. Its flat snapshot includes `version`, which is `0` when

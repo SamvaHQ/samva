@@ -85,10 +85,13 @@ Docs: <https://samva.dev/docs/mailboxes> and <https://samva.dev/docs/mailboxes/c
 - Give an agent a restricted key with `mailboxes` access, listing only the permissions it needs
   (`read`, `update`, `send`, `spam.read`) and its `mailboxIds`. Never hand it a full-access
   key.
-- To hold a key's sends and replies, have a person set `decide: "person"` for effect `write`.
-  A permitted key send runs directly unless policy requires review; a `final` rule alone does not
-  hold sends. Policy writes require a person's OAuth session and selected organization, never an
-  API key. Held sends return `state: "approvalRequired"` and
+- To hold a key's sends and replies, set a rule for effect `write` (`atLeast: "person"`). A
+  permitted key send runs directly unless policy requires review; a `final` rule alone does not
+  hold sends. A person's OAuth session with the selected organization writes any policy scope. An
+  API key writes policy only if it is full-access, not namespace-confined, and owned by an
+  organization owner or admin: it sets another key's rules (never its own) and can only tighten a
+  mailbox's (keep every rule, add `person` or `never` floors or `decide: "never"`); organization and agent
+  policy stay with a person. Held sends return `state: "approvalRequired"` and
   wait for a different person. The action's `resolution` and the `mailbox.action.resolved` event
   say how the wait ended. Draft with `mailboxes.createDraft` when a send is not needed.
 - Only a person signed in (`samva login` or an OAuth connection) approves or denies an action and
@@ -113,14 +116,14 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | Tag                                                            | Next action                                                                                                                                   |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ValidationError`                                              | Fix each dotted path in `fields`, then retry.                                                                                                 |
-| `UnauthorizedError`                                            | Supply an active bearer key; in the CLI run `samva login` or set `SAMVA_API_KEY`.                                                             |
-| `ForbiddenError`                                               | Use a key with the required scope and follow the message.                                                                                     |
+| `UnauthorizedError`                                            | Send an active key in `X-API-Key` (or as a bearer); in the CLI run `samva login` or set `SAMVA_API_KEY`.                                      |
+| `ForbiddenError`                                               | Follow the next step the message ends with; a person-only operation or policy refusal needs a person, not a broader key.                      |
 | `ResourceNotFoundError`                                        | Call the matching list operation to find a valid id.                                                                                          |
 | `RateLimitedError`                                             | Wait `retryAfterSeconds` before retrying.                                                                                                     |
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
-| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
+| `FromAddressRequiredError`                                     | Pass `from: { email }` with one of `addresses`, or set a default sender; the send was not accepted.                                           |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |
 
