@@ -21,7 +21,7 @@ The tests use fakes, so the whole flow runs without an account. Full reference:
 bun add samva
 ```
 
-These examples use `samva@^0.50.0`. Agent module helpers are part of the SDK at `samva/agent`
+These examples use `samva@^0.51.0`. Agent module helpers are part of the SDK at `samva/agent`
 and `samva/agent/test`, which need `effect` at runtime. To add an agent module to an existing
 project, install it too (`samva agents init` adds it for a new one):
 
@@ -32,7 +32,10 @@ bun add samva effect
 ## Create a mailbox and a scoped key
 
 Setup uses a person's OAuth session to create the mailbox, issue a restricted key, and set its
-policy. The agent uses that restricted key; it cannot configure policies or approve actions.
+policy. An organization-wide API key (full access, no namespace, owned by a current organization
+owner or admin) can set the agent key's rule in place of that session. It sets a rule in another
+key's scope, never its own, and may only tighten a mailbox's policy. The agent uses the restricted
+key; it cannot configure policies or approve actions.
 
 ```ts
 import { createClient } from "samva";
@@ -47,7 +50,9 @@ const mailbox = await samva.mailboxes.create({
   name: "Support",
 });
 
-const key = await samva.apiKeys.create({
+// The create response holds the only copy of the secret. Write it to a secret store, and never
+// log or print the response.
+const { id: keyId, key: agentKey } = await samva.apiKeys.create({
   name: "Support agent",
   access: {
     mode: "restricted",
@@ -59,17 +64,14 @@ const key = await samva.apiKeys.create({
   },
 });
 
-const currentPolicy = await samva.policies.getPolicy({ kind: "apiKey", id: key.id });
+const currentPolicy = await samva.policies.getPolicy({ kind: "apiKey", id: keyId });
 await samva.policies.setPolicy({
   kind: "apiKey",
-  id: key.id,
+  id: keyId,
   ifVersion: currentPolicy.version,
   presets: [],
   rules: [{ match: { effect: "write" }, atLeast: "person" }],
 });
-
-// Store this now. Samva does not return it again.
-const agentKey = key.key;
 ```
 
 Policy replacement checks the version read above. A stale write returns `409`; reload and review the
@@ -140,7 +142,13 @@ receipt under `send`. `approveAction` returns an action with this nested receipt
 
 Rate limits, sender readiness, and pending onboarding review queue the send for
 automatic retry until `executeUntil`. Read `retryAt` and `problem.error._tag` for the
-wait and its cause. Template operations report a transient template service failure as
+wait and its cause. A new organization's sends can wait on email onboarding review: the receipt
+stays `queued` with `waitReason: "onboarding-review"` and `problem.code` `reviewPending`, and
+`problem.error.nextAction` names the next step. A sender wait shows `problem.code` `senderNotReady`
+with `waitReason: null`. Check with `samva email review status`, `samva.email.getOnboardingReview()`
+(`GET /v1/email/onboarding-review`), or the MCP tool `email_review_get_status`. See
+[A send that stays queued](https://samva.dev/docs/mailboxes/approvals#a-send-that-stays-queued).
+Template operations report a transient template service failure as
 `ServiceUnavailableError` (503) with `retryAfterSeconds` from the `Retry-After` header;
 wait that long and reuse the same idempotency key for writes. Policy refusal returns 403,
 validation 422, and competing actions 409. If a response is lost, repeat the same

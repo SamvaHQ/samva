@@ -28,7 +28,6 @@ const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 const { endpoint } = await configureInboundEmail(samva, {
   domainId: process.env.SAMVA_DOMAIN_ID!,
-  domain: "replies.example.com",
   webhookUrl: "https://app.example.com/webhooks/samva",
 });
 

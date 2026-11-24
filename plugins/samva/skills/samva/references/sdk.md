@@ -47,7 +47,11 @@ The root entrypoint and `samva/promises` expose the same Promise client.
 
 The `email.send` helper takes a flat object. `to` accepts a string address, a
 `{ email }` or `{ contactId }` object, a contact object, or an array of any of
-those.
+those. `from` is an object, `{ email, name? }`, never a string. Omit it only when the template sets
+`fromDefault`, the organization has a default sender, or it has exactly one verified sender; a new
+organization whose only sending identity is a hosted mailbox address has none of these, so the send
+fails with `FromAddressRequiredError` (`422`, with `verifiedDomains` and `addresses`). Pass one of
+those addresses as `from: { email }`, or call `email.setDefaultSender`.
 
 ```typescript
 import { createClient } from "samva";
@@ -56,6 +60,7 @@ const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
 const message = await samva.email.send(
   {
+    from: { email: "hello@yourdomain.com" },
     to: "ada@example.com",
     subject: "Welcome to Samva",
     html: "<h1>Welcome!</h1><p>Thanks for joining.</p>",
@@ -102,7 +107,10 @@ the only override: an `Idempotency-Key` passed through `headers` is replaced by 
 error class and its fields: `https://samva.dev/docs/developers/error-reference`.
 
 The Promise client retries reads and idempotent mutations automatically. Set `maxRetries` in
-`createClient` or the per-call options; `0` disables retries. Cursor lists expose `.items()` and
+`createClient` or the per-call options; `0` disables retries. Each attempt fails with
+`SamvaTimeoutError` after 30 000 ms (`timeoutMs` on the client or call, `null` for no bound), and a
+timed-out keyed call retries with its key; after the retries, repeat it with the same
+`idempotencyKey`. Cursor lists expose `.items()` and
 `.pages()` async iterators, which preserve filters and fetch pages as you consume them:
 
 ```typescript
@@ -142,7 +150,10 @@ the same pattern, such as `* as Contacts from "samva/effect/contacts"` and call
 limit inputs take numbers; the client serializes them as query strings. Annotated absolute-instant inputs take a
 `Date` (such as `ScheduledMessages.create`'s `scheduledFor`); sensitive outputs become
 `Redacted` (such as `ApiKeys.create`'s `key`). Use `Redacted.value` at the point
-where the secret is needed. Response timestamps stay ISO 8601 strings, including
+where the secret is needed. The Promise client returns the key as a plain string: destructure it
+(`const { key: secret } = await samva.apiKeys.create({ ... })`), store it, and keep the response out of
+logs and tool output. Capture the key before any redaction filter runs; a filter that blanks the
+response loses the only copy, and a key that was printed should be revoked. Response timestamps stay ISO 8601 strings, including
 `MessageReceipt.createdAt`.
 
 In a Cloudflare Worker or other serverless function, import focused entrypoints rather than the
@@ -170,6 +181,7 @@ const { contact } = await samva.contacts.findOrCreate({
 });
 
 await samva.email.send({
+  from: { email: "hello@yourdomain.com" },
   to: contact, // contact object, { id }, or { contactId }
   subject: "Welcome",
   html: "<p>Hi there!</p>",
@@ -182,6 +194,7 @@ await samva.email.send({
 
 ```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: contact"
 await samva.email.send({
+  from: { email: "hello@yourdomain.com" },
   to: [{ contactId: contact.id }],
   subject: "Welcome",
   html: "<p>Hi!</p>",
@@ -206,8 +219,10 @@ import { createClient } from "samva";
 
 const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
 
+// The address is a full address on the hosted domain whoami reports; a slug is not an address.
+const { organization } = await samva.whoami.get();
 const mailbox = await samva.mailboxes.create({
-  endpoint: { channel: "email", address: "support@acme.samva.email" },
+  endpoint: { channel: "email", address: `support@${organization.hostedMailDomain}` },
   name: "Support",
 });
 
@@ -215,25 +230,62 @@ const mailbox = await samva.mailboxes.create({
 await samva.mailboxes.createEndpoint({
   id: mailbox.id,
   channel: "email",
-  address: "billing@acme.samva.email",
+  address: `billing@${organization.hostedMailDomain}`,
 });
 
-const threads = await samva.mailboxes.listThreads({ id: mailbox.id, unread: true, limit: 20 });
-for (const { id: threadId } of threads.items) {
-  const thread = await samva.mailboxes.getThreadContent({ id: mailbox.id, threadId });
-  // Decide what to do with each unread thread.
-}
-
-// Reply in the thread. The idempotency key makes a retry return the original receipt.
-const receipt = await samva.mailboxes.reply(
-  {
+// Follow `nextCursor` on the thread list and on each thread's messages.
+let threadCursor: string | undefined;
+do {
+  const threads = await samva.mailboxes.listThreads({
     id: mailbox.id,
-    messageId: "msg_...",
-    text: "Thanks, we got it.",
-  },
-  { idempotencyKey: "reply-for-event-123" },
-);
+    unread: true,
+    limit: 20,
+    cursor: threadCursor,
+  });
+
+  // A thread id is not a message id. `getThread` returns the thread without its messages;
+  // `listThreadMessages` returns summaries and `getThreadContent` the bodies, each item's `id`
+  // being the `messageId` that `reply`, `replyAll`, and `forward` take.
+  for (const { id: threadId } of threads.items) {
+    // Message pages run oldest first: the newest incoming message is on the last page.
+    let latest: { id: string } | undefined;
+    let cursor: string | undefined;
+    do {
+      const messages = await samva.mailboxes.listThreadMessages({
+        id: mailbox.id,
+        threadId,
+        cursor,
+      });
+      for (const message of messages.items) {
+        if (message.direction === "inbound") latest = message;
+      }
+      cursor = messages.nextCursor ?? undefined;
+    } while (cursor);
+    if (!latest) continue;
+
+    // Reply in the thread. The idempotency key makes a retry return the original receipt.
+    await samva.mailboxes.reply(
+      { id: mailbox.id, messageId: latest.id, text: "Thanks, we got it." },
+      { idempotencyKey: `reply-${latest.id}` },
+    );
+  }
+  threadCursor = threads.nextCursor ?? undefined;
+} while (threadCursor);
 ```
+
+`sendMessage` takes plain address strings and sends from the mailbox's default email endpoint; it has
+no `from` or template fields. A thread's folder is set when it is created: inbound mail starts in
+`inbox` and a thread you start with a send starts in `sent`. It does not move when replies arrive,
+so `listThreads({ folder: "inbox" })` omits a thread you started. Omit `folder` and pass
+`unread: true` to find replies; `folder` takes `inbox`, `assigned`, `pending`, `sent`, `archived`,
+`trash`, or `spam`.
+
+A send or reply receipt is `queued` with `messageId: null` until Samva accepts the send. To confirm
+it landed, keep `actionId` and poll `mailboxes.getAction({ id, actionId })` until `state` is
+`completed`, `notSent`, or `uncertain`, no later than the receipt's `executeUntil`. Once accepted,
+`action.send.messageId` names the sent message and `action.send.threadId` its thread, and
+`listThreadMessages` shows it there. Recipient delivery arrives as `mailbox.message.delivered` over
+the event stream or a webhook.
 
 Other methods follow the API operations: `sendMessage`, `replyAll`, `forward`, `createDraft` and
 `sendDraft`, `updateThread`, `addThreadLabels`, `createGrant`, `pause`, and
@@ -241,7 +293,8 @@ Other methods follow the API operations: `sendMessage`, `replyAll`, `forward`, `
 
 Configure decision policies with `samva.policies.getPolicy` and `samva.policies.setPolicy`.
 To change a key's policy, use an organization owner or admin's OAuth token and selected
-organization. No API key, including a full-access one, can change policies. A key's permitted sends run directly unless policy requires
+organization, or an organization-wide full-access `apiKey` client owned by an owner or admin that
+targets a different key (a key never writes its own policy). A key's permitted sends run directly unless policy requires
 review. Hold its sends and replies with a `write` rule; `final` alone does not match them:
 
 ```typescript
@@ -348,6 +401,88 @@ the editor. An unusable website returns a `422` error without creating a project
 idempotency key when retrying the same request. The Effect equivalent is
 `Templates.createFromWebsite` from `samva/effect/templates`.
 
+## Domains
+
+Email domain methods are flat on `samva.email`; only newsletter domains nest, under
+`samva.newsletters.domains`. There is no `samva.email.domains`.
+
+```typescript
+import { createClient } from "samva";
+
+const samva = createClient({ apiKey: process.env.SAMVA_API_KEY! });
+
+const domain = await samva.email.addDomain({ domain: "mail.example.com" }); // dnsRecords to publish
+await samva.email.getDomainVerification({ id: domain.id }); // last observed state
+const verification = await samva.email.advanceDomainVerification({ id: domain.id }); // checks DNS now
+console.log(verification.phase); // repeat until "ready"
+
+await samva.email.enableReceiving({ id: domain.id, catchAll: true });
+const receiving = await samva.email.getReceivingStatus({ id: domain.id });
+console.log(receiving.ready, receiving.mx.expected); // the MX record to publish
+
+await samva.email.removeDomain({ id: domain.id });
+```
+
+`enableReceiving` takes the domain's `id` and returns a `ValidationError` until the domain is
+verified. `removeDomain` is asynchronous: the domain stays listed with `deleting: true` until its
+teardown finishes, and a repeat call or read after that answers 404. Over REST: `POST /v1/email/domains`, `GET .../{id}/verification`,
+`POST .../{id}/verify`, `POST .../{id}/enable-receiving`, `GET .../{id}/receiving-status`, and
+`DELETE /v1/email/domains/{id}`.
+
+## Mailbox readiness
+
+An email endpoint's `sendingStatus` (`mailboxes.get`) is `pending`, `ready`, or `failed` and
+describes the address's setup. While the organization's email onboarding review is undecided, a send
+from a `ready` address returns a receipt whose action stays `queued` with
+`waitReason: "onboarding-review"` and the review's next action in `problem.error.nextAction`; read
+`samva.email.getOnboardingReview()` for the detail. `mailboxes.cancelAction` and
+`mailboxes.retryAction` need a person's credential; an API key is refused.
+
+## Create and publish a template from code
+
+```typescript sdk-typecheck-skip="Fragment uses application values or preceding examples: tsxSource"
+const template = await samva.templates.create({ name: "Order shipped", slug: "order-shipped" });
+const opened = await samva.templates.openWorkspace({ id: template.id }); // revision starts at "0"
+const patched = await samva.templates.patchWorkspace({
+  id: template.id,
+  expectedRevision: opened.workspace.revision,
+  patches: [{ path: template.entryPath, content: tsxSource }], // content: null deletes
+});
+await samva.templates.checkWorkspace({
+  id: template.id,
+  expectedRevision: patched.workspace.revision,
+});
+const saved = await samva.templates.saveWorkspace({
+  id: template.id,
+  expectedRevision: patched.workspace.revision,
+  expectedHead: patched.workspace.remoteHead, // the 40-hex head
+  message: "Order shipped email",
+});
+const publication = await samva.templates.publish({
+  id: template.id,
+  projectId: template.projectId,
+  entryPath: template.entryPath,
+  commitSha: saved.commit,
+  expectedWorkspaceRevision: saved.revision,
+});
+```
+
+`create` seeds a starter whose entry is `templates/welcome.tsx`, with its `defineTemplate` `id` set to
+the slug; keep that `id`. Every patch raises `revision`, so read it from each response. Send with
+`samva.email.send({ templateSlug, templateData })`. Over REST, `POST /v1/messages` nests those fields
+under `email`: `{ "channel": "email", "to": [...], "email": { "templateSlug": "...", "templateData": {} } }`.
+`templateSlug` takes the slug and `templateId` the `tmpl_...` id; name exactly one.
+
+## Method names
+
+A REST `DELETE` is `remove`: `mailboxes.remove`, `namespaces.remove`, `webhooks.remove`,
+`email.removeDomain`, `newsletters.domains.remove`. The exceptions are `apiKeys.revoke`,
+`whatsappSetupLinks.revoke`, `campaigns.archive`, `templates.delete`, `templates.deleteProject`, and
+`templateShareLinks.delete`. The identity call is `samva.whoami.get()`, listing messages is
+`messages.list`, and sending from a mailbox is `mailboxes.sendMessage`. MCP tool names are
+`<group>_<operation>` and can use another verb for the same operation, such as `namespaces_delete`
+for `namespaces.remove`.
+
 ## Other services
 
 The client's namespaces are `agents`, `analytics`, `apiKeys`, `attachments`, `brands`, `campaigns`,
@@ -391,13 +526,13 @@ Do not retry a rejected request unchanged. CLI `next` and MCP `hint` carry recov
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ValidationError`                                              | Fix each dotted path in `fields`, then retry.                                                                                                 |
 | `UnauthorizedError`                                            | Supply an active bearer key; in the CLI run `samva login` or set `SAMVA_API_KEY`.                                                             |
-| `ForbiddenError`                                               | Use a key with the required scope and follow the message.                                                                                     |
+| `ForbiddenError`                                               | Follow the next step the message ends with; a person-only operation or policy refusal needs a person, not a broader key.                      |
 | `ResourceNotFoundError`                                        | Call the matching list operation to find a valid id.                                                                                          |
 | `RateLimitedError`                                             | Wait `retryAfterSeconds` before retrying.                                                                                                     |
 | `PaymentRequiredError`                                         | Check usage, the reset time, and the plan's limits in billing.                                                                                |
 | `FlagDisabledError`                                            | Use an enabled feature for the organization.                                                                                                  |
 | `OnboardingReviewRequiredError`                                | Follow `nextAction`; do not send again until review permits it.                                                                               |
-| `FromAddressRequiredError`                                     | Pass `from` on a `verifiedDomains` domain, or set a default sender; the send was not accepted.                                                |
+| `FromAddressRequiredError`                                     | Pass `from: { email }` with one of `addresses`, or set a default sender; the send was not accepted.                                           |
 | `ConflictError`                                                | Read the resource and resolve the conflict before retrying.                                                                                   |
 | `TemplateSourceError`                                          | Fix the template source as `diagnostics` describe, then retry.                                                                                |
 | `InternalError`, `ExternalServiceError`, `GatewayTimeoutError` | Retry once, preserving a send's idempotency key; report a repeat failure with `feedback_send` or `samva feedback send`, naming the operation. |

@@ -56,6 +56,21 @@ chat.onDirectMessage(acknowledge);
 export const POST = (request: Request) => chat.webhooks.samva(request);
 ```
 
+`chat.webhooks.samva(request)` takes a Web `Request` and returns a `Response`, so it runs in any framework, and the route path is yours: it only has to match the webhook URL. With Bun:
+
+```ts
+Bun.serve({
+  port: 3000,
+  fetch(request) {
+    const { pathname } = new URL(request.url);
+    if (request.method === "POST" && pathname === "/samva") return chat.webhooks.samva(request);
+    return new Response("Not found", { status: 404 });
+  },
+});
+```
+
+The adapter receives by webhook only, so it needs a public URL. A server without one reads `samva.mailboxes.events` instead, as in the [mailboxes cookbook](https://github.com/SamvaHQ/samva/blob/main/cookbooks/mailboxes.md#follow-events).
+
 Pass the original request to the webhook handler. Authentication uses the signed body bytes. Use a shared Chat SDK state adapter when deploying across workers so webhook deduplication works across instances.
 
 ## Environment variables
@@ -90,11 +105,65 @@ const samva = createSamvaAdapter({
 
 ## Platform setup
 
-1. Create a mailbox-scoped API key with the approval rule `{ match: { effect: "write" }, atLeast: "person" }`.
-2. Create a mailbox webhook for `mailbox.message.received` pointing at your route, and keep its signing secret.
-3. In a test conversation, verify the reply returns `approvalRequired` and review it in the dashboard.
+1. Create a mailbox-scoped API key for the agent and give it the approval rule `{ match: { effect: "write" }, atLeast: "person" }`. A person sets the rule while signed in, or an organization-wide API key sets it on the agent's key (`policies.setPolicy`, `PUT /v1/policies/apiKey/{id}`). The agent's own key cannot set or lift its rule, and it can never approve or deny a send.
+2. Deploy the route. The signing secret does not exist yet, so pass `webhookSecret` as a function that reads it per delivery. Until it is set, the handler throws and Samva retries the delivery.
+3. Create a mailbox webhook for `mailbox.message.received` pointing at your route. The create response holds the signing `secret`; `GET /v1/webhooks/{id}/secret` and the MCP tool `webhooks_get_secret` return it later. Store it where the function reads it.
+4. In a test conversation, verify the reply returns `approvalRequired` and review it in the dashboard.
 
-See the [mailbox approval setup](https://github.com/SamvaHQ/samva/blob/main/cookbooks/mailboxes.md). Installing Samva from Vercel writes `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` to your projects. It writes `SAMVA_WEBHOOK_SECRET` only when you set **Receive messages at** to your route's URL; otherwise create the webhook yourself and set its secret ([docs](https://samva.dev/docs/integrations/vercel)).
+See the [mailbox approval setup](https://github.com/SamvaHQ/samva/blob/main/cookbooks/mailboxes.md). A reply that stays `queued` has a `waitReason` or `problem.code` on its receipt, for example `onboarding-review` while a new organization's email onboarding review is pending. See [A send that stays queued](https://samva.dev/docs/mailboxes/approvals#a-send-that-stays-queued). Installing Samva from Vercel writes `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` to your projects. It writes `SAMVA_WEBHOOK_SECRET` only when you set **Receive messages at** to your route's URL; otherwise create the webhook yourself and set its secret ([docs](https://samva.dev/docs/integrations/vercel)).
+
+## Smoke test the route
+
+`samva webhooks test` and `POST /v1/webhooks/{id}/test` send only `webhook.test`, which this adapter answers with an empty `204`. They cannot produce `mailbox.message.received`. To exercise the route, sign a sample `mailbox.message.received` body with `signWebhook` from `@samva/webhooks` and send it with the three signing headers. The mailbox ID must match `SAMVA_MAILBOX_ID`; the other IDs are placeholders.
+
+```ts
+import { signWebhook } from "@samva/webhooks";
+
+const now = new Date();
+const body = JSON.stringify({
+  type: "mailbox.message.received",
+  timestamp: now.toISOString(),
+  data: {
+    mailboxId: process.env.SAMVA_MAILBOX_ID,
+    namespaceId: null,
+    thread: { id: "thread_0000000000000000", subject: null, preview: null },
+    message: {
+      id: "msg_0000000000000000",
+      channel: "email",
+      threadId: "thread_0000000000000000",
+      from: { address: "customer@example.com" },
+      to: [],
+      cc: [],
+      subject: null,
+      text: "Hello",
+      replyText: null,
+      attachments: [],
+      occurredAt: now.toISOString(),
+    },
+  },
+});
+const id = "msg_smoke_1";
+const timestamp = Math.floor(now.getTime() / 1000);
+const signature = await signWebhook({
+  body,
+  id,
+  timestamp,
+  secret: process.env.SAMVA_WEBHOOK_SECRET!,
+});
+
+const response = await fetch("http://localhost:3000/samva", {
+  method: "POST",
+  body,
+  headers: {
+    "webhook-id": id,
+    "webhook-timestamp": String(timestamp),
+    "webhook-signature": signature,
+  },
+});
+console.log(response.status);
+```
+
+A `401` means the secret does not match. The route answers `204` both for a delivery it routed and for one it ignored, so confirm the turn ran in your Chat SDK handler, for example with a log line. A reply to the placeholder message ID cannot succeed, so a handler that replies fails at that step.
 
 ## Features
 

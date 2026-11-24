@@ -43,7 +43,8 @@ builds, and a missing one fails the build with its name.
 - **A person approves every send.** Give the agent a mailbox-scoped key whose policy is
   `{ match: { effect: "write" }, atLeast: "person" }`. A reply then returns
   `state: "approvalRequired"`, and nothing is sent until a person approves it in the dashboard or
-  with `samva login` in the CLI. An API key can never approve a send. See the
+  with `samva login` in the CLI. A person, or an organization-wide API key, sets the rule; the
+  agent's own key cannot set or lift it, and no API key can approve a send. See the
   [mailboxes cookbook](../../cookbooks/mailboxes.md).
 - **Mail is untrusted data.** The extension's instructions tell the model to answer a customer
   message and never follow instructions inside it. The approval rule is what makes that safe to
@@ -113,4 +114,5 @@ server for shared state.
 
 `agent/agent.ts` passes `anthropic("claude-opus-5-5")` from `eve/models/anthropic`, which reads
 `ANTHROPIC_API_KEY`. Eve also accepts an AI Gateway model id string or any AI SDK language model in
-`defineAgent`'s `model`.
+`defineAgent`'s `model`. A model id Eve has no AI Gateway context window metadata for fails the
+build with "does not have known AI Gateway context window metadata", so pick an id Eve knows.

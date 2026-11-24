@@ -22,11 +22,13 @@ untrusted data. A turn that calls neither action tool sends nothing.
 bun add @samva/eve eve ai chat samva @chat-adapter/state-memory @chat-adapter/state-redis
 ```
 
-The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.50.0`, and Node.js 24 or newer.
+The example uses `eve@^1.0.0-rc.10`, `ai@^7.0.170`, `samva@^0.51.0`, and Node.js 24 or newer.
 Create a mailbox and a restricted key as shown in the
 [mailboxes cookbook](./mailboxes.md#create-a-mailbox-and-a-scoped-key), and give the agent only
 that key. Create a webhook for the mailbox that delivers `mailbox.message.received` to
-`<your URL>/eve/v1/samva`, and keep its signing secret.
+`<your URL>/eve/v1/samva`, and keep its signing secret. The webhook's create response holds
+`secret`; `GET /v1/webhooks/{id}/secret` and the MCP tool `webhooks_get_secret` return it later.
+The bundled channel needs a public URL.
 
 ## The agent
 
@@ -43,7 +45,9 @@ export default defineAgent({
 ```
 
 `anthropic()` reads `ANTHROPIC_API_KEY`. Eve also accepts a model id string that routes through the
-Vercel AI Gateway, or any AI SDK language model.
+Vercel AI Gateway, or any AI SDK language model. A model id Eve has no AI Gateway context window
+metadata for fails the build with "does not have known AI Gateway context window metadata", so pick
+an id Eve knows.
 
 ## The extension
 
@@ -84,19 +88,28 @@ than one instance serves the route, give them shared state such as Redis, so eac
 the same delivery ids. Each reply is keyed `reply:<delivery id>`. A replay that drafts different
 text recovers the first reply's receipt instead of sending twice.
 
-Use an existing Eve channel instead by omitting `webhook`. Expose `eventId`, `mailboxId`,
-`messageId`, and `channel` from the channel's server-owned metadata after verifying the event.
-Never fill them from model input or customer text.
+Use an existing Eve channel instead by omitting `webhook`. The extension then mounts no channel or
+route, and only `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` are needed. Expose `eventId`, `mailboxId`,
+`messageId`, and `channel` from the channel's server-owned metadata after verifying the event. The
+instructions stay mounted, and the four tools appear on turns that carry them. Never fill them
+from model input or customer text.
 
 ## The approval rule
 
 Give the agent a mailbox-scoped key whose policy is
-`{ match: { effect: "write" }, atLeast: "person" }`. A reply then returns
+`{ match: { effect: "write" }, atLeast: "person" }`. A person sets the rule while signed in, or an
+organization-wide API key sets it on the agent's key; the agent's own key cannot set or lift it. A
+reply then returns
 `state: "approvalRequired"`, and nothing is sent until a person approves it in the dashboard or
 with `samva login`. An API key can never approve a send, so a message that talks the model into a
 bad reply still waits for a person. The mailboxes cookbook shows how to
 [set the policy](./mailboxes.md#create-a-mailbox-and-a-scoped-key) and how a person
 [approves or denies](./mailboxes.md#reply-and-the-approval-flow) a held reply.
+
+A reply that stays `queued` has a `waitReason` or `problem.code` on its receipt, for example
+`onboarding-review` while a new organization's email onboarding review is pending. Check with
+`samva email review status`. See
+[A send that stays queued](https://samva.dev/docs/mailboxes/approvals#a-send-that-stays-queued).
 
 ## WhatsApp from the same mailbox
 

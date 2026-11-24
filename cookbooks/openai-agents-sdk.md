@@ -23,7 +23,7 @@ neither tool.
 bun add @openai/agents samva zod
 ```
 
-The example uses `@openai/agents@^0.21.0` and `samva@^0.50.0`.
+The example uses `@openai/agents@^0.21.0` and `samva@^0.51.0`.
 
 ## The two tools
 

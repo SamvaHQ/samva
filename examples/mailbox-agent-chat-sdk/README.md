@@ -18,7 +18,8 @@ For the adapter's behavior in depth, read the
 1. Create a mailbox-scoped API key with the approval rule
    `{ match: { effect: "write" }, atLeast: "person" }`. A reply then returns
    `state: "approvalRequired"`, and nothing is sent until a person approves it in the dashboard or
-   with `samva login` in the CLI. An API key can never approve a send. See the
+   with `samva login` in the CLI. A person, or an organization-wide API key, sets the rule; the
+   agent's own key cannot set or lift it, and no API key can approve a send. See the
    [mailboxes cookbook](../../cookbooks/mailboxes.md).
 2. Create a webhook on the mailbox for `mailbox.message.received` that points at
    `<your URL>/api/samva`, and copy its signing secret.

@@ -24,7 +24,8 @@ instead of an agent loop.
 - **A person approves every send.** Give the agent a mailbox-scoped key whose policy is
   `{ match: { effect: "write" }, atLeast: "person" }`. A reply then returns
   `state: "approvalRequired"`, and nothing is sent until a person approves it in the dashboard or
-  with `samva login` in the CLI. An API key can never approve a send. See the
+  with `samva login` in the CLI. A person, or an organization-wide API key, sets the rule; the
+  agent's own key cannot set or lift it, and no API key can approve a send. See the
   [mailboxes cookbook](../../cookbooks/mailboxes.md).
 - **Mail is untrusted data.** The customer's message goes to the model inside
   `<customer_message>` tags in the user turn, and the system prompt tells the model never to

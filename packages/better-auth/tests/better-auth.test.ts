@@ -119,6 +119,7 @@ describe("@samva/better-auth", () => {
         {
           _tag: "FromAddressRequiredError",
           message: "Choose a sender.",
+          addresses: ["support@example.com"],
           verifiedDomains: ["example.com"],
         },
         { status: 422 },
@@ -132,7 +133,10 @@ describe("@samva/better-auth", () => {
         { apiKey: "samva_sk_test_adapter", baseUrl: "https://samva.test" },
       ).catch((caught: unknown) => caught);
       expect(error).toBeInstanceOf(FromAddressRequiredError);
-      expect(error).toMatchObject({ verifiedDomains: ["example.com"] });
+      expect(error).toMatchObject({
+        addresses: ["support@example.com"],
+        verifiedDomains: ["example.com"],
+      });
       expect(fetcher).toHaveBeenCalledOnce();
     } finally {
       vi.unstubAllGlobals();

@@ -61,9 +61,35 @@ function tools() {
 
 const receipt = {
   actionId: "action_1",
+  draftId: null,
+  messageId: null,
+  threadId: null,
+  state: "approvalRequired",
+  acceptedAt: null,
+  waitReason: null,
+  reviewExpectedAt: null,
+  skippedRecipients: [],
+  executeUntil: null,
+  retryAt: null,
+  problem: null,
+  retryEligible: false,
+  decision: null,
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-01T00:00:00Z",
+};
+// The tool result the model reads: @samva/ai-sdk's projection of the receipt.
+const projected = {
+  actionId: "action_1",
   state: "approvalRequired",
   messageId: null,
   threadId: null,
+  waitReason: null,
+  retryAt: null,
+  reviewExpectedAt: null,
+  executeUntil: null,
+  skippedRecipients: [],
+  problem: null,
+  decision: null,
 };
 
 beforeEach(() => {
@@ -92,7 +118,7 @@ it("saves the action claim across catalog rebuilds", async () => {
   expect(await tools().leave_for_person.execute({ reason: "Escalate" }, ctx)).toEqual({
     status: "already handled",
   });
-  await expect(reply).resolves.toEqual({ status: "held for approval", receipt });
+  await expect(reply).resolves.toEqual({ status: "held for approval", receipt: projected });
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
@@ -109,7 +135,7 @@ it("allows a same-key retry after a lost reply without allowing handoff", async 
   });
   await expect(tools().reply_to_customer.execute({ text: "Hello again" }, ctx)).resolves.toEqual({
     status: "held for approval",
-    receipt,
+    receipt: projected,
   });
   expect(fetch.mock.calls.map(([req]) => req.headers.get("idempotency-key"))).toEqual([
     "reply:evt_1",

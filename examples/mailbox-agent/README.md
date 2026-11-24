@@ -20,7 +20,9 @@ stays about mailbox mechanics. Replace it with your own logic.
   `{ match: { effect: "write" }, atLeast: "person" }`. Policy reads return `version`; replacements must send that value as `ifVersion`. Reload and review current rules after a `409` conflict. A reply returns `state: "approvalRequired"` and an `actionId`; nothing is
   sent until a person approves it with a person's OAuth credential in the dashboard, the CLI
   (`samva login`), or `samva.mailboxes.approveAction`. Approval and denial carry the observed
-  `decision.reviewRound`; CLI commands require `--review-round`. An API key can never approve a send.
+  `decision.reviewRound`; CLI commands require `--review-round`. A person, or an organization-wide
+  API key, sets the rule; the agent's own key cannot set or lift it, and no API key can approve a
+  send.
 - **Least privilege.** The module registers one handler, and its `ctx.samva` reads the event's
   mailbox and replies to the received message; any other operation fails with HTTP 403. The key
   reaches one mailbox.

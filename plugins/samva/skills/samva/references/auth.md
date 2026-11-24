@@ -20,7 +20,7 @@ Production keys start with `samva_sk_live_`; keys minted outside production star
 
 Create one in the Samva dashboard under **Developers → API keys**. The full value is shown once at
 creation. Store it in an environment variable, never in source. Send it as the `X-API-Key` header;
-the SDK and CLI do this for you when you set `SAMVA_API_KEY`. Hosted MCP also accepts it as
+the SDK and CLI do this for you when you set `SAMVA_API_KEY`. REST and hosted MCP also accept it as
 `Authorization: Bearer samva_sk_live_...`.
 
 The organization is derived from the key, so API-key callers never select an org. Each key carries
@@ -38,9 +38,10 @@ keyring, never in a file, and sends it as `Authorization: Bearer ...`.
   `orgSlug: "<slug>"` to the SDK's `createClient({ authToken, orgSlug })`.
 - There is **no refresh token**. Run `samva login` again once the session expires.
 
-Use OAuth for interactive work, especially across multiple organizations. Policy writes also
-require a person's OAuth credential; no API key can change policy. Use an API key for unattended
-operations its permissions allow.
+Use OAuth for interactive work, especially across multiple organizations. Policy writes by an API
+key need organization-wide reach (full access, no namespace, owned by an organization owner or
+admin) and cover another key's scope or a mailbox tightening only; organization and agent policy
+need a person. Use an API key for unattended operations its permissions allow.
 
 ## Errors
 
