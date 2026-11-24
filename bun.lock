@@ -136,7 +136,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@ai-sdk/anthropic": "^4.0.102",
-        "@samva/ai-sdk": "^0.1.3 || ^0.2.0",
+        "@samva/ai-sdk": "^0.2.0",
         "ai": "^7.0.170",
         "samva": "^0.51.0",
       },
@@ -204,7 +204,7 @@
       "dependencies": {
         "@chat-adapter/state-memory": "4.42.0",
         "@chat-adapter/state-redis": "4.42.0",
-        "@samva/eve": "^0.1.3 || ^0.2.0",
+        "@samva/eve": "^0.2.0",
         "ai": "^7.0.170",
         "chat": "4.42.0",
         "eve": "^1.0.0-rc.10",
