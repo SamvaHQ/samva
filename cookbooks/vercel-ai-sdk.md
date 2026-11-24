@@ -48,13 +48,14 @@ const tools = samvaTools({ client: samva, message, eventId: event.id });
 
 Each result is a projection for the model. A reply returns `{ status, receipt }`, where the receipt
 holds `actionId`, `state`, `messageId`, `threadId`, `waitReason`, `retryAt`, `reviewExpectedAt`,
-`executeUntil`, `skippedRecipients`, and `problem` (`code` and `message`). Read the full action with
+`executeUntil`, `skippedRecipients`, `problem` (`code` and `message`), and `decision` (`outcome`,
+`decider`, `reason`). Read the full action with
 `samva.mailboxes.getAction({ id, actionId })`. `get_thread` returns `{ threadId, items, nextCursor }`
 with `id`, `channel`, `direction`, `occurredAt`, `from`, `to`, `text`, and `attachments` on each
-item, plus `subject` on email and `template` on an outbound WhatsApp template message. `text` is the
+item, plus `subject` and `cc` on email, and `template` and `contextMessageId` on WhatsApp and SMS. `text` is the
 reply without quoted history when Samva could separate it. The item `id` is what a reply or forward
 takes. `search_threads` returns `{ items, nextCursor }` with `id`, `channel`, `subject`, `preview`,
-`from`, `messageCount`, `folder`, and `lastActivityAt`, and `spam: true` for a thread in Spam.
+`from`, `messageCount`, `folder`, and `lastActivityAt`, and `spam: { reason }` for a thread in Spam.
 
 The reply and leave tools share one claim that is taken before any `await`, so a model that calls
 both in one step produces one action. The reply is keyed `reply:<event id>`. Events are delivered at

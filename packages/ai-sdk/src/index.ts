@@ -46,6 +46,7 @@ type Mailboxes = SamvaClient["mailboxes"];
 type SendReceipt = Awaited<ReturnType<Mailboxes["reply"]>>;
 type ThreadMessage = Awaited<ReturnType<Mailboxes["getThreadContent"]>>["items"][number];
 type ThreadSummary = Awaited<ReturnType<Mailboxes["listThreads"]>>["items"][number];
+type Decision = NonNullable<SendReceipt["decision"]>;
 type AlreadyHandled = { readonly status: "already handled" };
 
 type ToolInput<Name extends keyof typeof samvaToolInputs> = z.output<
@@ -53,8 +54,9 @@ type ToolInput<Name extends keyof typeof samvaToolInputs> = z.output<
 >;
 
 /**
- * What the model reads about a submitted reply: where it stands and why it waits. The full receipt
- * is one `mailboxes.getAction({ id, actionId })` away for application code that needs it.
+ * What the model reads about a submitted reply: where it stands, why it is held or waits, and who
+ * decides. The full receipt is one `mailboxes.getAction({ id, actionId })` away for application
+ * code that needs it.
  */
 export interface SamvaReplyReceipt {
   readonly actionId: SendReceipt["actionId"];
@@ -70,6 +72,12 @@ export interface SamvaReplyReceipt {
     readonly reason: SendReceipt["skippedRecipients"][number]["reason"];
   }[];
   readonly problem: { readonly code: string; readonly message: string } | null;
+  /** Why the mailbox rules held, refused, or allowed the reply, and who decides a hold. */
+  readonly decision: {
+    readonly outcome: Decision["outcome"];
+    readonly decider: Decision["decider"];
+    readonly reason: string;
+  } | null;
 }
 
 export type SamvaReplyResult =
@@ -108,11 +116,15 @@ export interface SamvaThreadMessage {
   readonly occurredAt: string;
   readonly from: SamvaParticipant;
   readonly to: readonly string[];
+  /** Email only, when the message was copied to anyone. */
+  readonly cc?: readonly string[];
   /** Email only. */
   readonly subject?: string | null;
   readonly text: string | null;
   /** The approved WhatsApp template an outbound message was sent as. */
   readonly template?: string;
+  /** WhatsApp and SMS: the message this one quotes or reacts to. */
+  readonly contextMessageId?: string;
   readonly attachments: readonly SamvaAttachment[];
 }
 
@@ -132,8 +144,8 @@ export interface SamvaThreadSummary {
   readonly messageCount: number;
   readonly folder: ThreadSummary["folder"];
   readonly lastActivityAt: string;
-  /** Present when the thread is in Spam. */
-  readonly spam?: true;
+  /** Present when the thread is in Spam, with the reason Samva gave when it has one. */
+  readonly spam?: { readonly reason: NonNullable<ThreadSummary["spam"]>["reason"] };
 }
 
 export interface SamvaThreadList {
@@ -167,6 +179,11 @@ function toReplyReceipt(receipt: SendReceipt): SamvaReplyReceipt {
       reason,
     })),
     problem: receipt.problem && { code: receipt.problem.code, message: receipt.problem.message },
+    decision: receipt.decision && {
+      outcome: receipt.decision.outcome,
+      decider: receipt.decision.decider,
+      reason: receipt.decision.reason,
+    },
   };
 }
 
@@ -179,11 +196,18 @@ function toThreadMessage(message: ThreadMessage): SamvaThreadMessage {
     from: { address: message.from.address, name: message.from.displayName ?? null },
   };
   if (message.channel === "email") {
+    const addressed = (kind: "to" | "cc") =>
+      message.recipients
+        .filter((recipient) => recipient.kind === kind)
+        .map(({ address }) => address);
+    const cc = addressed("cc");
     return {
       ...base,
-      to: message.recipients.filter(({ kind }) => kind !== "bcc").map(({ address }) => address),
+      to: addressed("to"),
+      ...(cc.length > 0 ? { cc } : {}),
       subject: message.subject ?? null,
-      text: message.replyText ?? message.text ?? null,
+      // An empty reply part falls back to the whole text, so the model never reads a blank message.
+      text: message.replyText || message.text || null,
       attachments: message.attachments
         .filter(({ isInline }) => !isInline)
         .map(({ filename, contentType }) => ({ name: filename, type: contentType })),
@@ -194,6 +218,7 @@ function toThreadMessage(message: ThreadMessage): SamvaThreadMessage {
     to: message.to,
     text: message.text ?? message.summary,
     ...(message.template ? { template: message.template.name } : {}),
+    ...(message.contextMessageId ? { contextMessageId: message.contextMessageId } : {}),
     attachments: message.media.map(({ filename, type }) => ({ name: filename, type })),
   };
 }
@@ -210,7 +235,7 @@ function toThreadSummary(thread: ThreadSummary): SamvaThreadSummary {
     messageCount: thread.messageCount,
     folder: thread.folder,
     lastActivityAt: thread.lastActivityAt,
-    ...(thread.spam ? { spam: true as const } : {}),
+    ...(thread.spam ? { spam: { reason: thread.spam.reason } } : {}),
   };
 }
 

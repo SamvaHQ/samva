@@ -41,7 +41,7 @@ Use a shared Chat SDK state adapter in a deployment with multiple instances. The
 
 The bundled channel skips automated email by default and includes the subject alongside the email body in the agent input. Set `webhook.includeAutomatedEmail: true` to let automated mail start turns.
 
-To use an existing Eve channel, omit `webhook`. The extension then mounts no channel or route, and only `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` are needed. Expose `eventId`, `mailboxId`, `messageId`, and `channel` (`email` or `whatsapp`) via the channel's server-owned metadata after verifying the event. The four tools and the untrusted-message instructions appear on turns with a matching inbound message. Never populate these fields from model input or customer-supplied text.
+To use an existing Eve channel, omit `webhook`. The extension then mounts no channel or route, and only `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` are needed. Expose `eventId`, `mailboxId`, `messageId`, and `channel` (`email` or `whatsapp`) via the channel's server-owned metadata after verifying the event. The instructions stay mounted, and the four tools appear on turns with a matching inbound message. Never populate these fields from model input or customer-supplied text.
 
 ## License
 

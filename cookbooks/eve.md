@@ -91,7 +91,7 @@ text recovers the first reply's receipt instead of sending twice.
 Use an existing Eve channel instead by omitting `webhook`. The extension then mounts no channel or
 route, and only `SAMVA_API_KEY` and `SAMVA_MAILBOX_ID` are needed. Expose `eventId`, `mailboxId`,
 `messageId`, and `channel` from the channel's server-owned metadata after verifying the event. The
-four tools and the untrusted-message instructions appear on turns that carry them. Never fill them
+instructions stay mounted, and the four tools appear on turns that carry them. Never fill them
 from model input or customer text.
 
 ## The approval rule

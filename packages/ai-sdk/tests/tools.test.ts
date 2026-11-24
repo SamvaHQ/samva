@@ -35,11 +35,25 @@ const projected = {
   executeUntil: null,
   skippedRecipients: [],
   problem: null,
+  decision: null,
 };
 
 it("claims the event before awaiting a reply and reports a hold", async () => {
   const client = createClient({ apiKey: "test" });
-  const held = { ...receipt, skippedRecipients: [] };
+  const held: Awaited<ReturnType<Mailboxes["reply"]>> = {
+    ...receipt,
+    skippedRecipients: [],
+    decision: {
+      id: "dec_1",
+      reviewRound: 1,
+      requirement: "person",
+      decider: "person",
+      outcome: "hold",
+      reason: "rule:apiKey:0",
+      scopes: [{ kind: "apiKey", id: "key_1" }],
+      rule: { scope: { kind: "apiKey", id: "key_1" }, index: 0 },
+    },
+  };
   const reply = vi.spyOn(client.mailboxes, "reply").mockResolvedValue(held);
   const tools = samvaTools({ client, message, eventId: "evt" });
   const result = tools.reply_to_customer.execute({ text: "Hello" }, call);
@@ -49,7 +63,13 @@ it("claims the event before awaiting a reply and reports a hold", async () => {
   await expect(tools.reply_to_customer.execute({ text: "Again" }, call)).resolves.toEqual({
     status: "already handled",
   });
-  await expect(result).resolves.toEqual({ status: "held for approval", receipt: projected });
+  await expect(result).resolves.toStrictEqual({
+    status: "held for approval",
+    receipt: {
+      ...projected,
+      decision: { outcome: "hold", decider: "person", reason: "rule:apiKey:0" },
+    },
+  });
   expect(reply).toHaveBeenCalledExactlyOnceWith(
     { id: "mbx", messageId: "msg", channel: "whatsapp", text: "Hello" },
     { idempotencyKey: "reply:evt" },
@@ -140,7 +160,7 @@ const chatMessage: Extract<ThreadMessage, { channel: "whatsapp" | "sms" }> = {
   media: [{ type: "image", contentType: "image/jpeg", filename: null, caption: null }],
   template: { name: "order_update", language: "en" },
   summary: null,
-  contextMessageId: null,
+  contextMessageId: "msg_email",
 };
 const threadSummary: ThreadSummary = {
   id: "thread",
@@ -208,7 +228,8 @@ it("gives the model each message's id, sender, and own words, not the raw thread
         direction: "inbound",
         occurredAt: "2026-01-01T00:00:00Z",
         from: { address: "ada@example.com", name: "Ada" },
-        to: ["support@acme.samva.email", "ops@example.com"],
+        to: ["support@acme.samva.email"],
+        cc: ["ops@example.com"],
         subject: "Where is my order?",
         text: "It has not arrived.",
         attachments: [{ name: "receipt.pdf", type: "application/pdf" }],
@@ -222,6 +243,7 @@ it("gives the model each message's id, sender, and own words, not the raw thread
         to: ["+15550000002"],
         text: null,
         template: "order_update",
+        contextMessageId: "msg_email",
         attachments: [{ name: null, type: "image" }],
       },
     ],
@@ -247,13 +269,23 @@ it("falls back to the full text and a chat summary when nothing shorter exists",
   const client = createClient({ apiKey: "test" });
   const { replyText: _, ...withoutReply } = emailMessage;
   vi.spyOn(client.mailboxes, "getThreadContent").mockResolvedValue({
-    items: [withoutReply, { ...chatMessage, template: null, summary: "Reacted 👍" }],
+    items: [
+      withoutReply,
+      { ...emailMessage, replyText: "" },
+      { ...chatMessage, channel: "sms", template: null, summary: "Reacted 👍" },
+    ],
     nextCursor: null,
   });
   const tools = samvaTools({ client, message, eventId: "evt" });
 
   const result = await tools.get_thread.execute({ threadId: "thread", limit: 10 }, call);
-  expect(result).toMatchObject({ items: [{ text: emailMessage.text }, { text: "Reacted 👍" }] });
+  expect(result).toMatchObject({
+    items: [
+      { text: emailMessage.text },
+      { text: emailMessage.text },
+      { channel: "sms", text: "Reacted 👍" },
+    ],
+  });
   expect(JSON.stringify(result)).not.toContain("template");
 });
 
@@ -277,7 +309,7 @@ it("gives the model a short row per thread with a cursor to page", async () => {
         messageCount: 2,
         folder: "inbox",
         lastActivityAt: "2026-01-01T00:01:00Z",
-        spam: true,
+        spam: { reason: null },
       },
       {
         id: "thread_2",
@@ -303,7 +335,7 @@ it("tells the model why a reply waits and drops the decision record", async () =
     reviewExpectedAt: "2026-01-02T00:00:00Z",
     skippedRecipients: [{ address: "gone@example.com", reason: "bounce", topicId: null }],
     problem: {
-      code: "OnboardingReviewRequiredError",
+      code: "reviewPending",
       message: "Your organization is in review.",
       error: null,
     },
@@ -319,7 +351,7 @@ it("tells the model why a reply waits and drops the decision record", async () =
       reviewExpectedAt: "2026-01-02T00:00:00Z",
       skippedRecipients: [{ address: "gone@example.com", reason: "bounce" }],
       problem: {
-        code: "OnboardingReviewRequiredError",
+        code: "reviewPending",
         message: "Your organization is in review.",
       },
     },

@@ -89,6 +89,7 @@ const projected = {
   executeUntil: null,
   skippedRecipients: [],
   problem: null,
+  decision: null,
 };
 
 beforeEach(() => {
